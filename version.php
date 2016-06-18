@@ -26,8 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2016052402; // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014111001; // Requires this Moodle version
+$plugin->requires  = 2015111100; // Requires this Moodle version
 $plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_RC;
-$plugin->release = "2.8.0 (Build 2015061900)";
+$plugin->release = "3.0.0 (Build 2016040301)";
 $plugin->cron = 5;
