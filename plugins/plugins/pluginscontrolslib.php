@@ -28,7 +28,6 @@ require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/message/lib.php');
 require_once($CFG->dirroot.'/repository/lib.php');
 require_once($CFG->libdir.'/questionlib.php');
-require_once($CFG->libdir.'/pluginlib.php');
 require_once($CFG->libdir.'/portfoliolib.php');
 require_once($CFG->dirroot.'/mod/assign/adminlib.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');

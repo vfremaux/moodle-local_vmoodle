@@ -59,7 +59,7 @@ class Command_Plugin_Set_State extends Command {
         $cmd_name = vmoodle_get_string('cmdpluginsetupname', 'vmoodleadminset_plugins');
         $cmd_desc = vmoodle_get_string('cmdpluginsetupdesc', 'vmoodleadminset_plugins');
 
-        $pm = \plugin_manager::instance();
+        $pm = \core_plugin_manager::instance();
 
         $allplugins = $pm->get_plugins();
 

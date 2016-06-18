@@ -47,7 +47,7 @@ class Host_Form extends \moodleform {
         $this->platform_form = $platform_form;
 
         // Calling parent's constructor.
-        parent::__construct(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'do'.$this->mode, 'page' => $this->mode)));
+        parent::__construct(new \moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'do'.$this->mode, 'page' => $this->mode)));
     }
 
     /**

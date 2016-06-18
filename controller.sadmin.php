@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Manages the wizard of pool administration.
  * 
@@ -32,11 +34,6 @@ Use \vmoodleadminset_sql\Command_MultiSql;
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Form.php');
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Upload_Form.php');
-
-// Checking if is included from view.php in local/vmoodle
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');
-}
 
 $sadminreturnurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin'));
 

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * This file catches an action and do the corresponding usecase.
  * Called by 'view.php'.
@@ -46,11 +48,9 @@ require_once($CFG->dirroot.'/mnet/lib.php');
 
 $PAGE->requires->js('/local/vmoodle/js/host_form.js');
 
-// It must be included from 'view.php' in local/vmoodle.
+$config = get_config('local_vmoodle');
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');
-}
+// It must be included from 'view.php' in local/vmoodle.
 
 // Confirmation message.
 $message_object = new StdClass();
@@ -71,26 +71,26 @@ if ($action == 'add') {
     if (!empty($templates)) {
 
         // Default configuration (automated schema).
-        if (@$CFG->local_vmoodle_automatedschema) {
+        if (@$config->automatedschema) {
             $platform_form = new StdClass();
-            $platform_form->vhostname = (@$CFG->local_vmoodle_vmoodlehost) ? $CFG->local_vmoodle_vmoodlehost : 'localhost' ;
-            $platform_form->vdbtype = (@$CFG->local_vmoodle_vdbtype) ? $CFG->local_vmoodle_vdbtype : 'mysqli' ;
-            $platform_form->vdbhost = (@$CFG->local_vmoodle_vdbhost) ? $CFG->local_vmoodle_vdbhost : 'localhost' ;
-            $platform_form->vdblogin = $CFG->local_vmoodle_vdblogin;
-            $platform_form->vdbpass = $CFG->local_vmoodle_vdbpass;
-            $platform_form->vdbname = $CFG->local_vmoodle_vdbbasename;
-            $platform_form->vdbprefix = (@$CFG->local_vmoodle_vdbprefix) ? $CFG->local_vmoodle_vdbprefix : 'mdl_' ;
-            $platform_form->vdbpersist = (@$CFG->local_vmoodle_vdbpersist) ? 1 : 0 ;
-            $platform_form->vdatapath = stripslashes($CFG->local_vmoodle_vdatapathbase);
+            $platform_form->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost' ;
+            $platform_form->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli' ;
+            $platform_form->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost' ;
+            $platform_form->vdblogin = $config->vdblogin;
+            $platform_form->vdbpass = $config->vdbpass;
+            $platform_form->vdbname = $config->vdbbasename;
+            $platform_form->vdbprefix = (@$config->vdbprefix) ? $config->vdbprefix : 'mdl_' ;
+            $platform_form->vdbpersist = (@$config->vdbpersist) ? 1 : 0 ;
+            $platform_form->vdatapath = stripslashes($config->vdatapathbase);
 
-            if ($CFG->local_vmoodle_mnet == 'NEW') {
+            if ($config->mnet == 'NEW') {
                 $lastsubnetwork = $DB->get_field('local_vmoodle', 'MAX(mnet)', array());
                 $platform_form->mnet = $lastsubnetwork + 1;
             } else {
-                $platform_form->mnet = 0 + @$CFG->local_vmoodle_mnet;
+                $platform_form->mnet = 0 + @$config->mnet;
             }
         
-            $platform_form->services = $CFG->local_vmoodle_services;
+            $platform_form->services = $config->services;
 
             // Try to get crontab (Linux).
             if ($CFG->ostype != 'WINDOWS') {
@@ -113,7 +113,7 @@ if ($action == 'add') {
     } else {
         echo $OUTPUT->header();
         echo $OUTPUT->box(get_string('notemplates', 'local_vmoodle'));
-        echo $OUTPUT->continue_button($CFG->wwwroot.'/local/vmoodle/view.php?view=management');
+        echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
         echo $OUTPUT->footer();
         die;
     }
@@ -164,7 +164,7 @@ if ($action == 'doadd') {
 
         if ($submitteddata->vtemplate === 0) {
 
-            $sqlrequest = 'UPDATE 
+            $sqlrequest = 'UPDATE
                                 {mnet_host}
                            SET
                                 deleted = 0
@@ -317,9 +317,9 @@ if ($action == 'doadd') {
                         $opts['view'] = 'management';
                         $opts['what'] = 'doadd';
                         $opts['step'] = 2;
-                        echo "<center>";
+                        echo '<center>';
                         echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $opts), get_string('skip', 'local_vmoodle'), 'get');
-                        echo "</center>";
+                        echo '</center>';
                     }
                     echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'doadd', 'step' => 2)));
                     echo $OUTPUT->footer();
@@ -799,7 +799,6 @@ if ($action == 'snapshot'){
         }
 
         if ($vmoodlestep == 1) {
-            echo $OUTPUT->header();
             // Auto dump the database in a master template_folder.
             if (!vmoodle_dump_database($vmoodle, $absolute_sqldir.$separator.'vmoodle_master.sql')) {
                 print_error('baddumpcommandpath', 'local_vmoodle');
@@ -808,6 +807,7 @@ if ($action == 'snapshot'){
                 }
             }
             if (empty($automation)) {
+                echo $OUTPUT->header();
                 echo $OUTPUT->box(get_string('vmoodlesnapshot2', 'local_vmoodle'));
                 $params = array('view' => 'management', 'what' => 'snapshot', 'step' => 2, 'wwwroot' => $wwwroot);
                 echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));

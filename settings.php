@@ -14,8 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-if (!defined('MOODLE_INTERNAL')) {
-    die ("You cannot use this script this way");
+/**
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+if (get_config('local_vmoodle', 'late_install')) {
+    // Need performing some corrections on some db recordings, specially subplugins mnet function records.
+    require_once $CFG->dirroot.'/local/vmoodle/db/install.php';
+    xmldb_local_vmoodle_late_install();
 }
 
 $systemcontext = context_system::instance();
@@ -27,7 +38,7 @@ if (is_dir($CFG->dirroot.'/local/adminsettings')) {
     }
 } else {
     // this is Moodle Standard
-    if ($ADIN->fulltree) {
+    if ($ADMIN->fulltree) {
         $hasadmin = true;
     }
 }
@@ -42,9 +53,9 @@ if ($hasadmin) {
 
         $yesnoopts[0] = get_string('no');
         $yesnoopts[1] = get_string('yes');
-    
+
         $settings->add(new admin_setting_configselect('local_vmoodle/automatedschema', get_string('automateschema', 'local_vmoodle'), get_string('automateschema_desc', 'local_vmoodle'), 1, $yesnoopts));
-    
+
         $settings->add(new admin_setting_heading('siteschema', get_string('siteschema', 'local_vmoodle'), ''));
         $settings->add(new admin_setting_configtext('local_vmoodle/vmoodlehost', get_string('vmoodlehost', 'local_vmoodle'), get_string('vmoodlehost_desc', 'local_vmoodle'), 'http://<%%INSTANCE%%>'));
         $settings->add(new admin_setting_configtext('local_vmoodle/vmoodleip', get_string('vmoodleip', 'local_vmoodle'), get_string('vmoodleip_desc', 'local_vmoodle'), ''));
@@ -84,11 +95,11 @@ if ($hasadmin) {
         );
         $settings->add(new admin_setting_configselect('local_vmoodle/services', get_string('servicesstrategy', 'local_vmoodle'), get_string('servicesstrategy_desc', 'local_vmoodle'), 0, $services_strategies));
     
-        $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('tools', 'local_vmoodle'), ''));
+        $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
     
         $onoffopts[0] = get_string('off', 'local_vmoodle');
         $onoffopts[1] = get_string('on', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect('local_vmoodle/mnet_key_autorenew', get_string('mnetkeyautorenew', 'local_vmoodle'), get_string('mnetkeyautorenew_desc', 'local_vmoodle'), 1, $onoffopts));
+        $settings->add(new admin_setting_configselect('local_vmoodle/mnet_key_autorenew', get_string('mnetkeyautorenewenable', 'local_vmoodle'), get_string('mnetkeyautorenew_desc', 'local_vmoodle'), 1, $onoffopts));
         $settings->add(new admin_setting_configtext('local_vmoodle/mnet_key_autorenew_gap', get_string('mnetkeyautorenewgap', 'local_vmoodle'), get_string('mnetkeyautorenewgap_desc', 'local_vmoodle'), 24 * 3));
         $settings->add(new admin_setting_configtime('local_vmoodle/mnet_key_autorenew_time_hour', 'mnet_key_autorenew_time_min', get_string('mnetkeyautorenewtime', 'local_vmoodle'), '', array('h' => 0, 'm' => 0)));
     
@@ -107,6 +118,6 @@ if ($hasadmin) {
         $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
         $yesno = array(0 => get_string('no'), 1 => get_string('yes'));
         $settings->add(new admin_setting_configselect('local_vmoodle/force_https_proto', get_string('forcehttpsproto', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $yesno));
-        $settings->add(new admin_setting_configselect('local_vmoodle/allow_mnet_user_system_admin', get_string('allowmentusersasadmin', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $yesno));
+        $settings->add(new admin_setting_configselect('local_vmoodle/allow_mnet_user_system_admin', get_string('allowmnetusersasadmin', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $yesno));
     }
 }

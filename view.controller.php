@@ -17,6 +17,8 @@
 require_once($CFG->dirroot.'/local/vmoodle/filesystemlib.php');
 require_once($CFG->dirroot.'/mnet/lib.php');
 
+$config = get_config('local_vmoodle');
+
 /**************************** add the new vmoodle host and installs it ************/
 if ($action == 'doaddupdate') {
     $form->id = optional_param('id', '', PARAM_INT);
@@ -46,7 +48,7 @@ if ($action == 'doaddupdate') {
     $vmoodle->vdbname = $form->vdbname;
     $vmoodle->vdbprefix = $form->vdbprefix;
     $vmoodle->vdbpersist = $form->vdbpersist;
-    $vmoodle->vdatapath = $CFG->local_vmoodle_vdatapathbase.'/'.$form->vdatapath;
+    $vmoodle->vdatapath = $config->vdatapathbase.'/'.$form->vdatapath;
     $vmoodle->mnet = $form->mnet;
 
     if ($CFG->ostype != 'WINDOWS'){
@@ -79,7 +81,7 @@ if ($action == 'doaddupdate') {
         if ($form->id == ''){
 
             if (!file_exists($form->vdatapath)) {
-                if (!filesystem_create_dir($form->vdatapath, FS_RECURSIVE, $CFG->local_vmoodle_vdatapathbase)){
+                if (!filesystem_create_dir($form->vdatapath, FS_RECURSIVE, $config->vdatapathbase)){
                     $erroritem->message = get_string('couldnotcreatedataroot', 'local_vmoodle'). " ".$form->vdatapath;
                     $erroritem->on = 'vdatapath';
                     $errors[] = $erroritem;
@@ -129,7 +131,7 @@ if ($action == 'doaddupdate') {
                 $filter[$manifest->templatehost] = $form->vhostname;
                 /// Try to setup full datamodel loading database template
                 if ($res = vmoodle_load_db_template($form, $CFG->dirroot.'/local/vmoodle/'.$v.'_sql/vmoodle_master.'.$form->vdbtype.'.sql', $side_cnx, $filter)) {
-                    $errors[] = $res;                
+                    $errors[] = $res;
                 } else {
                     $done[] = 'databaseloaded';
                     print_string('databaseloaded', 'local_vmoodle');
@@ -242,7 +244,7 @@ if ($action == 'doaddupdate') {
         /// Errors when virtualizing. 
         // Rollback
         if (@array_key_exists('datapath', $done)) {
-            filesystem_clear_dir($form->vdatapath, true, $CFG->local_vmoodle_vdatapathbase);
+            filesystem_clear_dir($form->vdatapath, true, $config->vdatapathbase);
             print_string('datatpathunbound', 'local_vmoodle');
         }
 
@@ -278,16 +280,16 @@ if ($action == 'add') {
     }
 
     echo $OUTPUT->heading(get_string('newvmoodle', 'local_vmoodle'));
-    if ($CFG->local_vmoodle_automatedschema) {
-        $form->vhostname = $CFG->local_vmoodle_vmoodlehost;
-        $form->vdbtype = $CFG->local_vmoodle_vdbtype;
-        $form->vdbhost = $CFG->local_vmoodle_vdbhost;
-        $form->vdblogin = $CFG->local_vmoodle_vdblogin;
-        $form->vdbpass = $CFG->local_vmoodle_vdbpass;
-        $form->vdbprefix = $CFG->local_vmoodle_vdbprefix;
-        $form->vdbpersist = $CFG->local_vmoodle_vdbpersist;
-        $form->vdbname = $CFG->local_vmoodle_vdbbasename;
-        $form->vdatapath = $CFG->local_vmoodle_vdatapathbase;
+    if ($config->automatedschema) {
+        $form->vhostname = $config->vmoodlehost;
+        $form->vdbtype = $config->vdbtype;
+        $form->vdbhost = $config->vdbhost;
+        $form->vdblogin = $config->vdblogin;
+        $form->vdbpass = $config->vdbpass;
+        $form->vdbprefix = $config->vdbprefix;
+        $form->vdbpersist = $config->vdbpersist;
+        $form->vdbname = $config->vdbbasename;
+        $form->vdatapath = $config->vdatapathbase;
     }
 
     // Try to get crontab.

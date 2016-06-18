@@ -54,8 +54,12 @@ table.pfilter td.pfilter_action {
 	text-align: center;
 }
 <?php
-	// Adding plugin libraries styles
-	$plugins = core_plugin_manager::get_plugins_of_type('vmoodleadminset');
-	foreach($plugins as $plugin)
-		if(file_exists($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/theme/styles.php'))
-			include_once $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/theme/styles.php';
+
+// Adding plugin libraries styles
+$manager = core_plugin_manager::instance();
+$plugins = $manager->get_plugins_of_type('vmoodleadminset');
+foreach ($plugins as $plugin) {
+	if (file_exists($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin->name.'/theme/styles.php')) {
+		include_once $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin->name.'/theme/styles.php';
+    }
+}

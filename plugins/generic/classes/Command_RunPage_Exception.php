@@ -14,20 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace vmoodleadminset_generic;
+Use \Exception;
+
 /**
- * Version details
- *
- * @package    local_vmoodle
+ * Exception about Command_RunPage.
+ * 
+ * @package local_vmoodle
  * @category local
- * @copyright  2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version = 2016052402; // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014111001; // Requires this Moodle version
-$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics)
-$plugin->maturity = MATURITY_RC;
-$plugin->release = "2.8.0 (Build 2015061900)";
-$plugin->cron = 5;
+class Command_RunPage_Exception extends Exception {
+    /**
+     * Constructor with localized message.
+     * @param string $identifier The key identifier for the localized string.
+     * @param mixed $a An object, string or number that can be used (optional).
+    */
+    public function __construct($identifier, $a = null) {
+        parent::__construct(vmoodle_get_string($identifier, 'vmoodleadminset_generic', $a));
+    }
+}

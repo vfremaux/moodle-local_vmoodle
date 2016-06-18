@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * lib.php
  * 
@@ -44,23 +46,6 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
-/**
- * Define MySQL and PostgreSQL paths for commands.
- */
-// Windows.
-if ($CFG->ostype == 'WINDOWS') {
-    $CFG->vmoodle_cmd_mysql            =     '';
-    $CFG->vmoodle_cmd_mysqldump        =     '';
-    $CFG->vmoodle_cmd_pgsql            =     '';
-    $CFG->vmoodle_cmd_pgsqldump        =     '';
-} else {
-    // Linux.
-    $CFG->vmoodle_cmd_mysql            =     '/usr/bin/mysql';
-    $CFG->vmoodle_cmd_mysqldump        =     '/usr/bin/mysqldump';
-    $CFG->vmoodle_cmd_pgsql            =     '/usr/bin/pgsql';
-    $CFG->vmoodle_cmd_pgsqldump        =     '/usr/bin/pgsqldump';
-}
-
 /** Define commands' constants */
 $vmcommands_constants = array(
     'prefix' => $CFG->prefix,
@@ -79,6 +64,7 @@ foreach ($plugin_libs as $lib) {
  */
 function vmoodle_get_vmoodles() {
     global $DB;
+
     if ($vmoodles = $DB->get_records('local_vmoodle')) {
         return $vmoodles;
     }
@@ -95,11 +81,13 @@ function vmoodle_get_vmoodles() {
 function vmoodle_setup_mnet_environment($vmoodle, $cnx) {
     global $USER, $CFG;
 
+    $config = get_config('local_vmoodle');
+
     // Make an empty mnet environment.
     $mnet_env = new mnet_environment();
 
     $mnet_env->wwwroot              = $vmoodle->vhostname;
-    $mnet_env->ip_address           = $CFG->local_vmoodle_vmoodleip;
+    $mnet_env->ip_address           = $config->vmoodleip;
     $mnet_env->keypair              = array();
     $mnet_env->keypair              = mnet_generate_keypair(null);
     $mnet_env->public_key           = $mnet_env->keypair['certificate'];
@@ -385,17 +373,16 @@ function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars=null,
 function get_available_platforms() {
     global $CFG, $DB;
 
+    $config = get_config('local_vmoodle');
+
     // Getting description of master host.
     $master_host = $DB->get_record('course', array('id' => 1));
 
     // Setting available platforms.
     $aplatforms = array();
-    if (@$CFG->local_vmoodle_host_source == 'vmoodle') {
+    if (@$config->host_source == 'vmoodle') {
         $id = 'vhostname';
-        $records = $DB->get_records('local_vmoodle', array(), 'name', $id.', name');
-        if (!empty($CFG->vmoodledefault)) {
-            $records[] = (object) array($id => $CFG->wwwroot, 'name' => $master_host->fullname);
-        }
+        $records = $DB->get_records('local_vmoodle', array(), 'name', $id.', name'); 
     } else {
         $id = 'wwwroot';
         $moodleapplication = $DB->get_record('mnet_application', array('name' => 'moodle'));
@@ -404,7 +391,6 @@ function get_available_platforms() {
             if ($record->name == '' || $record->name == 'All Hosts')
             unset($records[$key]);
         }
-        $records[] = (object) array($id => $CFG->wwwroot, 'name' => $master_host->fullname);
     }
     if ($records) {
         foreach ($records as $record) {
@@ -496,7 +482,8 @@ function print_collapsable_bloc_start($id, $caption, $classes = '', $displayed =
                         'type="image" class="hide-show-image" '.
                         'onclick="elementToggleHide(this, false, function(el) {
                                 return findParentNode(el, \'DIV\', \'bvmc\'); 
-                                }, \''.get_string('show').' '.$caption.'\', \''.get_string('hide').' '.$caption.'\');                              return false;" '.
+                                }, \''.get_string('show').' '.$caption.'\', \''.get_string('hide').' '.$caption.'\');
+                                return false;" '.
                         'src="'.$OUTPUT->pix_url($pixpath).'" '.
                         'alt="'.get_string('show').' '.strip_tags($caption).'" '.
                         'title="'.get_string('show').' '.strip_tags($caption).'"/>'.
@@ -648,6 +635,8 @@ function vmoodle_close_connection($vmoodle, $cnx) {
 function vmoodle_dump_database($vmoodle, $outputfile) {
     global $CFG;
 
+    $config = get_config('local_vmoodle');
+
     // Separating host and port, if sticked.
     if (strstr($vmoodle->vdbhost, ':') !== false) {
         list($host, $port) = split(':', $vmoodle->vdbhost);
@@ -680,7 +669,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         }
 
         // MySQL application (see 'vconfig.php').
-        $pgm = (!empty($CFG->local_vmoodle_cmd_mysqldump)) ? stripslashes($CFG->local_vmoodle_cmd_mysqldump) : false;
+        $pgm = (!empty($config->cmd_mysqldump)) ? stripslashes($config->cmd_mysqldump) : false;
     } elseif ($vmoodle->vdbtype == 'postgres') { // PostgreSQL.
         // Default port.
         if (empty($port)) {
@@ -702,11 +691,11 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         }
 
         // PostgreSQL application (see 'vconfig.php').
-        $pgm = (!empty($CFG->local_vmoodle_cmd_pgsqldump)) ? $CFG->vmoodle_cmd_pgsqldump : false;
+        $pgm = (!empty($config->cmd_pgsqldump)) ? $config->cmd_pgsqldump : false;
     }
 
     if (!$pgm) {
-        error("Database dump command not available");
+        print_error('dbdumpnotavailable', 'local_vmoodle');
         return false;
     } else {
         $phppgm = str_replace("\\", '/', $pgm);
@@ -714,7 +703,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $pgm = str_replace('/', DIRECTORY_SEPARATOR, $pgm);
 
         if (!is_executable($phppgm)) {
-            error("Database dump command $phppgm does not match any executable");
+            print_error('dbcommanderror', 'local_vmoodle', $phppgm);
             return false;
         }
         // Final command.
@@ -1036,7 +1025,7 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
     global $DB;
 
     // We will mix in order to an single array of configurated service here.
-    $servicesstrategy = unserialize(get_config(null, 'local_vmoodle_services_strategy'));
+    $servicesstrategy = unserialize(get_config('local_vmoodle', 'services_strategy'));
     $servicerecs = $DB->get_records('mnet_service', array());
     $servicesstrategy = (array)$servicesstrategy;
 
@@ -1091,14 +1080,16 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
 function vmoodle_get_database_dump_cmd($vmoodledata) {
     global $CFG;
 
+    $config = get_config('local_vmoodle');
+
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
-        $pgm = (!empty($CFG->local_vmoodle_cmd_mysql)) ? stripslashes($CFG->local_vmoodle_cmd_mysql) : false;
+        $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
     } elseif ($vmoodledata->vdbtype == 'mysqli') {
-        $pgm = (!empty($CFG->local_vmoodle_cmd_mysql)) ? stripslashes($CFG->local_vmoodle_cmd_mysql) : false;
+        $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
     } elseif ($vmoodledata->vdbtype == 'postgres') {
         // Needs to point the pg_restore command.
-        $pgm = (!empty($CFG->local_vmoodle_cmd_pgsql)) ? stripslashes($CFG->local_vmoodle_cmd_pgsql) : false;
+        $pgm = (!empty($config->cmd_pgsql)) ? stripslashes($config->cmd_pgsql) : false;
     }
 
     // Checks the needed program.
@@ -1450,7 +1441,7 @@ function vmoodle_get_string($identifier, $subplugin, $a = '', $lang = '') {
 
     if (array_key_exists($identifier, $plugstring[$plug])) {
         $result = $plugstring[$plug][$identifier];
-        if ($a !== NULL) {
+        if ($a !== null) {
             if (is_object($a) || is_array($a)) {
                 $a = (array)$a;
                 $search = array();

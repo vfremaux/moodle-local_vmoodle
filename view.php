@@ -28,12 +28,15 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 require_once($CFG->dirroot.'/local/vmoodle/debuglib.php');
 require_once($CFG->dirroot.'/mnet/lib.php');
 
-// Loading jQuery.
-global $JQUERYVERSION;
-if (empty($JQUERYVERSION)) {
-    $JQUERYVERSION = '1.7.2';
-    $PAGE->requires->js('/local/vmoodle/js/lib/jquery-1.7.2.min.js');
+// Finish install if ever never done.
+if (get_config('local_vmoodle', 'late_install')) {
+    // Need performing some corrections on some db recordings, specially subplugins mnet function records.
+    require_once $CFG->dirroot.'/local/vmoodle/db/install.php';
+    xmldb_local_vmoodle_late_install();
 }
+
+// Loading jQuery.
+$PAGE->requires->jquery();
 
 // Loading javascript files.
 
@@ -63,16 +66,17 @@ $action = optional_param('what', '', PARAM_TEXT);
 
 $system_context = context_system::instance();
 require_login();
-require_capability('block/vmoodle:managevmoodles', $system_context);
+require_capability('local/vmoodle:managevmoodles', $system_context);
 
-$plugins = core_plugin_manager::get_plugins_of_type('vmoodleamdinset');
+$manager = core_plugin_manager::instance();
+$plugins = $manager->get_plugins_of_type('vmoodleadminset');
 foreach ($plugins as $plugin) {
-    if (file_exists($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/js/strings.php')) {
-        $js_file = '/local/vmoodle/plugins/'.$plugin.'/js/strings.php';
+    if (file_exists($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin->name.'/js/strings.php')) {
+        $js_file = '/local/vmoodle/plugins/'.$plugin->name.'/js/strings.php';
         $PAGE->requires->js($js_file);
     }
 
-    foreach (glob($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/js/*.js') as $file) {
+    foreach (glob($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin->name.'/js/*.js') as $file) {
          $PAGE->requires->js( str_replace($CFG->dirroot, '', $file));
     }
 }
@@ -81,7 +85,7 @@ foreach ($plugins as $plugin) {
 
 $strtitle = get_string('vmoodlemanager', 'local_vmoodle');
 
-$CFG->stylesheets[] = $CFG->wwwroot.'/local/vmoodle/theme/styles.php';
+$PAGE->requires->css('/local/vmoodle/theme/styles.php');
 
 // Generating header.
 
@@ -98,6 +102,7 @@ $PAGE->set_headingmenu('');
 
 $url = new moodle_url('/local/vmoodle/view.php');
 $PAGE->set_url($url,array('view' => $view, 'what' => $action));
+$PAGE->requires->js('/local/vmoodle/js/sadmin.js');
 
 // Capturing action.
 

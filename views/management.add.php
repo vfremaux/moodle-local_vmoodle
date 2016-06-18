@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Form for adding a virtual host.
  *
@@ -39,7 +41,7 @@ if (isset($SESSION->vmoodle_mg['dataform'])) {
 } else {
     $platform_form = new \local_vmoodle\Host_Form('add', null);
 
-    if ($CFG->local_vmoodle_automatedschema) {
+    if (!empty($config->automatedschema)) {
         if ($config->mnet == 'NEW') {
             $lastsubnetwork = $DB->get_field('local_vmoodle', 'MAX(mnet)', array());
             $formdata->mnet = $lastsubnetwork + 1;

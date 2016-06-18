@@ -13,7 +13,6 @@ require_once $CFG->dirroot.'/local/vmoodle/lib.php';
 require_once($CFG->libdir.'/adminlib.php');       // various admin-only functions
 require_once($CFG->libdir.'/upgradelib.php');     // general upgrade/install related functions
 require_once($CFG->libdir.'/environmentlib.php');
-require_once($CFG->libdir.'/pluginlib.php');
 
 if (!defined('RPC_SUCCESS')) {
     define('RPC_TEST', 100);

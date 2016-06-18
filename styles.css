@@ -9,7 +9,7 @@
 }
 
 
-.vmoodle-block_hidden {
+.vmoodle-block_hidden{
      display:none;
     visibility:hidden;
 }
@@ -17,4 +17,8 @@
 .content.hidden
 {
     display:none;
+}
+
+.vmoodle-tools-row * {
+    display: inline;
 }

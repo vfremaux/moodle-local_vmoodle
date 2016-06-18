@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Displays default services strategy.
  *
@@ -31,8 +33,8 @@ $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name')
 $config = get_config('local_vmoodle');
 
 // Displays the form.
-$services_form = new ServicesStrategy_Form();
-if ($services = unserialize($config->services_strategy)) {
+$services_form = new \local_vmoodle\ServicesStrategy_Form();
+if ($services = unserialize(@$config->services_strategy)) {
     $services_form->set_data($services);
 }
 

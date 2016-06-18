@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Redirection to a certain page of Vmoodle management.
  *
@@ -25,7 +27,11 @@
 
 // Check status of previous action
 if (isset($SESSION->vmoodle_ma['confirm_message'])) {
-    echo $OUTPUT->notification($SESSION->vmoodle_ma['confirm_message']->message, $SESSION->vmoodle_ma['confirm_message']->style);
+    if (is_object($SESSION->vmoodle_ma['confirm_message'])) {
+        echo $OUTPUT->notification($SESSION->vmoodle_ma['confirm_message']->message, $SESSION->vmoodle_ma['confirm_message']->style);
+    } else {
+        echo $OUTPUT->notification($SESSION->vmoodle_ma['confirm_message']);
+    }
     echo '<br/>';
     unset($SESSION->vmoodle_ma['confirm_message']);
 }
@@ -68,16 +74,26 @@ if ($vmoodles) {
 
         $vmoodlecmd = '';
         $editurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'edit', 'id' => $vmoodle->id));
-        $vmoodlecmd .= '<a href="'.$editurl.'"><img src="'.$OUTPUT->pix_url('t/edit','core').'" title="'.get_string('edithost', 'local_vmoodle').'" /></a>';
+        $pix = $OUTPUT->pix_url('t/edit','core');
+        $label = get_string('edithost', 'local_vmoodle');
+        $vmoodlecmd .= '<a href="'.$editurl.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
+
         if ($vmoodle->enabled == 1) {
             $deleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'delete', 'id' => $vmoodle->id));
-            $vmoodlecmd .= ' <a href="'.$deleteurl.'" onclick="return confirm(\''.get_string('confirmdelete', 'local_vmoodle').'\');"><img src="'.$OUTPUT->pix_url('t/delete').'" title="'.get_string('deletehost', 'local_vmoodle').'" /></a>';
+            $pix = $OUTPUT->pix_url('t/delete');
+            $label = get_string('deletehost', 'local_vmoodle');
+            $vmoodlecmd .= '&nbsp;<a href="'.$deleteurl.'" onclick="return confirm(\''.get_string('confirmdelete', 'block_vmoodle').'\');"><img src="'.$pix.'" title="'.$label.'" /></a>';
         } else {
             $fulldeleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'fulldelete', 'id' => $vmoodle->id));
-            $vmoodlecmd .= ' <a href="'.$fulldemeteurl.'" onclick="return confirm(\''.get_string('confirmfulldelete', 'local_vmoodle').'\');"><img src="'.$OUTPUT->pix_url('t/delete').'" title="'.get_string('fulldeletehost', 'local_vmoodle').'" /></a>';
+            $pix = $OUTPUT->pix_url('t/delete');
+            $label = get_string('fulldeletehost', 'local_vmoodle');
+            $vmoodlecmd .= '&nbsp;<a href="'.$fulldeleteurl.'" onclick="return confirm(\''.get_string('confirmfulldelete', 'block_vmoodle').'\');"><img src="'.$pix.'" title="'.$label.'" /></a>';
         }
-        $nsapshoturl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $vmoodle->vhostname));
-        $vmoodlecmd .= ' <a href="'.$snapshoturl.'"><img src="'.$OUTPUT->pix_url('snapshot', 'local_vmoodle').'" title="'.get_string('snapshothost', 'local_vmoodle').'" /></a>';
+
+        $snapurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $vmoodle->vhostname));
+        $pix = $OUTPUT->pix_url('snapshot', 'local_vmoodle');
+        $label = get_string('snapshothost', 'local_vmoodle');
+        $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
         $vmoodlestatus = vmoodle_print_status($vmoodle, true);
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {
@@ -85,10 +101,13 @@ if ($vmoodles) {
         } elseif ($strmnet == 0) {
             $strmnet = get_string('mnetfree', 'local_vmoodle');
         }
-        $vmoodleurl = new moodle_url('/auth/mnet/jump.php', array('hostwwwroot' => urlencode($vmoodle->vhostname)));
-        $vmoodlelnk = '<a href="'.$vmoodleurl.'" target="_blank" >'.$vmoodle->name.'</a>';
-        $hostlnk = '<a href="'.$vmoodle->vhostname.'" target="_blank">'.$vmoodle->vhostname.'</a>';
-        $crongap = ($vmoodle->lastcrongap > DAYSECS) ? '<span style="color:red">'.$vmoodle->lastcrongap.' s.</span>' : $vmoodle->lastcrongap .' s.';
+
+        $auth = is_enabled_auth('multimnet') ? 'multimnet' : 'mnet';
+        $jumpurl = new moodle_url('/auth/'.$auth.'/jump.php', array('hostwwwroot' => $vmoodle->vhostname));
+        $vmoodlelnk = '<a href="'.$jumpurl.'" target="_blank" >'.$vmoodle->name.'</a>';
+
+        $hostlnk = "<a href=\"{$vmoodle->vhostname}\" target=\"_blank\">{$vmoodle->vhostname}</a>";
+        $crongap = ($vmoodle->lastcrongap > DAYSECS) ? "<span style=\"color:red\">$vmoodle->lastcrongap s.</span>" : $vmoodle->lastcrongap ." s.";
 
         $table->data[] = array($vmoodlecheck, $vmoodlelnk, $hostlnk, $vmoodlestatus, $strmnet, $vmoodle->croncount, userdate($vmoodle->lastcron), $crongap, $vmoodlecmd);
     }
@@ -99,7 +118,7 @@ if ($vmoodles) {
     echo '<p>'.$OUTPUT->paging_bar($totalcount, $page, $perpage, $returnurl, 'vpage').'</p>';
     echo '<form name="vmoodlesform" action="'.$returnurl.'" method="POST" >';
     echo html_writer::table($table);
-    
+
     echo '<div class="vmoodle-group-cmd">';
     print_string('withselection', 'local_vmoodle');
     $cmdoptions = array(
@@ -112,16 +131,18 @@ if ($vmoodles) {
     echo '</form>';
     echo '</center>';
 } else {
-    echo $OUTPUT->box(get_string('novmoodles', 'local_vmoodle'));
+    echo $OUTPUT->notification(get_string('novmoodles', 'local_vmoodle'));
 }
 
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $CFG->wwwroot)), get_string('snapshotmaster', 'local_vmoodle'), 'get');
+$params = array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $CFG->wwwroot);
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), get_string('snapshotmaster', 'local_vmoodle'), 'get');
 
 // Displays buttons for adding a new virtual host and renewing all keys.
 
 echo '<br/>';
 
 $templates = vmoodle_get_available_templates();
+$params = array('view' => 'management', 'what' => 'add');
 if (empty($templates)) {
     echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'add')), get_string('notemplates', 'local_vmoodle'), 'get', array('tooltip' => null, 'disabled' => true));
 } else {
@@ -129,9 +150,23 @@ if (empty($templates)) {
 }
 
 echo '<br/>';
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'generateconfigs')), get_string('generateconfigs', 'local_vmoodle'), 'get');
-echo '<br/>';
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'renewall')), get_string('renewallbindings', 'local_vmoodle'), 'get');
-echo '<br/>';
+echo '<div class="vmoodle-tools-row">';
+echo '<div class="vmoodle-tool">';
+$params = array('view' => 'management', 'what' => 'generateconfigs');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), get_string('generateconfigs', 'local_vmoodle'), 'get');
+echo '</div>';
+echo '<div class="vmoodle-tool">';
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecopyscripts.php', $params), get_string('generatecopyscripts', 'local_vmoodle'), 'get');
+echo '</div>';
+echo '<div class="vmoodle-tool">';
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecustomscripts.php', $params), get_string('generatecustomscripts', 'local_vmoodle'), 'get');
+echo '</div>';
+echo '<div class="vmoodle-tool">';
+$params = array('view' => 'management', 'what' => 'renewall');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), get_string('renewallbindings', 'local_vmoodle'), 'get');
+echo '</div>';
+echo '<div class="vmoodle-tool">';
 echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/vcron.php'), get_string('runvcron', 'local_vmoodle'), 'get');
+echo '</div>';
+echo '</div>';
 echo '</center>';

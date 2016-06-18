@@ -1,24 +1,38 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace local_vmoodle;
 
-require_once($CFG->libdir.'/formslib.php');
+defined('MOODLE_INTERNAL') || die();
 
 /**
- * Define form to choose targets.
- * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+require_once($CFG->libdir.'/formslib.php');
+
 class Target_Form extends \moodleform {
     /**
      * Constructor.
      * @param $customdata array The data about the form such as available platforms (optional).    
      */
     public function __construct($customdata = null) {
-        parent::__construct(new moodle_url('/local/vmoodle/view.php'), $customdata, 'post', '', array('onsubmit'=>'submit_target_form()'));
+        parent::__construct(new \moodle_url('/local/vmoodle/view.php'), $customdata, 'post', '', array('onsubmit'=>'submit_target_form()'));
     }
     
     /**

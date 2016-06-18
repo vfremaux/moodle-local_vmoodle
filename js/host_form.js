@@ -15,7 +15,7 @@ function opencnxpopup(wwwroot) {
     var dbname = document.getElementById('id_vdbname').value;
 
     // PHP file linked the pop-up, and name.
-    var url = wwwroot+"/blocks/vmoodle/views/management.testcnx.php" + "?" + "vdbtype="
+    var url = wwwroot+"/local/vmoodle/views/management.testcnx.php" + "?" + "vdbtype="
             + dbtype + "&" + "vdbhost=" + dbhost + "&" + "vdblogin=" + dblogin
             + "&" + "vdbpass=" + dbpass + "&" + "vdbname=" + dbname;
 
@@ -74,11 +74,6 @@ function switcherServices(mnetnewsubnetwork) {
     }
 }
 
-/**
- * Let the function be executed immediately after loading the page.
- */
-addonload(onLoadInit);
-
 function syncSchema(){
 
     var originelement = document.getElementById("id_shortname");
@@ -92,7 +87,10 @@ function syncSchema(){
     syncedelement4.value = syncedelement4.value.replace(/<%%INSTANCE%%>/g, originelement.value);
 }
 
-function onLoadInit(){
+/**
+ * Let the function be executed immediately after loading the page.
+ */
+$(function(){
     var originelement = document.getElementById("id_shortname");
     originelement.onchange = syncSchema;
-}
+});

@@ -202,18 +202,19 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
  */
 function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     global $CFG;
-    
+
     $vnodes = array();
+    $config = get_config('local_vmoodle');
 
     if (empty($nodelistlocation)) {
         $nodelistlocation = $CFG->dataroot.'/vmoodle/snaplist.csv';
     }
-    
+
     // Decode file.
     $csv_encode = '/\&\#44/';
-    if (isset($CFG->local_vmoodle_csvseparator)) {
-        $csv_delimiter = '\\' . $CFG->local_vmoodle_csvseparator;
-        $csv_delimiter2 = $CFG->local_vmoodle_csvseparator;
+    if (isset($config->csvseparator)) {
+        $csv_delimiter = '\\' . $config->csvseparator;
+        $csv_delimiter2 = $config->csvseparator;
 
         if (isset($CFG->CSV_ENCODE)) {
             $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
@@ -277,8 +278,6 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
 
     // Get header (field names).
 
-    $textlib = new textlib();
-
     if (!$fp = fopen($nodelistlocation, 'rb')) {
         cli_error(get_string('badnodefile', 'local_vmoodle', $nodelistlocation));
     }
@@ -286,7 +285,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     // Jump any empty or comment line.
     $text = fgets($fp, 1024);
     $i = 0;
-    while(vmoodle_is_empty_line_or_format($text, $i == 0)){
+    while (vmoodle_is_empty_line_or_format($text, $i == 0)) {
         $text = fgets($fp, 1024);
         $i++;
     }
@@ -355,26 +354,22 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
  * Ensures compatbility to UTF-8 BOM or unBOM formats
  */
 function vmoodle_is_empty_line_or_format(&$text, $resetfirst = false){
-    global $CFG;
-    
-    static $textlib;
     static $first = true;
-        
+
+    $config = get_config('local_vmoodle');
+
     // We may have a risk the BOM is present on first line.
     if ($resetfirst) {
         $first = true;
-    }    
-    if (!isset($textlib)) {
-        $textlib = new textlib(); // Singleton.
     }
-    if ($first && $CFG->local_vmoodle_encoding == 'UTF-8') {
-        $text = $textlib->trim_utf8_bom($text);
+    if ($first && $config->encoding == 'UTF-8') {
+        $text = core_text::trim_utf8_bom($text);
         $first = false;
     }
-    
+
     $text = preg_replace("/\n?\r?/", '', $text);
 
-    if ($CFG->local_vmoodle_encoding != 'UTF-8') {
+    if ($config->encoding != 'UTF-8') {
         $text = utf8_encode($text);
     }
 
@@ -382,7 +377,7 @@ function vmoodle_is_empty_line_or_format(&$text, $resetfirst = false){
     if ('ASCII' == mb_detect_encoding($text)) {
         $text = utf8_encode($text);
     }
-    
+
     // Check the text is empty or comment line and answer true if it is
     return preg_match('/^$/', $text) || preg_match('/^(\(|\[|-|#|\/| )/', $text);
 }

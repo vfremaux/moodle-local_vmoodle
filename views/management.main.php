@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Redirection to a certain page of Vmoodle management.
  *
@@ -24,26 +26,26 @@
  */
 
 // Declaring the page parameter.
-$page = optional_param('page', 'list', PARAM_TEXT);
+$action = optional_param('what', 'list', PARAM_TEXT);
 
 // Templates test, for ADD page.
 $templates = vmoodle_get_available_templates();
-if ($page == 'add' && empty($templates)) {
-    $page = 'list';
+if ($action == 'add' && empty($templates)) {
+    $action = 'list';
 }
 
 // Selecting the page.
-switch($page) {
+switch ($action) {
     case 'list': {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.list.php');
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.list.php');
     }
     break;
-    case 'add' : {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.add.php');
+    case 'add': {
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.add.php');
     }
     break;
-    case 'edit' : {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.edit.php');
+    case 'edit': {
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.edit.php');
     }
     break;
     default: {

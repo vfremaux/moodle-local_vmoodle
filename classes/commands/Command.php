@@ -105,7 +105,7 @@ abstract class Command {
         $parameters = $this->getParameters();
         // Setting parameters' values
         foreach ($parameters as $parameter) {
-            if (!($parameter instanceofCommand_Parameter_Internal)) {
+            if (!($parameter instanceof Command_Parameter_Internal)) {
                 if ($parameter->getType() == 'boolean' && !property_exists($data, $parameter->getName()))
                     $parameter->setValue('0');
                 else

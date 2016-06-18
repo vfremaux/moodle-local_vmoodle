@@ -88,7 +88,7 @@ Options:
 -h, --help            Print out this help
 
 Example:
-\$sudo -u www-data /usr/bin/php admin/cli/upgrade.php --host=http://my.virtual.moodle.org
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade.php --host=http://my.virtual.moodle.org
 "; //TODO: localize - to be translated later when everything is finished
 
     echo $help;

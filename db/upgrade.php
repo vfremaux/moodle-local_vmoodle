@@ -16,6 +16,15 @@
 // The commands in here will all be database-neutral,
 // using the functions defined in lib/ddllib.php
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
+
 function xmldb_local_vmoodle_upgrade($oldversion = 0) {
     global $CFG, $DB;
 

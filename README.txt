@@ -5,6 +5,15 @@ Implements a packaged virtualization control feature for large "Moodle Arrays"
 
 Important requirements for VMoodling :
 
+Version 2015062000 summary
+=============================
+
+This is a key change in architecture. Main part of the VMoodle mechanism is
+transfered to the local/vmoodle component, as local component set is naturally
+core enabled for subplugins. 
+
+The original bloc is mostly conserved for quick access to VMoodles configurations
+
 Version 2014071301 summary
 =============================
 
@@ -25,12 +34,12 @@ version 2013020801 summary
 Summary of prerequisites
 ################################################################
 
-0. Alter the <moodle>/lib/classes/component.php in lone 48 to let subplugins be used in blocks. (add 'block' to the list).
-
-1. Installing vmoodle block in codebase
-2. Installing the master moodle as usual browsing to Administration -> notifications
-3. Installing the config.php hook to vconfig.php
-4. Configuring the VMoodle common parameters
+1. Installing vmoodle local component in codebase
+2. Installing accessory vmoodle block in codebase
+3. Installing the accessory VMoodle report in codebase
+4. Installing the master moodle as usual browsing to Administration -> notifications
+5. Installing the config.php hook to vconfig.php
+6. Configuring the VMoodle common parameters
 
 Post install procedure
 ----------------------------------------------------------------

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * This file catches an action and do the corresponding usecase.
  * Called by 'view.php'.
@@ -26,11 +28,6 @@
  * @usecase redefineservices
  */
 require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
-
-// It must be included from 'view.php' in local/vmoodle.
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');
-}
 
 // Confirmation message.
 $message_object = new stdclass();
