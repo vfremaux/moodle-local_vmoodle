@@ -50,6 +50,7 @@ $CFG->vmasterdbpass = '';
 $CFG->vmasterdbpersist =  false;
 $CFG->vmasterprefix    = 'mdl_';
 $CFG->vmoodledefault    = 1; // Tells if the default physical config can be used as true host.
+$CFG->vlogfilepattern  = '/var/log/%%VHOSTNAME%%.log';
 
 vmoodle_get_hostname();
 

@@ -27,7 +27,7 @@ list($options, $unrecognized) = cli_get_params(
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error($unrecognized.' are not recognized options');
+    cli_error($unrecognized.' are not recognized options ');
 }
 
 if ($options['help']) {
