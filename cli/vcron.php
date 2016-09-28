@@ -57,7 +57,7 @@ $VCRON->TRACE_ENABLE = false;                        // enables tracing
  *
  */
 function fire_vhost_cron($vhost) {
-    global $VCRON,$DB;
+    global $VCRON, $DB, $CFG;
 
     if ($VCRON->TRACE_ENABLE) {
         $CRONTRACE = fopen($VCRON->TRACE, 'a');
@@ -93,6 +93,17 @@ function fire_vhost_cron($vhost) {
         return false;
     }
 
+    // A centralised per host trace for vcron monitoring.
+    if (!empty($CFG->vlogfilepattern)) {
+        $logfile = str_replace('%%VHOSTNAME%%', $vhost->vhostname, $CFG->vlogfilepattern);
+        $logfile = preg_replace('#https?://#', '', $logfile);
+        if ($LOG = fopen($logfile, 'w')) {
+            fputs($LOG, $rawresponse);
+            fclose($LOG);
+        }
+    }
+
+    // A debug trace for developers.
     if ($VCRON->TRACE_ENABLE) {
         if ($CRONTRACE) {
             fputs($CRONTRACE, "VCron start on $vhost->vhostname : $timestamp_send\n" );
@@ -130,6 +141,18 @@ function exec_vhost_cron($vhost) {
     exec($cmd, $rawresponse);
     $timestamp_receive = time();
 
+    // A centralised per host trace for vcron monitoring.
+    if (!empty($CFG->vlogfilepattern)) {
+        $logfile = str_replace('%%VHOSTNAME%%', $vhost->vhostname, $CFG->vlogfilepattern);
+        $logfile = preg_replace('#https?://#', '', $logfile);
+        echo "Opening $logfile\n";
+        if ($LOG = fopen($logfile, 'w')) {
+            fputs($LOG, $output);
+            fclose($LOG);
+        }
+    }
+
+    // A debug trace for developers.
     if ($VCRON->TRACE_ENABLE) {
         if ($CRONTRACE) {
             fputs($CRONTRACE, "VCron start on $vhost->vhostname : $timestamp_send\n" );
