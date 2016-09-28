@@ -38,7 +38,7 @@ if ($unrecognized) {
     cli_error($unrecognized.' are not recognized options');
 }
 
-if ($options['help'] or (!$options['list'] and !$options['execute'])) {
+if ($options['help'] || (!$options['list'] && !$options['execute'])) {
     $help =
 "Scheduled cron tasks.
 
