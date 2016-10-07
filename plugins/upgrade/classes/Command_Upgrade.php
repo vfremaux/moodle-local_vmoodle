@@ -114,7 +114,7 @@ class Command_Upgrade extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
                 if (debugging()) {
                     // echo '<pre>';
                     // var_dump($rpc_client);

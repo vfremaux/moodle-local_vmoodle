@@ -37,10 +37,12 @@
  *
  */
 
-if ((defined('CLI_SCRIPT') && CLI_SCRIPT) && !defined('WEB_CRON_EMULATED_CLI') && !defined('CLI_VMOODLE_OVERRIDE')) return;
-require_once $CFG->dirroot."/local/vmoodle/bootlib.php";
+if ((defined('CLI_SCRIPT') && CLI_SCRIPT) && !defined('WEB_CRON_EMULATED_CLI') && !defined('CLI_VMOODLE_OVERRIDE')) {
+    return;
+}
+require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
-// EDIT A CONFIGURATION FOR MASTER MOODLE
+// EDIT A CONFIGURATION FOR MASTER MOODLE.
 
 $CFG->vmasterdbhost = 'localhost';
 $CFG->vmasterdbtype = 'mysqli';
@@ -54,9 +56,6 @@ $CFG->vlogfilepattern  = '/var/log/%%VHOSTNAME%%.log';
 
 vmoodle_get_hostname();
 
-// TODO : insert customized additional code here if required
-
-
-//
+// TODO : insert customized additional code here if required.
 
 vmoodle_boot_configuration();

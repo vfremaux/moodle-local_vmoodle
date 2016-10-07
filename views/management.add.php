@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Form for adding a virtual host.
  *
@@ -24,9 +22,9 @@ defined('MOODLE_INTERNAL') || die();
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the library.
-Use \local_vmoodle\Host_Form;
+use \local_vmoodle\Host_Form;
 
 $config = get_config('local_vmoodle');
 

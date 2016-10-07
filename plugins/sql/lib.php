@@ -15,9 +15,9 @@ Use \vmoodleadminset_sql\Command_Sql_Exception;
 
 /** Adding the SQL commands' constants */
 /*
-if (isset($vmcommands_constants))
-    $vmcommands_constants = array_merge(
-        $vmcommands_constants,
+if (isset($vmcommandconstants))
+    $vmcommandconstants = array_merge(
+        $vmcommandconstants,
         array(
             'prefix' => $CFG->prefix
         )

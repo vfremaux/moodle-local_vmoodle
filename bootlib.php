@@ -15,20 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
- *
+ * @category        local
+ * @package         local_vmoodle
+ * @author          valery.fremaux (valery.fremaux@gmail.com)
  */
 function vmoodle_get_hostname() {
     global $CFG;
 
-    if ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') || !empty($CFG->vmoodle_force_https_proto)) {
+    if ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+            $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+                    !empty($CFG->vmoodle_force_https_proto)) {
         $protocol = 'https';
     } else {
         $protocol = 'http';
     }
 
-    // This happens when a cli script needs to force one Vmoodle execution.
-    // This will force vmoodle switch using a hard defined constant.
+    /*
+     * This happens when a cli script needs to force one Vmoodle execution.
+     * This will force vmoodle switch using a hard defined constant.
+     */
     if (defined('CLI_VMOODLE_OVERRIDE')) {
         $CFG->vmoodleroot = CLI_VMOODLE_OVERRIDE;
         $CFG->vmoodlename = preg_replace('/https?:\/\//', '', CLI_VMOODLE_OVERRIDE);
@@ -58,7 +63,6 @@ function vmoodle_boot_configuration() {
     /*
      * vconfig provides an bypassed configuration using vmoodle host definition
      * from the vmoodle master instance
-     *
      */
 
     $CFG->mainwwwroot = $CFG->wwwroot;
@@ -108,7 +112,7 @@ function vmoodle_boot_configuration() {
             } else {
                 die ("VMoodling : Could not fetch virtual moodle configuration");
             }
-        } elseif ($CFG->vmasterdbtype == 'mysqli') {
+        } else if ($CFG->vmasterdbtype == 'mysqli') {
             $vmaster = new StdClass();
             $vmaster->vdbtype = $CFG->vmasterdbtype;
             $vmaster->vdbhost = $CFG->vmasterdbhost;
@@ -144,13 +148,12 @@ function vmoodle_boot_configuration() {
                     $CFG->wwwroot   = $CFG->vmoodleroot;
                     $CFG->dataroot  = $vmoodle->vdatapath;
                 } else {
-                    // echo mysqli_error();
                     die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.");
                 }
             } else {
                 die ("VMoodling : Could not fetch virtual moodle configuration");
             }
-        } elseif ($CFG->vmasterdbtype == 'postgres' || $CFG->vmasterdbtype == 'postgres7') {
+        } else if ($CFG->vmasterdbtype == 'postgres' || $CFG->vmasterdbtype == 'postgres7') {
             $vmaster = new StdClass();
             $vmaster->vdbtype = $CFG->vmasterdbtype;
             $vmaster->vdbhost = $CFG->vmasterdbhost;
@@ -190,9 +193,9 @@ function vmoodle_boot_configuration() {
         } else {
             die("VMoodling : Unsupported Database for VMoodleMaster");
         }
-    } elseif ($CFG->vmoodledefault) {
-        // echo "VDefault selected";
-        // do nothing, just bypass
+    } else if ($CFG->vmoodledefault) {
+        // Do nothing, just bypass.
+        assert(true);
     } else {
         die ("real moodle instance cannot be used in this VMoodle implementation");
     }
@@ -217,10 +220,10 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false) {
             }
         }
         return $mysql_side_cnx;
-    } elseif($vmoodle->vdbtype == 'mysqli') {
+    } else if ($vmoodle->vdbtype == 'mysqli') {
         // Important : force new link here.
 
-        $mysql_side_cnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass,$vmoodle->vdbname ,3306);
+        $mysql_side_cnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, 3306);
         if (!$mysql_side_cnx) {
             die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
         }
@@ -230,7 +233,7 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false) {
             }
         }
         return $mysql_side_cnx;
-    } elseif($vmoodle->vdbtype == 'postgres') {
+    } else if ($vmoodle->vdbtype == 'postgres') {
 
         if (preg_match("/:/", $vmoodle->vdbhost)) {
             list($host, $port) = explode(":", $vmoodle->vdbhost);
@@ -242,7 +245,8 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false) {
 
         $dbname = ($binddb) ? "dbname={$vmoodle->vdbname} " : '';
 
-        $postgres_side_cnx = @pg_connect("host={$host} {$port} user={$vmoodle->vdblogin} password={$vmoodle->vdbpass} {$dbname}");
+        $cnxstr = "host={$host} {$port} user={$vmoodle->vdblogin} password={$vmoodle->vdbpass} {$dbname}";
+        $postgres_side_cnx = @pg_connect($cnxstr);
         return $postgres_side_cnx;
     } else {
         echo "vmoodle_make_connection : Database not supported<br/>";

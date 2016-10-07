@@ -1285,7 +1285,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                     if (empty($result)) {
                         // if (preg_match('/dev/', $CFG->wwwroot)) print_object($rpc_client);
                         $response->errors[] = 'Create user : bounce failed rpc transaction to '.$bouncehost;
-                        $response->errors[] = $rpc_client->getErrors();
+                        $response->errors[] = $rpc_client->get_errors();
                         $response->error = 'Create user : bounce failed rpc transaction to '.$bouncehost;
                     } else {
                         // whatever we have, aggregate eventual remote errors to error stack.

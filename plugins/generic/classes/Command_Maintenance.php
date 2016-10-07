@@ -15,12 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace vmoodleadminset_generic;
-Use \local_vmoodle\commands\Command;
-Use \StdClass;
+
+use \local_vmoodle\commands\Command;
+use \StdClass;
 
 /**
  * Describes meta-administration plugin's command for Maintenance setup.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)
@@ -48,7 +49,7 @@ class Command_Maintenance extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -93,7 +94,8 @@ class Command_Maintenance extends Command {
             if ($mnet_host->bootstrap($host, null, 'moodle')) {
                 $mnet_hosts[] = $mnet_host;
             } else {
-                $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
+                $errorstr = get_string('couldnotcreateclient', 'local_vmoodle', $host);
+                $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => $errorstr);
             }
         }
 
@@ -112,12 +114,7 @@ class Command_Maintenance extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpc_client);
-                    echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
             } else {
                 $response = json_decode($rpc_client->response);
             }
@@ -150,7 +147,7 @@ class Command_Maintenance extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;

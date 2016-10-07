@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Manages the wizard of pool administration.
  * 
@@ -23,13 +21,16 @@ defined('MOODLE_INTERNAL') || die();
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
- 
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command_Category;
-Use \local_vmoodle\Target_Form;
-Use \vmoodleadminset_sql\Command_Sql;
-Use \vmoodleadminset_sql\Command_MultiSql;
+defined('MOODLE_INTERNAL') || die();
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command_Category;
+use \local_vmoodle\AdvancedCommand_Form;
+use \local_vmoodle\Target_Form;
+use \local_vmoodle\Command_Form;
+use \vmoodleadminset_sql\Command_Sql;
+use \vmoodleadminset_sql\Command_MultiSql;
 
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Form.php');
@@ -37,12 +38,13 @@ require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Uplo
 
 $sadminreturnurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin'));
 
-// Checking action to do
+// Checking action to do.
+
 switch ($action) {
 
-    // Validating the assisted command.
     case 'validateassistedcommand':
-        // Checking the neeed values
+        // Validating the assisted command.
+        // Checking the neeed values.
         $category = optional_param('category_plugin_name', null, PARAM_TEXT);
 
         $index = optional_param('command_index', -1, PARAM_INT);
@@ -64,37 +66,40 @@ switch ($action) {
             return 0;
         }
         $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
-        if (!($data = $command_form->get_data()))
+        if (!($data = $command_form->get_data())) {
             return 0;
-        // Setting parameters' values
+        }
+
+        // Setting parameters' values.
         try {
             $command->populate($data);
-        } catch(Exception $exception) {
+        } catch (Exception $exception) {
             $message = $exception->getMessage();
             if (empty($message)) {
                 $message = get_string('unablepopulatecommand', 'local_vmoodle');
             }
 
             echo $OUTPUT->notification($message);
-            unset($_POST); // Done to remove form information. Otherwise, it crack all forms..
+            unset($_POST); // Done to remove form information. Otherwise, it crack all forms.
             return 0;
         }
-        // Record the wizard status
+
+        // Record the wizard status.
         $SESSION->vmoodle_sa['command'] = serialize($command);
         $SESSION->vmoodle_sa['wizardnow'] = 'targetchoice';
 
-        // Move to the next step
+        // Move to the next step.
         redirect($sadminreturnurl);
         break;
 
-    // Switching to the advanced mode.
     case 'switchtoadvancedcommand':
+        // Switching to the advanced mode.
         $SESSION->vmoodle_sa['wizardnow'] = 'advancedcommand';
         redirect($sadminreturnurl);
         break;
 
-    // Validating the advanced command.
     case 'validateadvancedcommand':
+        // Validating the advanced command.
         // Invoking form.
         $advancedcommand_form = new AdvancedCommand_Form();
 
@@ -111,11 +116,9 @@ switch ($action) {
         }
 
         // Creating a Command_MultiSql.
-        $command = new Command_MultiSql(
-                        get_string('manualcommand', 'local_vmoodle'),
-                        get_string('manualcommand', 'local_vmoodle'),
-                        $data->sqlcommand
-                    );
+        $command = new Command_MultiSql(get_string('manualcommand', 'local_vmoodle'),
+                                        get_string('manualcommand', 'local_vmoodle'),
+                                        $data->sqlcommand);
         // Record the wizard status.
         $SESSION->vmoodle_sa['command'] = serialize($command);
         $SESSION->vmoodle_sa['wizardnow'] = 'targetchoice';
@@ -124,18 +127,18 @@ switch ($action) {
         redirect($sadminreturnurl);
         break;
 
-    // Uploading a SQL script to fill Command_Sql
     case 'uploadsqlscript':
+        // Uploading a SQL script to fill Command_Sql.
         // Checking uploaded file.
         $advancedcommand_form = new AdvancedCommand_Form();
         $advancedcommand_upload_form = new AdvancedCommand_Upload_Form();
-        if ($file_content = $advancedcommand_upload_form->get_file_content('script')){
+        if ($file_content = $advancedcommand_upload_form->get_file_content('script')) {
             $advancedcommand_form->set_data(array('sqlcommand' => $file_content));
         }
         break;
 
-    // Getting available platforms by their original value.
     case 'gettargetbyvalue':
+        // Getting available platforms by their original value.
         // Including requirements.
         include_once($CFG->dirroot.'/local/vmoodle/classes/Command_Form.php');
         include_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
@@ -145,7 +148,7 @@ switch ($action) {
             $SESSION['vmoodle_sa']['wizardnow'] = 'commandchoice';
             return 0;
         }
-        // Getting retrieve platforms command
+        // Getting retrieve platforms command.
         $command = unserialize($SESSION->vmoodle_sa['command']);
         $rpcommand = $command->getRPCommand();
         if (is_null($rpcommand)) {
@@ -156,20 +159,21 @@ switch ($action) {
         $rpcommand_form = new Command_Form($rpcommand, Command_Form::MODE_RETRIEVE_PLATFORM);
 
         // Checking if form is submitted.
-        if (!($data = $rpcommand_form->get_data())){
+        if (!($data = $rpcommand_form->get_data())) {
             return 0;
         }
 
         // Setting parameters' values.
         $rpcommand->populate($data);
-        // Sending command on available platforms
+
+        // Sending command on available platforms.
         $platforms = get_available_platforms();
         $rpcommand->setReturned(true);
         $rpcommand->run($platforms);
 
         // Removing failed platforms.
-        foreach($platforms as $host => $platform) {
-            if (!($rpcommand->getResult($host, 'status') == RPC_SUCCESS && $rpcommand->getResult($host, 'value'))){
+        foreach ($platforms as $host => $platform) {
+            if (!($rpcommand->getResult($host, 'status') == RPC_SUCCESS && $rpcommand->getResult($host, 'value'))) {
                 unset($platforms[$host]);
             }
         }
@@ -181,8 +185,8 @@ switch ($action) {
         redirect($sadminreturnurl);
         break;
 
-    // Sending command on virtual platforms.
     case 'sendcommand':
+        // Sending command on virtual platforms.
         // Invoking form.
         $target_form = new Target_Form();
 
@@ -200,14 +204,14 @@ switch ($action) {
 
         // Getting platforms // BUGFIX not found why splatforms dont' come into get_data().
         $form_platforms = optional_param_array('splatforms', array(), PARAM_URL);
-        if (empty($form_platforms) || (count($form_platforms) == 1 && $form_platforms[0] == '0')){
+        if (empty($form_platforms) || (count($form_platforms) == 1 && $form_platforms[0] == '0')) {
             echo $OUTPUT->header();
             throw new Command_Exception('noplatformchosen');
         }
 
         $platforms = array();
         $all_platforms = get_available_platforms();
-        foreach ($form_platforms as $platform_root){
+        foreach ($form_platforms as $platform_root) {
             $platforms[$platform_root] = $all_platforms[$platform_root];
         }
 
@@ -230,14 +234,14 @@ switch ($action) {
         redirect($sadminreturnurl);
         break;
 
-    // Clean up wizard session to run a new command.
     case 'newcommand':
+        // Clean up wizard session to run a new command.
         unset($SESSION->vmoodle_sa);
         redirect($sadminreturnurl);
         break;
 
-    // Run command again on other platforms.
     case 'runotherpfm':
+        // Run command again on other platforms.
         // Removing selected platforms from session.
         if (isset($SESSION->vmoodle_sa['platforms'])) {
             unset($SESSION->vmoodle_sa['platforms']);
@@ -253,8 +257,8 @@ switch ($action) {
         redirect($sadminreturnurl);
         break;
 
-    // Run an other command on selected platforms.
     case 'runothercmd':
+        // Run an other command on selected platforms.
         // Removing selected command from session.
         if (isset($SESSION->vmoodle_sa['command'])) {
             unset($SESSION->vmoodle_sa['command']);
@@ -267,8 +271,8 @@ switch ($action) {
         redirect($sadminreturnurl);
         break;
 
-    // Run the command again on a platform.
     case 'runcmdagain':
+        // Run the command again on a platform.
         // Checking wizard session.
         if (!isset($SESSION->vmoodle_sa['command'], $_GET['platform'])) {
             return -1;

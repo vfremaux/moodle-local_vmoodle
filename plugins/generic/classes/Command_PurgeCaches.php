@@ -29,10 +29,14 @@ Use \StdClass;
  */
 class Command_PurgeCaches extends Command {
 
-    /** maintenance message. Sets maintenance mode off if empty */
+    /**
+     * maintenance message. Sets maintenance mode off if empty
+     */
     private $message;
 
-    /** If command's result should be returned */
+    /**
+     * If command's result should be returned
+     */
     private $returned;
 
     /**
@@ -45,7 +49,7 @@ class Command_PurgeCaches extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -98,16 +102,11 @@ class Command_PurgeCaches extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpc_client);
-                    echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
             } else {
                 $response = json_decode($rpc_client->response);
             }
-            // Recording response
+            // Recording response.
             $responses[$mnet_host->wwwroot] = $response;
         }
 
@@ -136,7 +135,7 @@ class Command_PurgeCaches extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;

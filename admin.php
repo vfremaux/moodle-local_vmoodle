@@ -25,7 +25,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 
-// Adding requirements
+// Adding requirements.
 require_once('../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
@@ -80,7 +80,7 @@ switch ($action) {
         echo $OUTPUT->footer();
         exit();
     case 'disablecommands':
-        // Getting commands plugin path
+        // Getting commands plugin path.
         $commands = optional_param('commands');
         if (is_null($commands)) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
@@ -88,7 +88,7 @@ switch ($action) {
         }
         $plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/'.$commands;
         $new_plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/_'.$commands;
-        // Checking if plugin exists
+        // Checking if plugin exists.
         if (!is_dir($plugin_path)) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
             break;
@@ -114,7 +114,7 @@ switch ($action) {
             break;
         }
 
-        // Loading plugin library
+        // Loading plugin library.
         include_once($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/lib.php');
 
         // Removing plugin library.
@@ -146,13 +146,15 @@ foreach ($assistedcommands_conffiles as $conffile) {
     $path = explode('/', $conffile);
     $category = $path[count($path)-2];
     $vmoodle_category = load_vmplugin($category);
-    $table->data[] = array(
-                        $vmoodle_category->getName().'<br/> > '.$vmoodle_category->count().' '.get_string('elements', 'local_vmoodle'),
-                        ($category[0] == '_' ?
-                            $OUTPUT->single_button(new moodle_url('admin.php', array('action' => 'enablecommands', 'commands' => $category)), get_string('enable'), 'get') :
-                            $OUTPUT->single_button(new moodle_url('admin.php', array('action' => 'disablecommands', 'commands' => $category)), get_string('disable'), 'get')
-                        )
-                    );
+
+    $params = array('action' => 'enablecommands', 'commands' => $category);
+    $button1 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('enable'), 'get');
+    $params = array('action' => 'disablecommands', 'commands' => $category);
+    $button2 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('disable'), 'get')
+
+    $label = get_string('elements', 'local_vmoodle');
+    $table->data[] = array($vmoodle_category->getName().'<br/> > '.$vmoodle_category->count().' '.$label,
+                           ($category[0] == '_' ? $button1 : $button2));
 }
 
 // Displaying commands plugins.
@@ -163,7 +165,7 @@ echo '<br/>';
 
 // Retrieving vmoodle plugins.
 $plugins = core_plugin_manager::get_plugins_of_type('vmoodleadminset');
-foreach($plugins as $key => $plugin) {
+foreach ($plugins as $key => $plugin) {
     if (!$DB->get_record('config', array('name' => 'vmoodle_lib_'.$plugin.'_version'))) {
         unset($plugins[$key]);
     }
@@ -178,7 +180,9 @@ $table->width = '80%';
 
 // Adding plugins.
 foreach ($plugins as $plugin) {
-    $table->data[] = array($plugin, $OUTPUT->single_button(new moodle_url('admin.php', array('action' => 'uninstallplugin', 'plugin' => $plugin)), get_string('uninstall', 'local_vmoodle'), 'get'));
+    $params = array('action' => 'uninstallplugin', 'plugin' => $plugin);
+    $adminurl = new moodle_url('/local/vmoodle/admin.php', $params);
+    $table->data[] = array($plugin, $OUTPUT->single_button($adminurl, get_string('uninstall', 'local_vmoodle'), 'get'));
 }
 
 // Displaying plugins.

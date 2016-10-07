@@ -68,7 +68,7 @@ function mnetadmin_rpc_get_fields($user, $table, $fields, $select) {
  * @param boolean $return true if the result of SQL should be returned, false otherwise. In that case query CANNOT be multiple
  */
 function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false, $multiple = false) {
-    global $CFG, $USER, $vmcommands_constants, $DB;
+    global $CFG, $USER, $vmcommandconstants, $DB;
 
     // Adding requirements.
     include_once($CFG->dirroot.'/local/vmoodle/lib.php');

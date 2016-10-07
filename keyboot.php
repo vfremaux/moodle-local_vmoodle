@@ -31,50 +31,58 @@
  *
  */
 require('../../config.php');
-require_once($CFG->dirroot.'/local/vmoodle/debuglib.php'); // fakes existance of a debug lib
+require_once($CFG->dirroot.'/local/vmoodle/debuglib.php'); // Fakes existance of a debug lib.
 
 global $MNET;
 
 require_once($CFG->dirroot.'/mnet/lib.php');
 
-// This is a workaround to $_POST loosing long values.
-// @see http://stackoverflow.com/questions/5077969/php-some-post-values-missing-but-are-present-in-php-input
+/*
+ * This is a workaround to $_POST loosing long values.
+ * @see http://stackoverflow.com/questions/5077969/php-some-post-values-missing-but-are-present-in-php-input
+ */
 $_POST = getRealPOST();
 
 $test = 0;
 $masterpk = required_param('pk', PARAM_RAW);
 
-if(!$test) {
+if (!$test) {
     if (empty($masterpk)) {
         echo "ERROR : Empty PK ";
     }
 }
 
-// avoid shooting in yourself (@see locallib.php§vmoodle_fix_database() )
-// VMoodle Master identity has been forced in remote database with its current public key, so we should find it.
-// whatever the case, the master record is always added as an "extra" mnet_host record, after "self", and "all Hosts".
+/*
+ * avoid shooting in yourself (@see locallib.php§vmoodle_fix_database() )
+ * VMoodle Master identity has been forced in remote database with its current public key, so we should find it.
+ * whatever the case, the master record is always added as an "extra" mnet_host record, after "self", and "all Hosts".
+ */
 
-$remotehost = $DB->get_record_select('mnet_host', " TRIM(REPLACE(public_key, '\r', '')) = TRIM(REPLACE('$masterpk', '\r', '')) AND id > 1 ");
+$select = " TRIM(REPLACE(public_key, '\r', '')) = TRIM(REPLACE('$masterpk', '\r', '')) AND id > 1 ";
+$remotehost = $DB->get_record_select('mnet_host', $select);
 
 if ($remotehost || $test) {
 
-    // $CFG->bootstrap_init is a key that has been added by master when postprocessing the deployment template
-    // We check that the public key given matches the identity of the master who initiated the platform restoring.
+    /*
+     * $CFG->bootstrap_init is a key that has been added by master when postprocessing the deployment template
+     * We check that the public key given matches the identity of the master who initiated the platform restoring.
+     */
 
     // get it hard !!
     $initroot = $DB->get_field('config', array('name' => 'bootstrap_init'));
 
     if ($test || ($initroot == $remotehost->wwwroot)) {
 
-        // at this time, the local platform may not have self key, or may inherit 
-        // an obsolete key from the template SQL backup.
-        // we must fix that forcing a local key replacement
+        /*
+         * at this time, the local platform may not have self key, or may inherit 
+         * an obsolete key from the template SQL backup.
+         * we must fix that forcing a local key replacemen
+         */t
         $MNET = new mnet_environment();
         $MNET->init();
         $MNET->name = '';
         $oldkey = $MNET->public_key;
         $MNET->replace_keys();
-        // debug_trace("REMOTE : Replaced keys from \n$oldkey\nto\n{$MNET->public_key}\n");
 
         // Finally we disable the keyboot script locking definitively the door.
         set_config('bootstrap_init', null);

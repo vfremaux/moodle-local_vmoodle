@@ -105,8 +105,8 @@ class Command_Plugins_Sync extends Command {
             if (!isset($response)) {
                 $response = new Stdclass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                $response->error = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->error = implode('<br/>', $rpc_client->get_errors($mnet_host));
             }
 
             if (debugging()) {
@@ -151,7 +151,7 @@ class Command_Plugins_Sync extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new Stdclass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
                 $response->error = 'Set plugin state failed : Remote call error';
                 if (debugging()) {
                     echo '<pre>';

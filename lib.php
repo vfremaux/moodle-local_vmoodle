@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * lib.php
  * 
@@ -26,10 +24,12 @@ defined('MOODLE_INTERNAL') || die();
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 require_once($CFG->dirroot.'/local/vmoodle/filesystemlib.php');
 
-/** Define constants */
+/* Define constants */
 define('VMOODLE_LIBS_DIR', $CFG->dirroot.'/local/vmoodle/plugins/');
 define('VMOODLE_PLUGINS_DIR', $CFG->dirroot.'/local/vmoodle/plugins/');
 
@@ -46,13 +46,11 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
-/** Define commands' constants */
-$vmcommands_constants = array(
-    'prefix' => $CFG->prefix,
-    'wwwroot' => $CFG->wwwroot,
-);
+/* Define commands' constants */
+$vmcommandconstants = array('prefix' => $CFG->prefix,
+                              'wwwroot' => $CFG->wwwroot);
 
-// Loading plugin librairies
+// Loading plugin librairies.
 $plugin_libs = glob($CFG->dirroot.'/local/vmoodle/plugins/*/lib.php');
 foreach ($plugin_libs as $lib) {
     require_once $lib;
@@ -108,6 +106,7 @@ function vmoodle_add_services(&$vmoodle, $mnet_env, $cnx, $services) {
     if (!$mnet_env->id) {
         return false;
     }
+
     if ($services) {
         foreach ($services as $service => $keys) {
             $sql = "
@@ -160,7 +159,7 @@ function vmoodle_get_service_desc() {
 function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
     $mnet_array = get_object_vars($mnet_env);
     if (empty($mnet_env->id)) {
-        foreach($mnet_array as $key => $value) {
+        foreach ($mnet_array as $key => $value) {
             if ($key == 'id') {
                 continue;
             }
@@ -180,7 +179,7 @@ function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
         ";
         $mnet_env->id = vmoodle_execute_query($vmoodle, $sql, $cnx);
     } else {
-        foreach($mnet_array as $key => $value) {
+        foreach ($mnet_array as $key => $value) {
             $valuelist[] = "$key = '$value'";
         }
         unset($valuelist['id']);
@@ -226,7 +225,7 @@ function vmoodle_unregister_mnet(&$vmoodle, $fromvmoodle ) {
         $vdbprefix = $CFG->prefix;
     }
     $cnx = vmoodle_make_connection($fromvmoodle, true);
-    // cleanup all services for the deleted host
+    // Cleanup all services for the deleted host.
     $sql = "
         DELETE FROM
             {$vmoodle->vdbprefix}mnet_host2service
@@ -271,7 +270,7 @@ function vmoodle_drop_database(&$vmoodle, $cnx = null) {
             $sql = "
                DROP DATABASE `{$vmoodle->vdbname}`
             ";
-        } elseif($vmoodle->vdbtype == 'postgres'){
+        } else if ($vmoodle->vdbtype == 'postgres') {
             $sql = "
                DROP DATABASE {$vmoodle->vdbname}
             ";
@@ -298,7 +297,7 @@ function vmoodle_drop_database(&$vmoodle, $cnx = null) {
  * @param handle $cnx
  * @param array $vars an array of vars to inject in the bulk file before processing
  */
-function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars=null, $filter=null){
+function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars = null, $filter = null) {
     global $CFG;
 
     $local_cnx = 0;
@@ -313,7 +312,7 @@ function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars=null,
     if (file_exists($bulkfile)) {
         $sql = file($bulkfile);
 
-        // converts into an array of text lines
+        // Converts into an array of text lines.
         $dumpfile = implode("", $sql);
         if ($filter) {
             foreach ($filter as $from => $to) {
@@ -337,15 +336,15 @@ function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars=null,
         echo "vmoodle_load_db_template : Bulk file not found";
         return false;
     }
-    /// split into single queries
+    // Split into single queries.
     $dumpfile = str_replace("\r\n", "\n", $dumpfile); // Translates to Unix LF.
     $queries = preg_split("/;\n/", $dumpfile);
-    /// feed queries in database
+    // Feed queries in database.
     $i = 0;
     $j = 0;
     if (!empty($queries)) {
         foreach ($queries as $query) {
-            $query = trim($query); // Get rid of trailing spaces and returns
+            $query = trim($query); // Get rid of trailing spaces and returns.
             if ($query == '') {
                 continue; // Avoid empty queries.
             }
@@ -386,7 +385,8 @@ function get_available_platforms() {
     } else {
         $id = 'wwwroot';
         $moodleapplication = $DB->get_record('mnet_application', array('name' => 'moodle'));
-        $records = $DB->get_records('mnet_host', array('deleted' => 0, 'applicationid' => $moodleapplication->id), 'name', $id.', name');
+        $params = array('deleted' => 0, 'applicationid' => $moodleapplication->id);
+        $records = $DB->get_records('mnet_host', $params, 'name', $id.', name');
         foreach ($records as $key => $record) {
             if ($record->name == '' || $record->name == 'All Hosts')
             unset($records[$key]);
@@ -413,9 +413,7 @@ function help_button_vml($library, $helpitem, $title) {
     global $OUTPUT;
 
     //WAFA: help icon no longer take links, it now takes identifiers to 
-    //return $OUTPUT->help_icon('helprouter.html&amp;library='.$library.'&amp;helpitem='.$helpitem, 'local_vmoodle', false);
-    return "";//$OUTPUT->help_icon('helprouter.html&amp;library='.$library.'&amp;helpitem='.$helpitem, 'local_vmoodle', false);
-    
+    return '';
 }
 
 /**
@@ -428,34 +426,23 @@ function help_button_vml($library, $helpitem, $title) {
  * @return string The parameters' values.
  */
 function replace_parameters_values($matches, $params, $parameters_replace = true, $constants_replace = true) {
-    global $vmcommands_constants;
+    global $vmcommandconstants;
 
     // Parsing constants.
-    if ($constants_replace 
-            && empty($matches[1]) 
-                    && array_key_exists($matches[2], $vmcommands_constants)) {
-        $value = $vmcommands_constants[$matches[2]];
-        // Parsing parameter
+    if ($constants_replace
+            && empty($matches[1])
+                    && array_key_exists($matches[2], $vmcommandconstants)) {
+        $value = $vmcommandconstants[$matches[2]];
+        // Parsing parameter.
     } else if ($parameters_replace && !empty($matches[1]) && array_key_exists($matches[2], $params)) {
         $value = $params[$matches[2]]->getValue();
-        /*
-        $paramtype = $params[$matches[2]]->getType();
-        if ($paramtype == 'text' || $paramtype == 'ltext'){
-            // probably obsolete when transferring to Moodle placeholders
-            // $value = str_replace("'", "''", $params[$matches[2]]->getValue());
-            $value = $params[$matches[2]]->getValue();
-        } else {
-            $value = $params[$matches[2]]->getValue();
-        }
-        */
-
-    // Leave untouched
     } else {
+        // Leave untouched.
         return array($matches[2], $matches[0]);
     }
 
-    // Checking if member is asked.
     if (isset($matches[3]) && is_array($value)) {
+        // Checking if member is asked.
         $value = $value[$matches[3]];
     }
 
@@ -561,7 +548,6 @@ function vmoodle_make_this(){
     $thismoodle->vdblogin = $CFG->dbuser;
     $thismoodle->vdbpass = $CFG->dbpass;
     $thismoodle->vdbname = $CFG->dbname;
-    //$thismoodle->vdbpersist    = $CFG->dbpersist;    //not available in 2.2
     $thismoodle->vdbprefix    = $CFG->prefix;
 
     return $thismoodle;
@@ -575,21 +561,19 @@ function vmoodle_make_this(){
  * @param handle $cnx The connection to the Vmoodle database.
  * @return boolean true if the request is well-executed, false otherwise.
  */
-function vmoodle_execute_query(&$vmoodle, $sql, $cnx){
+function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
 
     // If database is MySQL typed.
-    if($vmoodle->vdbtype == 'mysql') {
+    if ($vmoodle->vdbtype == 'mysql') {
         if (!($res = mysql_query($sql, $cnx))) {
             echo "vmoodle_execute_query() : ".mysql_error($cnx)."<br/>";
             return false;
         }
         if ($newid = mysql_insert_id($cnx)) {
-            $res = $newid; // get the last insert id in case of an INSERT
+            $res = $newid; // Get the last insert id in case of an INSERT.
         }
-    }
-
-    // If database is PostgresSQL typed.
-    elseif ($vmoodle->vdbtype == 'postgres') {
+    } else if ($vmoodle->vdbtype == 'postgres') {
+        // If database is PostgresSQL typed.
         if (!($res = pg_query($cnx, $sql))) {
             echo "vmoodle_execute_query() : ".pg_last_error($cnx)."<br/>";
             return false;
@@ -597,10 +581,8 @@ function vmoodle_execute_query(&$vmoodle, $sql, $cnx){
         if ($newid = pg_last_oid($res)) {
             $res = $newid; // Get the last insert id in case of an INSERT.
         }
-    }
-
-    // If database not supported.
-    else {
+    } else {
+        // If database not supported.
         echo "vmoodle_execute_query() : Database not supported<br/>" ;
         return false;
     }
@@ -615,9 +597,9 @@ function vmoodle_execute_query(&$vmoodle, $sql, $cnx){
  * @return boolean If true, closing the connection is well-executed.
  */
 function vmoodle_close_connection($vmoodle, $cnx) {
-    if($vmoodle->vdbtype == 'mysql') {
+    if ($vmoodle->vdbtype == 'mysql') {
         $res = mysql_close($cnx);
-    } elseif($vmoodle->vdbtype == 'postgres') {
+    } else if ($vmoodle->vdbtype == 'postgres') {
         $res = pg_close($cnx);
     } else {
         echo "vmoodle_close_connection() : Database not supported<br/>";
@@ -648,7 +630,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
     $pass = '';
     $pgm = null;
   
-    if ($vmoodle->vdbtype == 'mysql' || $vmoodle->vdbtype == 'mysqli') { // MysQL.
+    if ($vmoodle->vdbtype == 'mysql' || $vmoodle->vdbtype == 'mysqli') {
         // Default port.
         if (empty($port)) {
             $port = 3306;
@@ -670,7 +652,8 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
 
         // MySQL application (see 'vconfig.php').
         $pgm = (!empty($config->cmd_mysqldump)) ? stripslashes($config->cmd_mysqldump) : false;
-    } elseif ($vmoodle->vdbtype == 'postgres') { // PostgreSQL.
+    } else if ($vmoodle->vdbtype == 'postgres') {
+        // PostgreSQL.
         // Default port.
         if (empty($port)) {
             $port = 5432;
@@ -749,7 +732,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
     $description = $DB->get_field('course', 'fullname', array('id' => SITEID)); 
     $cfgipaddress = gethostbyname($hostname);
 
-    // availability of SQL commands
+    // Availability of SQL commands.
 
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
@@ -766,7 +749,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
     $temporarysqlfile_path = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_master.temp.sql';
 
     // Retrieves files contents into strings.
-    // debug_trace("load_database_from_dump : getting sql content");
     if (!($dumptxt = file_get_contents($templatesqlfile_path))) {
         print_error('nosql', 'local_vmoodle');
         return false;
@@ -784,7 +766,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
     }
 
     // Puts strings into the temporary files.
-    // debug_trace("load_database_from_dump : writing modified sql");
     if (!file_put_contents($temporarysqlfile_path, $dumptxt)) {
         print_error('nooutputfortransformedsql', 'local_vmoodle');
         return false;
@@ -793,7 +774,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
     // Creates the new database before importing the data.
 
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-    // debug_trace("load_database_from_dump : executing creation sql");
     if (!$DB->execute($sql)) {
         print_error('noexecutionfor','local_vmoodle', $sql);
         return false;
@@ -805,7 +785,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
     $import = $sqlcmd.$temporarysqlfile_path;
 
     // Execute the command.
-    // debug_trace("load_database_from_dump : executing feeding sql");
 
     if (!defined('CLI_SCRIPT')) {
         putenv('LANG=en_US.utf-8'); 
@@ -816,15 +795,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
 
     exec($import, $output, $return);
 
-    // debug_trace(implode("\n", $output)."\n");
-
-    // Remove temporary files.
-    //    if(!unlink($temporarysqlfile_path))){
-    //        return false;
-    //    }
-
     // End.
-    // debug_trace("load_database_from_dump : OUT");
     return true;
 }
 
@@ -838,7 +809,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
 function vmoodle_fix_database($vmoodledata, $this_as_host) {
     global $CFG, $SITE;
 
-    // debug_trace('fixing_database ; IN');
     $manifest = vmoodle_get_vmanifest($vmoodledata->vtemplate);
     $hostname = mnet_get_hostname_from_uri($CFG->wwwroot);
     $cfgipaddress = gethostbyname($hostname);
@@ -846,7 +816,6 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
     // SQL files paths.
     $temporarysetup_path = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_setup_template.temp.sql';
 
-    // debug_trace('fixing_database ; opening setup script file');
     if (!$FILE = fopen($temporarysetup_path, 'wb')) {
         print_error('couldnotwritethesetupscript', 'local_vmoodle');
         return false;
@@ -881,10 +850,10 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
     fwrite($FILE, "DELETE FROM {$PREFIX}mnet_host WHERE wwwroot != '' AND wwwroot != '{$manifest['templatewwwroot']}';\n\n");
     $vmoodlenodename = str_replace("'", "''", $vmoodledata->name);
     fwrite($FILE, "UPDATE {$PREFIX}mnet_host SET id = 1, wwwroot = '{$vmoodledata->vhostname}', name = '{$vmoodlenodename}' , public_key = '', public_key_expires = 0, ip_address = '{$cfgipaddress}'  WHERE wwwroot = '{$manifest['templatewwwroot']}';\n\n");
-    fwrite($FILE, "UPDATE {$PREFIX}config SET value = 1 WHERE name = 'mnet_localhost_id';\n\n"); // ensure consistance
-    fwrite($FILE, "UPDATE {$PREFIX}user SET deleted = 1 WHERE auth = 'mnet' AND username != 'admin';\n\n"); // disable all mnet users
+    fwrite($FILE, "UPDATE {$PREFIX}config SET value = 1 WHERE name = 'mnet_localhost_id';\n\n"); // Ensure consistance.
+    fwrite($FILE, "UPDATE {$PREFIX}user SET deleted = 1 WHERE auth = 'mnet' AND username != 'admin';\n\n"); // Disable all mnet users.
 
-    /* 
+    /*
      * this is necessary when using a template from another location or deployment target as
      * the salt may have changed. We would like that all primary admins be the same techn admin.
      */
@@ -898,9 +867,10 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
          * disable mnet
          */
         fputs($FILE, "UPDATE {$PREFIX}config SET value = 'off' WHERE name = 'mnet_dispatcher_mode';\n\n");
-    } else { // ALL OTHER CASES.
+    } else {
+        // ALL OTHER CASES.
         /*
-         * we need : 
+         * we need :
          * enable mnet
          * push our master identity in mnet_host table
          */
@@ -934,7 +904,6 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
         fputs($FILE, "INSERT INTO {$PREFIX}config (name, value) VALUES ('bootstrap_init', '{$this_as_host->wwwroot}');\n");
     }
     fclose($FILE);
-    // debug_trace('fixing_database ; setup script written');
 
     $sqlcmd = vmoodle_get_database_dump_cmd($vmoodledata);
 
@@ -942,11 +911,12 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
     $import    = $sqlcmd.$temporarysetup_path;
 
     // Prints log messages in the page and in 'cmd.log'.
-    // debug_trace("fixing_database ; executing $import ");
 
-    // Ensure utf8 is correctly handled by php exec().
-    // @see http://stackoverflow.com/questions/10028925/call-a-program-via-shell-exec-with-utf-8-text-input
-    // this is required only with PHP exec through a web access.
+    /*
+     * Ensure utf8 is correctly handled by php exec().
+     * @see http://stackoverflow.com/questions/10028925/call-a-program-via-shell-exec-with-utf-8-text-input
+     * this is required only with PHP exec through a web access.
+     */
     if (!CLI_SCRIPT) {
         putenv('LANG=en_US.utf-8'); 
     }
@@ -954,18 +924,11 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
     // Execute the command.
     exec($import, $output, $return);
 
-    // debug_trace(implode("\n", $output)."\n");
-
-    // Remove temporary files.
-    //    if(!unlink($temporarysetup_path)){
-    //        return false;
-    //    }
-
     // End.
     return true;
 }
 
-function vmoodle_destroy($vmoodledata){
+function vmoodle_destroy($vmoodledata) {
     global $DB, $OUTPUT;
 
     if (!$vmoodledata) {
@@ -973,12 +936,12 @@ function vmoodle_destroy($vmoodledata){
     }
 
     // Checks if paths commands have been properly defined in 'vconfig.php'.
-    if($vmoodledata->vdbtype == 'mysql') {
-        $dropstatement = 'DROP DATABASE IF EXISTS'; 
-    } elseif ($vmoodledata->vdbtype == 'mysqli') {
+    if ($vmoodledata->vdbtype == 'mysql') {
         $dropstatement = 'DROP DATABASE IF EXISTS';
-    } elseif ($vmoodledata->vdbtype == 'postgres') {
-        $dropstatement = 'DROP SCHEMA'; 
+    } else if ($vmoodledata->vdbtype == 'mysqli') {
+        $dropstatement = 'DROP DATABASE IF EXISTS';
+    } else if ($vmoodledata->vdbtype == 'postgres') {
+        $dropstatement = 'DROP SCHEMA';
     }
 
     // Drop the database.
@@ -993,7 +956,7 @@ function vmoodle_destroy($vmoodledata){
     }
 
     // Destroy moodledata.
-    
+
     $cmd = " rm -rf \"$vmoodledata->vdatapath\" ";
     exec($cmd);
 
@@ -1021,7 +984,7 @@ function vmoodle_destroy($vmoodledata){
  * @param array reference $services the service scheme to apply to new host
  * @param array reference $peerservices the service scheme to apply to new host peers
  */
-function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, $domain = 'peer'){
+function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, $domain = 'peer') {
     global $DB;
 
     // We will mix in order to an single array of configurated service here.
@@ -1029,8 +992,9 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
     $servicerecs = $DB->get_records('mnet_service', array());
     $servicesstrategy = (array)$servicesstrategy;
 
-    if (!empty($servicerecs)) { // Should never happen; standard services are always there.
-        if ($vmoodledata->services == 'subnetwork'  && !empty($servicesstrategy)) {
+    if (!empty($servicerecs)) {
+        // Should never happen; standard services are always there.
+        if ($vmoodledata->services == 'subnetwork' && !empty($servicesstrategy)) {
             foreach ($servicerecs as $key => $service) {
                 $services[$service->name] = new StdClass();
                 $peerservices[$service->name] = new StdClass();
@@ -1039,7 +1003,8 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
                 $services[$service->name]->subscribe     = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_subscribe'];
                 $peerservices[$service->name]->publish   = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_subscribe'];
             }
-        } else { // If no strategy has been recorded, use default SSO binding.
+        } else {
+            // If no strategy has been recorded, use default SSO binding.
             foreach ($servicerecs as $key => $service) {
                 $services[$service->name] = new StdClass();
                 $peerservices[$service->name] = new StdClass();
@@ -1073,10 +1038,10 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
 }
 
 /**
-* get a proper SQLdump command
-* @param object $vmoodledata the complete new host information
-* @return string the shell command 
-*/
+ * get a proper SQLdump command
+ * @param object $vmoodledata the complete new host information
+ * @return string the shell command 
+ */
 function vmoodle_get_database_dump_cmd($vmoodledata) {
     global $CFG;
 
@@ -1093,7 +1058,6 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     }
 
     // Checks the needed program.
-    // debug_trace("load_database_from_dump : checking database command");
     if (!$pgm){
         print_error('dbcommandnotconfigured', 'local_vmoodle');
         return false;
@@ -1103,7 +1067,6 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     $phppgm = str_replace("\"", '', $phppgm);
     $pgm = str_replace("/", DIRECTORY_SEPARATOR, $pgm);
 
-    // debug_trace('load_database_from_dump : checking command is available');
     if (!is_executable($phppgm)) {
         print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', $phppgm);
         return false;
@@ -1122,15 +1085,15 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
 
     // Making the command line (see 'vconfig.php' file for defining the right paths).
     if ($vmoodledata->vdbtype == 'mysql') {
-        $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ' );
+        $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
     } elseif ($vmoodledata->vdbtype == 'mysqli') {
-        $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ' );
+        $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
     } elseif ($vmoodledata->vdbtype == 'postgres') {
-        $sqlcmd    = $pgm.' -Fc -h '.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -p '.$thisvmoodle->vdbport.' ' : ' ' );
+        $sqlcmd    = $pgm.' -Fc -h '.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -p '.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-U '.$thisvmoodle->vdblogin.' ';
         $sqlcmd .= '-d '.$vmoodledata->vdbname.' -f ';
     }
@@ -1159,27 +1122,22 @@ function vmoodle_dump_files_from_template($templatename, $destpath) {
  * @param object $submitteddata
  *
  */
-function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
+function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
     global $USER, $CFG, $DB, $OUTPUT;
 
-    // debug_trace("step 4.4 : binding to subnetwork");
-
-    // Getting services schemes to apply
-    // debug_trace("step 4.4.1 : getting services");
+    // Getting services schemes to apply.
     vmoodle_get_service_strategy($submitteddata, $services, $peerservices, 'peer');
 
-    // debug_trace("step 4.4.2 : getting possible peers");
     $idnewblock = $DB->get_field('local_vmoodle', 'id', array('vhostname' => $submitteddata->vhostname));
 
-    // last mnet has been raised by one at step 3 so we add to network if less
+    // Last mnet has been raised by one at step 3 so we add to network if less.
     if ($submitteddata->mnet < vmoodle_get_last_subnetwork_number()) {
         // Retrieves the subnetwork member(s).
         $subnetwork_hosts = array();
         $select = 'id != ? AND mnet = ? AND enabled = 1';
         $subnetwork_members = $DB->get_records_select('local_vmoodle', $select, array($idnewblock, $submitteddata->mnet));
-    
+
         if (!empty($subnetwork_members)) {
-            // debug_trace("step 4.4.3 : preparing peers");
             foreach ($subnetwork_members as $subnetwork_member) {
                 $temp_host = new stdClass();
                 $temp_host->wwwroot = $subnetwork_member->vhostname;
@@ -1187,10 +1145,9 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
                 $subnetwork_hosts[] = $temp_host;
             }
         }
-    
+
         // Member(s) of the subnetwork add the new host.
         if (!empty($subnetwork_hosts)) {
-            // debug_trace("step 4.4.4 : bind peers");
             $rpc_client = new \local_vmoodle\XmlRpc_Client();
             $rpc_client->reset_method();
             $rpc_client->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
@@ -1204,19 +1161,12 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
             $rpc_client->add_param($peerservices, 'array');
 
             foreach ($subnetwork_hosts as $subnetwork_host) {
-                // debug_trace("step 4.4.4.1 : bind to -> $subnetwork_host->wwwroot");
                 $temp_member = new \local_vmoodle\Mnet_Peer();
                 $temp_member->set_wwwroot($subnetwork_host->wwwroot);
                 if (!$rpc_client->send($temp_member)) {
-                    echo $OUTPUT->notification(implode('<br />', $rpc_client->getErrors($temp_member)));
-                    if (debugging()) {
-                        echo '<pre>';
-                        // var_dump($rpc_client);
-                        echo '</pre>';
-                    }
+                    echo $OUTPUT->notification(implode('<br />', $rpc_client->get_errors($temp_member)));
                 }
 
-                // debug_trace("step 4.4.4.1 : bind from <- $subnetwork_host->wwwroot");
                 $rpc_client_2 = new \local_vmoodle\XmlRpc_Client();
                 $rpc_client_2->reset_method();
                 $rpc_client_2->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
@@ -1230,30 +1180,22 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
                 $rpc_client_2->add_param($services, 'array');
 
                 if (!$rpc_client_2->send($newmnet_host)) {
-                    echo $OUTPUT->notification(implode('<br />', $rpc_client_2->getErrors($newmnet_host)));
-                    if (debugging()) {
-                        echo '<pre>';
-                        // var_dump($rpc_client_2);
-                        echo '</pre>';
-                    }
+                    echo $OUTPUT->notification(implode('<br />', $rpc_client_2->get_errors($newmnet_host)));
                 }
-                unset($rpc_client_2); // free some resource
+                unset($rpc_client_2); // Free some resource.
             }
         }
     }
 
-    // Getting services schemes to apply to main
-    // debug_trace("step 4.4.5 : getting services");
+    // Getting services schemes to apply to main.
     vmoodle_get_service_strategy($submitteddata, $services, $peerservices, 'main');
 
-    // debug_trace("step 4.4.5.1 : bind to -> $CFG->wwwroot");
-    $mainhost = new \local_vmoodle\Mnet_Peer(); // this is us
+    $mainhost = new \local_vmoodle\Mnet_Peer(); // This is us.
     $mainhost->set_wwwroot($CFG->wwwroot);
-    
-    // debug_trace('step 4.4.5.2 : Binding our main service strategy to remote');
-    // bind the local service strategy to new host
+
+    // Bind the local service strategy to new host.
     if (!empty($peerservices)) {
-        $DB->delete_records('mnet_host2service', array('hostid' => $newmnet_host->id)); // eventually deletes something on the way
+        $DB->delete_records('mnet_host2service', array('hostid' => $newmnet_host->id)); // Eventually deletes something on the way.
         foreach ($peerservices as $servicename => $servicestate) {
             $service = $DB->get_record('mnet_service', array('name' => $servicename));
             $host2service = new stdclass();
@@ -1262,11 +1204,9 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
             $host2service->publish = 0 + @$servicestate->publish;
             $host2service->subscribe = 0 + @$servicestate->subscribe;
             $DB->insert_record('mnet_host2service', $host2service);
-            // debug_trace("step 4.4.5.2 : adding ".serialize($host2service));
         }
     }
 
-    // debug_trace('step 4.4.5.4 : Binding remote service strategy to main');
     $rpc_client = new \local_vmoodle\XmlRpc_Client();
     $rpc_client->reset_method();
     $rpc_client->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
@@ -1278,15 +1218,7 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host){
     $rpc_client->add_param((array)$mainhost, 'array');
     $rpc_client->add_param($services, 'array');
 
-    // debug_trace('step 4.4.5.4 : Sending');
-    if (!$rpc_client->send($newmnet_host)) {
-        // echo $OUTPUT->notification(implode('<br />', $rpc_client->getErrors($newmnet_host)));
-        if (debugging()) {
-            echo '<pre>';
-            // var_dump($rpc_client);
-            echo '</pre>';
-        }
-    }
+    $rpc_client->send($newmnet_host);
 }
 
 /**
@@ -1307,7 +1239,7 @@ function vmoodle_exist_template($templatename) {
             && is_readable($templatedir_sql));
 }
 
-/**
+/*
  * Read manifest values in vmoodle template.
  */
 
@@ -1317,7 +1249,7 @@ function vmoodle_exist_template($templatename) {
  * @param string $templatename The template's name.
  * @return array The manifest values.
  */
-function vmoodle_get_vmanifest($templatename){
+function vmoodle_get_vmanifest($templatename) {
     global $CFG;
 
     // Reads php values.
@@ -1340,12 +1272,7 @@ function vmoodle_get_last_subnetwork_number() {
     return $nbmaxsubnetwork;
 }
 
-// **************************************************************************************
-// *                                    TO CHECK                                        *
-// **************************************************************************************
-
-
-/**
+/*
  * Be careful : this library might be include BEFORE any configuration
  * or other usual Moodle libs are loaded. It cannot rely on
  * most of the Moodle API functions.
@@ -1364,12 +1291,16 @@ function vmoodle_print_status($vmoodle, $return = false) {
 
     if (!vmoodle_check_installed($vmoodle)) {
         $vmoodlestate = '<img src="'.$OUTPUT->pix_url('broken', 'local_vmoodle').'"/>';
-    } elseif($vmoodle->enabled) {
-        $disableurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id));
-        $vmoodlestate = '<a href="'.$disableurl.'" title="'.get_string('disable').'"><img src="'.$OUTPUT->pix_url('enabled', 'local_vmoodle').'" /></a>';
+    } else if($vmoodle->enabled) {
+        $params = array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id);
+        $disableurl = new moodle_url('/local/vmoodle/view.php', $params);
+        $pix = '<img src="'.$OUTPUT->pix_url('enabled', 'local_vmoodle').'" />';
+        $vmoodlestate = '<a href="'.$disableurl.'" title="'.get_string('disable').'">'.$pix.'</a>';
     } else {
-        $enableurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'enable', 'id' => $vmoodle->id));
-        $vmoodlestate = '<a href="'.$enableurl.'" title="'.get_string('enable').'"><img src="'.$OUTPUT->pix_url('disabled', 'local_vmoodle').'" />';
+        $params = array('view' => 'management', 'what' => 'enable', 'id' => $vmoodle->id);
+        $enableurl = new moodle_url('/local/vmoodle/view.php', $params);
+        $pix = '<img src="'.$OUTPUT->pix_url('disabled', 'local_vmoodle').'" />';
+        $vmoodlestate = '<a href="'.$enableurl.'" title="'.get_string('enable').'">'.$pix;
     }
 
     // Prints the Vmoodle state.
@@ -1397,7 +1328,7 @@ function vmoodle_check_installed($vmoodle) {
 if (!function_exists('print_error_class')) {
     function print_error_class($errors, $errorkeylist) {
         if ($errors) {
-            foreach($errors as $anError) {
+            foreach ($errors as $anError) {
                 if ($anError->on == '') {
                     continue;
                 }
@@ -1420,9 +1351,9 @@ function vmoodle_get_string($identifier, $subplugin, $a = '', $lang = '') {
     }
 
     list($type, $plug) = explode('_', $subplugin);
-    
+
     include($CFG->dirroot.'/local/vmoodle/db/subplugins.php');
-    
+
     if (!isset($plugstring[$plug])) {
         if (file_exists($CFG->dirroot.'/'.$subplugins[$type].'/'.$plug.'/lang/en/'.$subplugin.'.php')) {
             include($CFG->dirroot.'/'.$subplugins[$type].'/'.$plug.'/lang/en/'.$subplugin.'.php');
@@ -1503,7 +1434,7 @@ function vmoodle_setup_DB($vmoodle) {
         $vmoodle->dblibrary = 'native';
         // Use new drivers instead of the old adodb driver names.
         switch ($vmoodle->vdbtype) {
-            case 'postgres7' :
+            case 'postgres7':
                 $vmoodle->vdbtype = 'pgsql';
                 break;
 
@@ -1515,7 +1446,7 @@ function vmoodle_setup_DB($vmoodle) {
                 $vmoodle->vdbtype = 'oci';
                 break;
 
-            case 'mysql' :
+            case 'mysql':
                 $vmoodle->vdbtype = 'mysqli';
                 break;
         }
@@ -1535,7 +1466,7 @@ function vmoodle_setup_DB($vmoodle) {
 
     $vdb->connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, $vmoodle->vdbprefix, $vmoodle->dboptions);
 
-    $vmoodle->vdbfamily = $vdb->get_dbfamily(); // TODO: BC only for now
+    $vmoodle->vdbfamily = $vdb->get_dbfamily(); // TODO: BC only for now.
 
     return $vdb;
 }

@@ -14,21 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command;
-
-require_once($CFG->libdir.'/formslib.php');
-
-
 /**
  * Defines forms to set Command.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-class Command_Form extends moodleform {
+namespace local_vmoodle;
+
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command;
+
+require_once($CFG->libdir.'/formslib.php');
+
+class Command_Form extends \moodleform {
 
     /**
      * Form modes
@@ -67,13 +68,13 @@ class Command_Form extends moodleform {
         // Setting form action.
         switch($mode) {
             case self::MODE_COMMAND_CHOICE:
-                $url = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'validateassistedcommand'));
+                $url = new \moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'validateassistedcommand'));
                 break;
             case self::MODE_RETRIEVE_PLATFORM:
-                $url = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'gettargetbyvalue'));
+                $url = new \moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'gettargetbyvalue'));
                 break;
             case self::MODE_DISPLAY_COMMAND:
-                $url = new moodle_url('/local/vmoodle/view.php', array('view' => 'targetchoice'));
+                $url = new \moodle_url('/local/vmoodle/view.php', array('view' => 'targetchoice'));
                 break;
             default:
                 throw new Command_Exception('badformmode');
@@ -82,12 +83,12 @@ class Command_Form extends moodleform {
         // Calling parent's constructor.
         parent::__construct($url->out());
     }
-    
+
     /**
      * Describes form depending on command.
      * @throws Command_Exception.
      */
-    function definition() {
+    public function definition() {
         global $CFG;
 
         // Setting variables.
@@ -117,33 +118,23 @@ class Command_Form extends moodleform {
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
                 switch ($parameter->getType()) {
-                    case 'boolean': {
+                    case 'boolean':
                         $mform->addElement('checkbox', $parameter->getName(), $parameter->getDescription());
-                    }
-                    break;
-                    case 'enum': {
+                        break;
+                    case 'enum':
                         $mform->addElement('select', $parameter->getName(), $parameter->getDescription(), $parameter->getChoices());
-                    }
-                    break;
-                    case 'text': {
+                        break;
+                    case 'text':
                         $mform->addElement('text', $parameter->getName(), $parameter->getDescription());
                         $mform->setType($parameter->getName(), PARAM_TEXT);
-                        if ($this->mode != self::MODE_DISPLAY_COMMAND) {
-                            // $mform->addRule($parameter->getName(), null, 'required', null, 'client');
-                        }
-                    }
-                    break;
-                    case 'ltext': {
-                        $mform->addElement('textarea', $parameter->getName(), $parameter->getDescription(), 'wrap="virtual" rows="20" cols="50"');
+                        break;
+                    case 'ltext':
+                        $attrs = 'wrap="virtual" rows="20" cols="50"';
+                        $mform->addElement('textarea', $parameter->getName(), $parameter->getDescription(), $attrs);
                         $mform->setType($parameter->getName(), PARAM_TEXT);
-                        if ($this->mode != self::MODE_DISPLAY_COMMAND) {
-                            // $mform->addRule($parameter->getName(), null, 'required', null, 'client');
-                        }
-                    }
-                    break;
-                    case 'internal': {
+                        break;
+                    case 'internal':
                         continue 2;
-                    }
                 }
                 // Defining value.
                 if ($this->mode == self::MODE_DISPLAY_COMMAND) {

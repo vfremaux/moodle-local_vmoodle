@@ -26,7 +26,7 @@ define('MOODLE_INTERNAL', true);
 require_once('../lib.php');
 
 echo "<h2>Testing numeric sequences protection encoder</h2><br>";
-echo "<p>This usefull encode/decoder protects any numeric sequence longer then 2, f.e. postalcodes or 
+echo "<p>This usefull encode/decoder protects any numeric sequence longer then 2, f.e. postalcodes or
 plant identification, so those longer codes may not be affected by version (2 digit) processing</p>";
 
 $strings = array();

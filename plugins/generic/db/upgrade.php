@@ -16,7 +16,7 @@
 
 /**
  * Install and upgrade Exemple library for the local Vmoodle.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@club-internet.fr)
@@ -24,10 +24,10 @@
  */
 function xmldb_vmoodleadminset_generic_upgrade($oldversion = 0) {
     // The function name must match with library name.
-    // Initializing
+    // Initializing.
     $result = true;
 
-    // Moodle 2.0 breakline
+    // Moodle 2.0 breakline.
 
     return $result;
 }

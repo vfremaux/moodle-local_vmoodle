@@ -14,16 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_vmoodle;
-
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace local_vmoodle;
+
+defined('MOODLE_INTERNAL') || die();
 
 // Moodle form's library.
 
@@ -57,7 +56,7 @@ class ServicesStrategy_Form extends \moodleform {
         // Master services.
         $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
 
-        // get version info to get real names
+        // Get version info to get real names.
         $self_mnet_peer = new \mnet_peer();
         $self_mnet_peer->set_id($CFG->mnet_localhost_id);
         $myservices = mnet_get_service_info($self_mnet_peer);
@@ -87,14 +86,11 @@ class ServicesStrategy_Form extends \moodleform {
                 if (empty($description)) {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
-                        $langmodule =
-                            ($version['plugintype'] == 'mod'
-                                ? ''
-                                : ($version['plugintype'] . '_'))
-                            . $version['pluginname']; // TODO there should be a moodle-wide way to do this
+                        // TODO there should be a moodle-wide way to do this.
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : ($version['plugintype'] . '_')).$version['pluginname'];
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
-                    $description = '[['$defaultservice->name.'_name]]';
+                        $description = '[['$defaultservice->name.'_name]]';
                     }
                 }
 
@@ -127,17 +123,13 @@ class ServicesStrategy_Form extends \moodleform {
                 if (empty($description)) {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
-                        $langmodule =
-                            ($version['plugintype'] == 'mod'
-                                ? ''
-                                : ($version['plugintype'] . '_'))
-                            . $version['pluginname']; // TODO there should be a moodle-wide way to do this
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : ($version['plugintype'] . '_')).$version['pluginname'];
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
                         $description = '[['.$defaultservice->name.'_name]]';
                     }
                 }
-                
+
                 $mform->setDefault('peer_'.$defaultservice->name.'_description', $description);
                 $mform->setDefault('peer_'.$defaultservice->name.'_id',    $defaultservice->id);
                 $mform->setType('peer_'.$defaultservice->name.'_id', PARAM_INT);

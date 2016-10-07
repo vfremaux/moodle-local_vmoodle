@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The final step of wizard.
  * Displays report of command command.
@@ -25,6 +23,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Adding requirements.
 require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
@@ -74,8 +73,8 @@ if (!empty($successfull_platforms)) {
 $i = 0;
 if (!empty($failed_platforms)) {
     echo '<table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">'.
-            '<tbody>' .
-                '<tr>' .
+            '<tbody>'.
+                '<tr>'.
                     '<th scope="col" class="header c0" style="vertical-align: top; text-align: left; width: 20%; white-space: nowrap;" colspan="3"><b>'.get_string('failedplatforms', 'local_vmoodle').'</b></th>' .
                 '</tr>';
     foreach ($failed_platforms as $host => $platform) {
@@ -88,7 +87,7 @@ if (!empty($failed_platforms)) {
         } else {
             echo '&nbsp;';
         }
-        echo     '</td>' .
+        echo '</td>' .
             '</tr>' .
             '<tr class="r'.$i.'" valign="top">' .
                 '<td>'.get_string('details', 'local_vmoodle').'</td>' .
@@ -102,7 +101,10 @@ if (!empty($failed_platforms)) {
 
 // Displaying controls.
 echo '<center>';
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runotherpfm')), get_string('runotherplatforms', 'local_vmoodle'), 'get');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runothercmd')), get_string('runothercommand', 'local_vmoodle'), 'get');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'newcommand')), get_string('runnewcommand', 'local_vmoodle'), 'get');
+$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runotherpfm'));
+echo $OUTPUT->single_button($buttonurl, get_string('runotherplatforms', 'local_vmoodle'), 'get');
+$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runothercmd'));
+echo $OUTPUT->single_button($buttonurl, get_string('runothercommand', 'local_vmoodle'), 'get');
+$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'newcommand'));
+echo $OUTPUT->single_button($buttonurl, get_string('runnewcommand', 'local_vmoodle'), 'get');
 echo '</center>';

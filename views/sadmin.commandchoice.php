@@ -14,20 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The first step of wizard.
  * Displays all assisted commands.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Loading the libraries.
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
+
+use \local_vmoodle\Command_From;
 
 // Retrieving configuration files.
 $assistedcommands_conffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
@@ -65,7 +66,8 @@ foreach ($assistedcommands_categories as $key => $category) {
 // Display link to the advanced mode.
 echo '<br/><center>';
 $btitle = get_string('advancedmode', 'local_vmoodle');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'switchtoadvancedcommand')), $btitle, 'get');
+$advurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'switchtoadvancedcommand'));
+echo $OUTPUT->single_button($advurl, $btitle, 'get');
 
 echo '<br/>';
 

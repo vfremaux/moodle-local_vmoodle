@@ -1,15 +1,29 @@
 <?php
-
-namespace local_vmoodle\commands;
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Describes meta-administration plugin's command parameter.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace local_vmoodle\commands;
+
 class Command_Parameter {
 
     /**
@@ -25,7 +39,7 @@ class Command_Parameter {
     /**
      * Parameter's type
      */
-    protected $type; // boolean | enum | text | ltext | internal
+    protected $type; // Types : boolean | enum | text | ltext | internal.
 
     /**
      * Parameter's description : uses for label or choices of enum parameter
@@ -56,35 +70,35 @@ class Command_Parameter {
      * @param $choices array Parameter's choices (in case of enum).
      */
     public function __construct($name, $type, $description, $default = null, $choices = null) {
-        // Checking parameter's name
+        // Checking parameter's name.
         if (empty($name)) {
             throw new Command_Exception('parameteremptyname');
         } else {
             $this->name = $name;
         }
 
-        // Checking parameter's type
+        // Checking parameter's type.
         if (!in_array($type, explode('|', self::parameter_types_allowed))) {
             throw new Command_Exception('parameterforbiddentype', $this->name);
         } else {
             $this->type = $type;
         }
 
-        // Checking parameter's description
+        // Checking parameter's description.
         if ($this->type != 'internal' && empty($description)) {
             throw new Command_Exception('parameteremptydescription', $this->name);
         } else {
             $this->description = $description;
         }
 
-        // Checking parameter's values
+        // Checking parameter's values.
         if ($this->type == 'enum' && !is_array($choices)) {
             throw new Command_Exception('parameterallowedvaluesnotgiven', $this->name);
         } else {
             $this->choices = $choices;
         }
 
-        // Checking parameter's default value
+        // Checking parameter's default value.
         if (!is_null($default) && $this->type == 'enum' && (!is_string($default) || !array_key_exists($default, $this->choices))) {
             throw new Command_Exception('parameterwrongdefaultvalue', $this->name);
         } else {

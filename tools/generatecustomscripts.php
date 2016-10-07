@@ -57,13 +57,13 @@ if ($data = $mform->get_data()) {
             $scriptlet = str_replace('%DATAROOT%', $vh->vdatapath, $scriptlet);
 
             switch ($data->commentformat) {
-                case 'shell' : 
+                case 'shell':
                     $script .= '# Process script for '.$vh->name."\n#------------\n";
                     break;
-                case 'sql' : 
+                case 'sql':
                     $script .= '// Process script for '.$vh->name."\n//\n";
                     break;
-                default : 
+                default:
                     $script .= '<!-- Process script for '.$vh->name." -->\n";
                     break;
             }

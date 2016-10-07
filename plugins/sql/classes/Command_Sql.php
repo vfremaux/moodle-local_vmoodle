@@ -40,7 +40,7 @@ class Command_Sql extends Command {
      * @throws    Command_Exception
      */
     public function __construct($name, $description, $sql, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -55,7 +55,7 @@ class Command_Sql extends Command {
             // Checking parameters to show.
             foreach ($sql_vars[2] as $key => $sql_var) {
                 $is_param = !(empty($sql_vars[1][$key]));
-                if (!$is_param && !array_key_exists($sql_var, $vmcommands_constants)) {
+                if (!$is_param && !array_key_exists($sql_var, $vmcommandconstants)) {
                     throw new Command_Sql_Exception('sqlconstantnotgiven', (object)array('constant_name' => $sql_var, 'command_name' => $this->name));
                 } elseif ($is_param && !array_key_exists($sql_var, $this->parameters)) {
                     throw new Command_Sql_Exception('sqlparameternotgiven', (object)array('parameter_name' => $sql_var, 'command_name' => $this->name));
@@ -122,7 +122,7 @@ class Command_Sql extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass;
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
                 if (debugging()) {
                     print_object($rpc_client);
                 }

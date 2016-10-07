@@ -30,11 +30,7 @@ require_once($CFG->dirroot.'/local/vmoodle/debuglib.php');
 require_once($CFG->dirroot.'/mnet/lib.php');
 
 // Loading jQuery.
-global $JQUERYVERSION;
-if (empty($JQUERYVERSION)) {
-    $PAGE->requires->js('/local/vmoodle/js/lib/jquery-1.7.2.min.js');
-    $JQUERYVERSION = '1.7.2';
-}
+$PAGE->requires->jquery();
  
 // Loading javascript files.
 $PAGE->requires->js('/local/vmoodle/js/strings.php');
@@ -43,11 +39,11 @@ $PAGE->requires->js ('/local/vmoodle/js/target_choice.js');
 $PAGE->requires->css ('/local/vmoodle/theme/styles.php');
 
 
-// Declaring parameters
+// Declaring parameters.
 $view = optional_param('view', 'management', PARAM_TEXT);
 $action = optional_param('what', '', PARAM_TEXT);
 
-// Checking login
+// Checking login.
 $system_context = context_system::instance();
 require_login();
 
@@ -63,12 +59,12 @@ foreach ($plugins as $plugin) {
     }
 }
 
-// Printing headers
+// Printing headers.
 $strtitle = get_string('vmoodlemanager', 'local_vmoodle');
 
 $CFG->stylesheets[] = $CFG->wwwroot.'/local/vmoodle/theme/styles.php';
 
-// Generating header
+// Generating header.
 
 ob_start();
 $PAGE->set_context($system_context);
@@ -86,7 +82,7 @@ $PAGE->set_url($url,array('view' => $view,'what' => $action));
 
 echo $OUTPUT->header();
 
-// Checking rights
+// Checking rights.
 require_capability('local/vmoodle:managevmoodles', context_system::instance());
 
 // Adding heading.
@@ -94,11 +90,14 @@ echo $OUTPUT->heading(get_string('vmoodleadministration', 'local_vmoodle'));
 
 // Adding tabs.
 $tabname = get_string('tabpoolmanage', 'local_vmoodle');
-$row[] = new tabobject('management', new moodle_url('/local/vmoodle/adminview.php', array('view' => 'management')), $tabname);
+$taburl = new moodle_url('/local/vmoodle/adminview.php', array('view' => 'management'));
+$row[] = new tabobject('management', $taburl, $tabname);
 $tabname = get_string('tabpoolsadmin', 'local_vmoodle');
-$row[] = new tabobject('sadmin', new moodle_url('/local/vmoodle/adminview.php', array('view' => 'sadmin')), $tabname);
+$taburl = new moodle_url('/local/vmoodle/adminview.php', array('view' => 'sadmin'));
+$row[] = new tabobject('sadmin', $taburl, $tabname);
 $tabname = get_string('tabpoolservices', 'local_vmoodle');
-$row[] = new tabobject('services', new moodle_url('/local/vmoodle/adminview.php', array('view' => 'services')), $tabname);
+$taburl = new moodle_url('/local/vmoodle/adminview.php', array('view' => 'services'));
+$row[] = new tabobject('services', $taburl, $tabname);
 $tabrows[] = $row;
 print_tabs($tabrows, $view);
 
@@ -106,28 +105,23 @@ print_tabs($tabrows, $view);
 if ($action != '') {
     try {
         switch ($view) {
-            case 'management': {
-                $result = include $CFG->dirroot.'/local/vmoodle/controller.management.php';
-            }
-            break;
-            case 'sadmin': {
+            case 'management': 
+                $result = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
+                break;
+            case 'sadmin':
                 $result = $CFG->dirroot.'/local/vmoodle/controller.sadmin.php';
-            }
-            break;
-            case 'services': {
-                $result = include $CFG->dirroot.'/local/vmoodle/controller.services.php';
-            }
-            break;
-            default: {
+                break;
+            case 'services':
+                $result = include($CFG->dirroot.'/local/vmoodle/controller.services.php');
+                break;
+            default:
                 $result = -1;
-            }
         }
         if ($result == -1) {
             echo $OUTPUT->footer();
             exit();
         }
-    }
-    catch(Exception $e) {
+    } catch (Exception $e) {
         echo $OUTPUT->notification($e->getMessage());
     }
 }
@@ -137,19 +131,16 @@ ob_end_flush();
 
 // Including contents.
 switch ($view) {
-    case 'management': {
-        include $CFG->dirroot.'/local/vmoodle/views/management.main.php';
-    }
-    break;
-    case 'sadmin': {
-        include $CFG->dirroot.'/local/vmoodle/views/sadmin.main.php';
-    }
-    break;
+    case 'management':
+        include($CFG->dirroot.'/local/vmoodle/views/management.main.php');
+        break;
+    case 'sadmin':
+        include($CFG->dirroot.'/local/vmoodle/views/sadmin.main.php');
+        break;
     case 'services': {
-        include $CFG->dirroot.'/local/vmoodle/views/services.main.php';
-    }
-    break;
+        include($CFG->dirroot.'/local/vmoodle/views/services.main.php');
+        break;
 }
 
-// Adding footer
+// Adding footer.
 echo $OUTPUT->footer();

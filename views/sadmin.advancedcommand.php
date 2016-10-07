@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The alternative first step of wizard.
  * Input a SQL command.
@@ -25,10 +23,13 @@ defined('MOODLE_INTERNAL') || die();
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the libraries.
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Form.php');
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Upload_Form.php');
+
+use \local_vmoodle\AdvancedCommand_Form;
+use \local_vmoodle\AdvancedCommand_Upload_Form;
 
 // Display forms.
 if (!isset($advancedcommand_form)) {

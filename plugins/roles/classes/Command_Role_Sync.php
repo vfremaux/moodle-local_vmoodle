@@ -92,8 +92,8 @@ class Command_Role_Sync extends Command {
             if (!isset($response)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                $response->error = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->error = implode('<br/>', $rpc_client->get_errors($mnet_host));
             }
             if (debugging()) {
                 echo '<pre>';
@@ -148,7 +148,7 @@ class Command_Role_Sync extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new stdclass;
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
                 $response->error = 'Set remote role capability : Remote call error';
                 if (debugging()) {
                     echo '<pre>';
