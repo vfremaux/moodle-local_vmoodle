@@ -22,11 +22,11 @@
 define('CLI_SCRIPT', true);
 
 require('../../../config.php');
-require_once($CFG->libdir.'/adminlib.php'); // various admin-only functions
-require_once($CFG->libdir.'/upgradelib.php'); // general upgrade/install related functions
-require_once($CFG->libdir.'/clilib.php'); // cli only functions
+require_once($CFG->libdir.'/adminlib.php'); // Various admin-only functions.
+require_once($CFG->libdir.'/upgradelib.php'); // General upgrade/install related functions.
+require_once($CFG->libdir.'/clilib.php'); // Cli only functions.
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
-require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // vmoodle cli only functions
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // Vmoodle cli only functions.
 
 // Fakes an admin identity for all the process.
 $USER = get_admin();
@@ -56,14 +56,14 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help =
-"Command line VMoodle Generator.
+"Command line VMoodle Snapshot.
 Please note you must execute this script with the same uid as apache!
 
 Options:
---interactive     No interactive questions or confirmations
+--interactive         No interactive questions or confirmations if not present
 -h, --help            Print out this help
 -c, --config          Define an external config file
--n, --nodes           A node descriptor CSV file
+-n, --nodes           A node to snapshot descriptor CSV file
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulksnapshot.php -nodes=nodelist.csv

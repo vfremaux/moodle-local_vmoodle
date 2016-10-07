@@ -66,7 +66,7 @@ class Command_Role_Allow_Compare extends Command {
             throw new Command_Exception('insuffisantcapabilities');
 
         // Getting role
-        $table = $this->getParameter('table')->getValue();
+        $table = $this->get_parameter('table')->getValue();
 
         // Creating XMLRPC client to read role configuration
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -126,9 +126,9 @@ class Command_Role_Allow_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
-        if (!$this->isRunned())
+        if (!$this->has_run())
             throw new Command_Exception('commandnotrun');
 
         // Checking host (general result isn't provide in this kind of command).
@@ -161,12 +161,12 @@ class Command_Role_Allow_Compare extends Command {
         global $CFG,$DB,$OUTPUT;
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
         // Getting table name.
-        $table = $this->getParameter('table')->getValue();
+        $table = $this->get_parameter('table')->getValue();
           
         // Getting hosts.
         $hosts = array_keys($this->capabilities);

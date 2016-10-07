@@ -153,7 +153,7 @@ foreach ($assistedcommands_conffiles as $conffile) {
     $button2 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('disable'), 'get');
 
     $label = get_string('elements', 'local_vmoodle');
-    $table->data[] = array($vmoodle_category->getName().'<br/> > '.$vmoodle_category->count().' '.$label,
+    $table->data[] = array($vmoodle_category->get_name().'<br/> > '.$vmoodle_category->count().' '.$label,
                            ($category[0] == '_' ? $button1 : $button2));
 }
 

@@ -94,54 +94,54 @@ class Command_Form extends \moodleform {
         // Setting variables.
         $mform =& $this->_form;
         $command = $this->command;
-        $parameters = $command->getParameters();
+        $parameters = $command->get_parameters();
 
         // Adding fieldset.
-        $mform->addElement('header', null, $command->getName());
+        $mform->addElement('header', null, $command->get_name());
 
         // Adding hidden fields.
         if ($this->mode == self::MODE_COMMAND_CHOICE) {
-            $mform->addElement('hidden', 'category_name', $command->getCategory()->getName());
+            $mform->addElement('hidden', 'category_name', $command->get_category()->get_name());
             $mform->setType('category_name', PARAM_TEXT);
 
-            $mform->addElement('hidden', 'category_plugin_name', $command->getCategory()->getPluginName());
+            $mform->addElement('hidden', 'category_plugin_name', $command->get_category()->getPluginName());
             $mform->setType('category_plugin_name', PARAM_TEXT);
 
-            $mform->addElement('hidden', 'command_index', $command->getIndex());
+            $mform->addElement('hidden', 'command_index', $command->get_index());
             $mform->setType('command_index', PARAM_TEXT);
         }
 
         // Adding command's description.
-        $mform->addElement('static', 'description', get_string('commanddescription', 'local_vmoodle'), $command->getDescription());
+        $mform->addElement('static', 'description', get_string('commanddescription', 'local_vmoodle'), $command->get_description());
 
         // Adding elements depending on command's parameter.
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
                 switch ($parameter->getType()) {
                     case 'boolean':
-                        $mform->addElement('checkbox', $parameter->getName(), $parameter->getDescription());
+                        $mform->addElement('checkbox', $parameter->get_name(), $parameter->get_description());
                         break;
                     case 'enum':
-                        $mform->addElement('select', $parameter->getName(), $parameter->getDescription(), $parameter->getChoices());
+                        $mform->addElement('select', $parameter->get_name(), $parameter->get_description(), $parameter->getChoices());
                         break;
                     case 'text':
-                        $mform->addElement('text', $parameter->getName(), $parameter->getDescription());
-                        $mform->setType($parameter->getName(), PARAM_TEXT);
+                        $mform->addElement('text', $parameter->get_name(), $parameter->get_description());
+                        $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
                     case 'ltext':
                         $attrs = 'wrap="virtual" rows="20" cols="50"';
-                        $mform->addElement('textarea', $parameter->getName(), $parameter->getDescription(), $attrs);
-                        $mform->setType($parameter->getName(), PARAM_TEXT);
+                        $mform->addElement('textarea', $parameter->get_name(), $parameter->get_description(), $attrs);
+                        $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
                     case 'internal':
                         continue 2;
                 }
                 // Defining value.
                 if ($this->mode == self::MODE_DISPLAY_COMMAND) {
-                    $mform->setDefault($parameter->getName(), $parameter->getValue());
-                    $mform->freeze($parameter->getName());
+                    $mform->setDefault($parameter->get_name(), $parameter->getValue());
+                    $mform->freeze($parameter->get_name());
                 } else if (!is_null($parameter->getDefault())) {
-                    $mform->setDefault($parameter->getName(), $parameter->getDefault());
+                    $mform->setDefault($parameter->get_name(), $parameter->getDefault());
                 }
             }
         }

@@ -106,7 +106,7 @@ class Command_Sql extends Command {
         }
 
         // Getting command.
-        $return = $this->isReturned();
+        $return = $this->is_returned();
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -144,7 +144,7 @@ class Command_Sql extends Command {
      * @param    $key        string            The information to retrieve (ie status, error / optional).
      * @throws                Command_Sql_Exception
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
 
         // Checking if command has been runned.
         if (is_null($this->results)) {
@@ -179,7 +179,7 @@ class Command_Sql extends Command {
      * Get if the command's result is returned.
      * @return                        boolean                True if the command's result should be returned, false otherwise.
      */
-    public function isReturned() {
+    public function is_returned() {
         return $this->returned;
     }
 
@@ -187,7 +187,7 @@ class Command_Sql extends Command {
      * Set if the command's result is returned.
      * @param    $returned            boolean                True if the command's result should be returned, false otherwise.
      */
-    public function setReturned($returned) {
+    public function set_returned($returned) {
         $this->returned = $returned;
     }
 
@@ -206,7 +206,7 @@ class Command_Sql extends Command {
      */
     private function _replaceParametersValues($matches) {
 
-        list($paramname, $paramvalue) = replace_parameters_values($matches, $this->getParameters(), true, false);
+        list($paramname, $paramvalue) = replace_parameters_values($matches, $this->get_parameters(), true, false);
     
         $this->values[$paramname] = $paramvalue;
 

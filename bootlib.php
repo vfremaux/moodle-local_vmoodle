@@ -96,16 +96,7 @@ function vmoodle_boot_configuration() {
             if ($res) {
                 if (mysql_num_rows($res)) {
                     $vmoodle = mysql_fetch_object($res);
-                    $CFG->dbtype    = $vmoodle->vdbtype;
-                    $CFG->dbhost    = $vmoodle->vdbhost;
-                    $CFG->dbname    = $vmoodle->vdbname;
-                    $CFG->dbuser    = $vmoodle->vdblogin;
-                    $CFG->dbpass    = $vmoodle->vdbpass;
-                    $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
-                    $CFG->prefix    = $vmoodle->vdbprefix;
-
-                    $CFG->wwwroot   = $CFG->vmoodleroot;
-                    $CFG->dataroot  = $vmoodle->vdatapath;
+                    vmoodle_feed_config($vmoodle);
                 } else {
                     die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.");
                 }
@@ -138,15 +129,7 @@ function vmoodle_boot_configuration() {
             if ($res) {
                 if (mysqli_num_rows($res)) {
                     $vmoodle = mysqli_fetch_object($res);
-                    $CFG->dbtype    = $vmoodle->vdbtype;
-                    $CFG->dbhost    = $vmoodle->vdbhost;
-                    $CFG->dbname    = $vmoodle->vdbname;
-                    $CFG->dbuser    = $vmoodle->vdblogin;
-                    $CFG->dbpass    = $vmoodle->vdbpass;
-                    $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
-                    $CFG->prefix    = $vmoodle->vdbprefix;
-                    $CFG->wwwroot   = $CFG->vmoodleroot;
-                    $CFG->dataroot  = $vmoodle->vdatapath;
+                    vmoodle_feed_config($vmoodle);
                 } else {
                     die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.");
                 }
@@ -174,15 +157,7 @@ function vmoodle_boot_configuration() {
             if ($res) {
                 if (pg_num_rows($res)) {
                     $vmoodle = pg_fetch_object($res);
-                    $CFG->dbtype    = $vmoodle->vdbtype;
-                    $CFG->dbhost    = $vmoodle->vdbhost;
-                    $CFG->dbname    = $vmoodle->vdbname;
-                    $CFG->dbuser    = $vmoodle->vdblogin;
-                    $CFG->dbpass    = $vmoodle->vdbpass;
-                    $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
-                    $CFG->prefix    = $vmoodle->vdbprefix;
-                    $CFG->wwwroot   = $CFG->vmoodleroot;
-                    $CFG->dataroot  = $vmoodle->vdatapath;
+                    vmoodle_feed_config($vmoodle);
                 } else {
                     die ("VMoodling : No configuration for this host. May be faked.");
                 }
@@ -251,4 +226,19 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false) {
     } else {
         echo "vmoodle_make_connection : Database not supported<br/>";
     }
+}
+
+function vmoodle_feed_config($vmoodle) {
+    global $CFG;
+
+    $CFG->dbtype    = $vmoodle->vdbtype;
+    $CFG->dbhost    = $vmoodle->vdbhost;
+    $CFG->dbname    = $vmoodle->vdbname;
+    $CFG->dbuser    = $vmoodle->vdblogin;
+    $CFG->dbpass    = $vmoodle->vdbpass;
+    $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
+    $CFG->prefix    = $vmoodle->vdbprefix;
+
+    $CFG->wwwroot   = $CFG->vmoodleroot;
+    $CFG->dataroot  = $vmoodle->vdatapath;
 }

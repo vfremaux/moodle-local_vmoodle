@@ -110,7 +110,7 @@ class Command_Parameter {
      * Get parameter's name.
      * @return string Parameter's name.
      */
-    public function getName() {
+    public function get_name() {
         return $this->name;
     }
 
@@ -126,7 +126,7 @@ class Command_Parameter {
      * Get parameter's description.
      * @return mixed Parameter's description.
      */
-    public function getDescription() {
+    public function get_description() {
         return $this->description;
     }
 

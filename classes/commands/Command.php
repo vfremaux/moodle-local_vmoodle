@@ -71,7 +71,8 @@ abstract class Command {
      * @throws Command_Exception
      */
     protected function __construct($name, $description, $parameters = null) {
-        // Checking command's name
+
+        // Checking command's name.
         if (empty($name)) {
             throw new Command_Exception('commandemptyname');
         } else {
@@ -97,7 +98,7 @@ abstract class Command {
             if (is_array($parameters)) {
                 foreach ($parameters as $parameter) {
                     if ($parameter instanceof Command_Parameter) {
-                        $i_parameters[$parameter->getName()] = $parameter;
+                        $i_parameters[$parameter->get_name()] = $parameter;
                     } else {
                         throw new Command_Exception('commandnotaparameter', $this->name);
                     }
@@ -116,15 +117,15 @@ abstract class Command {
      */
     public function populate($data) {
 
-        $parameters = $this->getParameters();
+        $parameters = $this->get_parameters();
 
         // Setting parameters' values.
         foreach ($parameters as $parameter) {
             if (!($parameter instanceof Command_Parameter_Internal)) {
-                if ($parameter->getType() == 'boolean' && !property_exists($data, $parameter->getName())) {
+                if ($parameter->getType() == 'boolean' && !property_exists($data, $parameter->get_name())) {
                     $parameter->setValue('0');
                 } else {
-                    $parameter->setValue($data->{$parameter->getName()});
+                    $parameter->setValue($data->{$parameter->get_name()});
                 }
             }
         }
@@ -147,7 +148,7 @@ abstract class Command {
      * Return if the command were runned.
      * @return boolean TRUE if the command were runned, FALSE otherwise.
      */
-    public function isRunned() {
+    public function has_run() {
         return !empty($this->results);
     }
     
@@ -156,12 +157,12 @@ abstract class Command {
      * @param string $host The host to retrieve result (optional, if null, returns general result).
      * @param string $key The information to retrieve (ie status, error / optional).
      */
-    public abstract function getResult($host = null, $key = null);
+    public abstract function get_result($host = null, $key = null);
 
     /**
      * Clear result of command execution.
      */
-    public function clearResult() {
+    public function clear_result() {
         $this->results = array();
     }
 
@@ -169,7 +170,7 @@ abstract class Command {
      * Get the command's name.
      * @return string Command's name.
      */
-    public function getName() {
+    public function get_name() {
         return $this->name;
     }
 
@@ -177,7 +178,7 @@ abstract class Command {
      * Get the command's description.
      * @return string Command's description.
      */
-    public function getDescription() {
+    public function get_description() {
         return $this->description;
     }
 
@@ -186,7 +187,7 @@ abstract class Command {
      * @param string $name A command parameter name.
      * @return mixed The command parameter.
      */
-    public function getParameter($name) {
+    public function get_parameter($name) {
         if (!array_key_exists($name, $this->parameters)) {
             return null;
         } else {
@@ -198,7 +199,7 @@ abstract class Command {
      * Get the command's parameters.
      * @return mixed Command's parameters.
      */
-    public function getParameters() {
+    public function get_parameters() {
         return $this->parameters;
     }
 
@@ -206,7 +207,7 @@ abstract class Command {
      * Get the retrieve platforms command.
      * @return Command Retrieve platforms command.
      */
-    public function getRPCommand() {
+    public function get_rpc_command() {
         return $this->rpcommand;
     }
 
@@ -215,7 +216,7 @@ abstract class Command {
      * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws Command_Exception
      */
-    public function attachRPCommand($rpcommand) {
+    public function attach_rpc_ommand($rpcommand) {
         // Checking retrieve platforms command
         if (!(is_null($rpcommand) || $rpcommand instanceof Command)) {
             throw new Command_Exception('commandwrongrpcommand', $this->name);
@@ -228,7 +229,7 @@ abstract class Command {
      * Get the command's category.
      * @return Command_Category Command's category.
      */
-    public function getCategory() {
+    public function get_category() {
         return $this->category;
     }
 
@@ -236,7 +237,7 @@ abstract class Command {
      * Define the command's category.
      * @param Command_Category $category Command's category.
      */
-    public function setCategory(Command_Category $category) {
+    public function set_category(Command_Category $category) {
         $this->category = $category;
     }
 
@@ -244,7 +245,7 @@ abstract class Command {
      * Get command's index on this category. 
      * @returm mixed The index of the command if is in a category or null otherwise.
      */
-    public function getIndex() {
+    public function get_index() {
         if (is_null($this->category))
             return null;
         else
@@ -257,6 +258,6 @@ abstract class Command {
      * @return boolean True if the compared command is the same of command parameter, false otherwise.
      */    
     public function equals($command) {
-        return ($command->getName() == $this->name);
+        return ($command->get_name() == $this->name);
     }
 }

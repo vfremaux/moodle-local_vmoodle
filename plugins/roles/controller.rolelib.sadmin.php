@@ -74,7 +74,7 @@ switch ($action) {
         if ($SESSION->vmoodle_sa['wizardnow'] != 'report' || !($command instanceof \vmoodleadminset_roles\Command_Role_Compare)) {
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         }
-        $role = $command->getParameter('role')->getValue();
+        $role = $command->get_parameter('role')->getValue();
 
         // Saving previous context.
         $SESSION->vmoodle_sa['rolelib']['command'] = $SESSION->vmoodle_sa['command'];
@@ -82,9 +82,9 @@ switch ($action) {
 
         // Creating RoleSyncCommand.
         $rolesync_command = new \vmoodleadminset_roles\Command_Role_Capability_Sync();
-        $rolesync_command->getParameter('platform')->setValue($source_platform);
-        $rolesync_command->getParameter('role')->setValue($role);
-        $rolesync_command->getParameter('capability')->setValue($capability);
+        $rolesync_command->get_parameter('platform')->setValue($source_platform);
+        $rolesync_command->get_parameter('role')->setValue($role);
+        $rolesync_command->get_parameter('capability')->setValue($capability);
 
         // Running command.
         $rolesync_command->run($platforms);

@@ -67,11 +67,11 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Getting role.
-        $role = $this->getParameter('role')->getValue();
+        $role = $this->get_parameter('role')->getValue();
         // Getting table.
-        $table = $this->getParameter('table')->getValue();
+        $table = $this->get_parameter('table')->getValue();
         // Checking hosts.
-        $platform = $this->getParameter('platform')->getValue();
+        $platform = $this->get_parameter('platform')->getValue();
 
         if (array_key_exists($platform, $hosts)) {
             $platforms = get_available_platforms();
@@ -80,7 +80,7 @@ class Command_Role_Allow_Sync extends Command {
 
         // Creating peer to read role configuration.
         $mnet_host = new \mnet_peer();
-        if (!$mnet_host->bootstrap($this->getParameter('platform')->getValue(), null, 'moodle')) {
+        if (!$mnet_host->bootstrap($this->get_parameter('platform')->getValue(), null, 'moodle')) {
             $response = (object) array(
                             'status' => RPC_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
@@ -176,9 +176,9 @@ class Command_Role_Allow_Sync extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    function getResult($host = null, $key = null) {
+    function get_result($host = null, $key = null) {
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
         // Checking host (general result isn't provide in this kind of command).

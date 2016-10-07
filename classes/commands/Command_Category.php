@@ -64,7 +64,7 @@ class Command_Category {
      * Get category's name.
      * @return string The category's name.
      */
-    public function getName() {
+    public function get_name() {
         return $this->name;
     }
 
@@ -82,7 +82,7 @@ class Command_Category {
      */
     public function addCommand(Command $command) {
         $this->commands[] = $command;
-        $command->setCategory($this);
+        $command->set_category($this);
     }
 
     /**

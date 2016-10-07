@@ -35,7 +35,7 @@ use \local_vmoodle\Command_Form;
 // Getting retrieve platform command.
 if (!isset($rpcommand) && isset($SESSION->vmoodle_sa['command'])) {
     $command = unserialize($SESSION->vmoodle_sa['command']);
-    $rpcommand = $command->getRPCommand();
+    $rpcommand = $command->get_rpc_command();
 } else {
     return -1;
 }

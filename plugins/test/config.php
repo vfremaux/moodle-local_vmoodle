@@ -294,7 +294,7 @@ $cmd = new Command_Sql(
     )
 );
 
-$test_rpcommad->attachRPCommand($cmd);
+$test_rpcommad->attach_rpc_ommand($cmd);
 $category->addCommand($test_rpcommad);
 
 $category->addCommand(new Command_Role_Sync());

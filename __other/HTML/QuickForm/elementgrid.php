@@ -99,7 +99,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @return string name
      */
-    function getName()
+    function get_name()
     {
         return $this->_name;
     }
@@ -300,7 +300,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
                     if (is_array($value)) {
                         $values = HTML_QuickForm::arrayMerge($values, $value);
                     } else {
-                        $values[$this->_rows[$key][$key2]->getName()] = $value;
+                        $values[$this->_rows[$key][$key2]->get_name()] = $value;
                     }
                 }
             }
@@ -322,7 +322,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
         $values = array();
         foreach (array_keys($this->_rows) as $key) {
             foreach (array_keys($this->_rows[$key]) as $key2) {
-                $values[$this->_rows[$key][$key2]->getName()] = $this->_rows[$key][$key2]->getValue();
+                $values[$this->_rows[$key][$key2]->get_name()] = $this->_rows[$key][$key2]->getValue();
             }
         }
         return $values;

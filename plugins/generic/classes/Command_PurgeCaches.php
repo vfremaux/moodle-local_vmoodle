@@ -85,12 +85,13 @@ class Command_PurgeCaches extends Command {
             if ($mnet_host->bootstrap($host, null, 'moodle')) {
                 $mnet_hosts[] = $mnet_host;
             } else {
-                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
+                $errormsg = get_string('couldnotcreateclient', 'local_vmoodle', $host);
+                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => $errormsg);
             }
         }
 
         // Getting command.
-        $command = $this->isReturned();
+        $command = $this->is_returned();
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -98,7 +99,7 @@ class Command_PurgeCaches extends Command {
 
         // Sending requests.
         foreach ($mnet_hosts as $mnet_host) {
-            // Sending request
+            // Sending request.
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = RPC_FAILURE;
@@ -120,7 +121,7 @@ class Command_PurgeCaches extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
         if (is_null($this->results)) {
             throw new Command_Exception('commandnotrun');
@@ -146,7 +147,7 @@ class Command_PurgeCaches extends Command {
      * Get if the command's result is returned.
      * @return boolean True if the command's result should be returned, false otherwise.
      */
-    public function isReturned() {
+    public function is_returned() {
         return $this->returned;
     }
 
@@ -154,7 +155,7 @@ class Command_PurgeCaches extends Command {
      * Set if the command's result is returned.
      * @param boolean $returned True if the command's result should be returned, false otherwise.
      */
-    public function setReturned($returned) {
+    public function set_returned($returned) {
         $this->returned = $returned;
     }
 }

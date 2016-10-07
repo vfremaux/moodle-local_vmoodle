@@ -74,13 +74,13 @@ class Command_Role_Capability_Sync extends Command {
         }
 
         // Getting role.
-        $role = $this->getParameter('role')->getValue();
+        $role = $this->get_parameter('role')->getValue();
 
         // Getting platform.
-        $platform = $this->getParameter('platform')->getValue();
+        $platform = $this->get_parameter('platform')->getValue();
 
         // Getting capability.
-        $capability = $this->getParameter('capability')->getValue();
+        $capability = $this->get_parameter('capability')->getValue();
 
         // Checking hosts.
         if (array_key_exists($platform, $hosts)) {
@@ -90,7 +90,7 @@ class Command_Role_Capability_Sync extends Command {
 
         // Creating peer to read role configuration.
         $mnet_host = new \mnet_peer();
-        if (!$mnet_host->bootstrap($this->getParameter('platform')->getValue(), null, 'moodle')) {
+        if (!$mnet_host->bootstrap($this->get_parameter('platform')->getValue(), null, 'moodle')) {
             $response = (object) array(
                             'status' => MNET_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
@@ -200,11 +200,11 @@ class Command_Role_Capability_Sync extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         global $CFG, $SESSION,$DB,$OUTPUT;
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 

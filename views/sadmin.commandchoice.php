@@ -51,7 +51,7 @@ foreach ($assistedcommands_categories as $key => $category) {
         $vmoodle_category = load_vmplugin($category);
 
         // Displaying a command's form.
-        print_collapsable_bloc_start($vmoodle_category->getPluginName(), $vmoodle_category->getName(), null, false);
+        print_collapsable_bloc_start($vmoodle_category->getPluginName(), $vmoodle_category->get_name(), null, false);
         foreach ($vmoodle_category->getCommands() as $command) {
             $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
             $command_form->display();

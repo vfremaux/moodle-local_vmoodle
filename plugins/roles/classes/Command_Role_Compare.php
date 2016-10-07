@@ -70,7 +70,7 @@ class Command_Role_Compare extends Command {
         }
 
         // Getting role.
-        $role = $this->getParameter('role')->getValue();
+        $role = $this->get_parameter('role')->getValue();
 
         // Creating XMLRPC client to read role configuration.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -129,9 +129,9 @@ class Command_Role_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
@@ -165,7 +165,7 @@ class Command_Role_Compare extends Command {
         global $CFG,$DB,$OUTPUT;
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
@@ -188,7 +188,7 @@ class Command_Role_Compare extends Command {
         );
 
         // Getting role name.
-        $role = $this->getParameter('role')->getValue();
+        $role = $this->get_parameter('role')->getValue();
         $role = $DB->get_record('role', array('shortname' => $role));
           
         // Getting hosts.

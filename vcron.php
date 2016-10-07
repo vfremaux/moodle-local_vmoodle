@@ -33,78 +33,20 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 require('../../config.php');
+require_once($CFG->dirroot.'/local/vmoodle/cronlib.php');
 
 define('ROUND_ROBIN', 0);
 define('LOWEST_POSSIBLE_GAP', 1);
 
-global $VCRON;
+global $vcron;
 
-$VCRON = new StdClass;
-$VCRON->ACTIVATION = 'cli';                         // Choose how individual cron are launched (cli or curl).
-$VCRON->STRATEGY = ROUND_ROBIN ;                    // Choose vcron rotation mode.
-$VCRON->PERIOD = 15 * MINSECS ;                     // Used if LOWEST_POSSIBLE_GAP to setup the max gap.
-$VCRON->TIMEOUT = 300;                              // Time out for CURL call to effective cron.
-$VCRON->TRACE = $CFG->dataroot.'/vcrontrace.log';   // Trace file where to collect cron outputs.
-$VCRON->TRACE_ENABLE = false;                       // Enables tracing.
-
-/**
-* fire a cron URL using CURL.
-*/
-function fire_vhost_cron($vhost) {
-    global $VCRON, $DB;
-
-    if ($VCRON->TRACE_ENABLE) {
-        $CRONTRACE = fopen($VCRON->TRACE, 'a');
-    }
-    $ch = curl_init($vhost->vhostname.'/admin/cron.php');
-
-    curl_setopt($ch, CURLOPT_TIMEOUT, $VCRON->TIMEOUT);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, '');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-
-    $timestamp_send = time();
-    $rawresponse = curl_exec($ch);
-    $timestamp_receive = time();
-
-    if ($rawresponse === false) {
-        $error = curl_errno($ch) .':'. curl_error($ch);
-        if ($VCRON->TRACE_ENABLE) {
-            if ($CRONTRACE) {
-                fputs($CRONTRACE, "VCron start on $vhost->vhostname : $timestamp_send\n" );
-                fputs($CRONTRACE, "VCron Error : $error \n");
-                fputs($CRONTRACE, "VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n" );
-                fclose($CRONTRACE);
-            }
-        }
-        mtrace("VCron started on $vhost->vhostname : $timestamp_send\n" );
-        mtrace("VCron Error : $error \n");
-        mtrace("VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n" );
-        return false;
-    }
-
-    if ($VCRON->TRACE_ENABLE) {
-        if ($CRONTRACE) {
-            fputs($CRONTRACE, "VCron start on $vhost->vhostname : $timestamp_send\n" );
-            fputs($CRONTRACE, $rawresponse."\n");
-            fputs($CRONTRACE, "VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n" );
-            fclose($CRONTRACE);
-        }
-    }
-    mtrace("VCron start on $vhost->vhostname : $timestamp_send\n" );
-    mtrace($rawresponse."\n");
-    mtrace("VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n" );
-    $vhost->lastcrongap = time() - $vhost->lastcron;
-    $vhost->lastcron = $timestamp_send;
-    $vhost->croncount++;
-
-    $DB->update_record('local_vmoodle', $vhost);
-
-}
+$vcron = new StdClass;
+$vcron->ACTIVATION = 'cli';                         // Choose how individual cron are launched (cli or curl).
+$vcron->STRATEGY = ROUND_ROBIN ;                    // Choose vcron rotation mode.
+$vcron->PERIOD = 15 * MINSECS ;                     // Used if LOWEST_POSSIBLE_GAP to setup the max gap.
+$vcron->TIMEOUT = 300;                              // Time out for CURL call to effective cron.
+$vcron->TRACE = $CFG->dataroot.'/vcrontrace.log';   // Trace file where to collect cron outputs.
+$vcron->TRACE_ENABLE = false;                       // Enables tracing.
 
 if (!$vmoodles = $DB->get_records('local_vmoodle', array('enabled' => 1))) {
     die("Nothing to do. No Vhosts");
@@ -116,7 +58,7 @@ mtrace("<pre>");
 mtrace("Moodle VCron... start");
 mtrace("Last croned : ".@$CFG->vmoodle_cron_lasthost);
 
-if ($VCRON->STRATEGY == ROUND_ROBIN) {
+if ($vcron->STRATEGY == ROUND_ROBIN) {
     $rr = 0;
     foreach ($allvhosts as $vhost) {
         if ($rr == 1) {
@@ -134,17 +76,17 @@ if ($VCRON->STRATEGY == ROUND_ROBIN) {
     mtrace("Round Robin : ".$vhost->vhostname);
     fire_vhost_cron($allvhosts[0]);
 
-} else if ($VCRON->STRATEGY == LOWEST_POSSIBLE_GAP) {
+} else if ($vcron->STRATEGY == LOWEST_POSSIBLE_GAP) {
     // First make measurement of cron period.
     if (empty($CFG->vcrontickperiod)) {
         set_config('vcrontime', time());
         return;
     }
     set_config('vcrontickperiod', time() - $CFG->vcrontime);
-    $hostsperturn = max(1, $VCRON->PERIOD / $CFG->vcrontickperiod * count($allvhosts));
+    $hostsperturn = max(1, $vcron->PERIOD / $CFG->vcrontickperiod * count($allvhosts));
     $i = 0;
     foreach ($allvhosts as $vhost) {
-        if ((time() - $vhost->lastcron) > $VCRON->PERIOD) {
+        if ((time() - $vhost->lastcron) > $vcron->PERIOD) {
             fire_vhost_cron($vhost);
             $i++;
             if ($i >= $hostsperturn) {

@@ -138,10 +138,10 @@ class Command_Upgrade extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host=null, $key = null) {
+    public function get_result($host=null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 

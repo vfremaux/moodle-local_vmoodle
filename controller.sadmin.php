@@ -150,7 +150,7 @@ switch ($action) {
         }
         // Getting retrieve platforms command.
         $command = unserialize($SESSION->vmoodle_sa['command']);
-        $rpcommand = $command->getRPCommand();
+        $rpcommand = $command->get_rpc_command();
         if (is_null($rpcommand)) {
             return 0;
         }
@@ -173,7 +173,7 @@ switch ($action) {
 
         // Removing failed platforms.
         foreach ($platforms as $host => $platform) {
-            if (!($rpcommand->getResult($host, 'status') == RPC_SUCCESS && $rpcommand->getResult($host, 'value'))) {
+            if (!($rpcommand->get_result($host, 'status') == RPC_SUCCESS && $rpcommand->get_result($host, 'value'))) {
                 unset($platforms[$host]);
             }
         }
@@ -246,7 +246,7 @@ switch ($action) {
         if (isset($SESSION->vmoodle_sa['platforms'])) {
             unset($SESSION->vmoodle_sa['platforms']);
             $command = unserialize($SESSION->vmoodle_sa['command']);
-            $command->clearResult();
+            $command->clear_result();
             $SESSION->vmoodle_sa['command'] = serialize($command);
         }
 

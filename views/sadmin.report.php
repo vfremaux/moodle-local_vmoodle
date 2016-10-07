@@ -35,7 +35,7 @@ $platforms = $SESSION->vmoodle_sa['platforms'];
 $successfull_platforms = array();
 $failed_platforms = array();
 foreach ($platforms as $host => $platform) {
-    if ($command->getResult($host, 'status') == RPC_SUCCESS) {
+    if ($command->get_result($host, 'status') == RPC_SUCCESS) {
         $successfull_platforms[$host] = $platform;
     } else {
         $failed_platforms[$host] = $platform;
@@ -43,8 +43,8 @@ foreach ($platforms as $host => $platform) {
 }
 
 // Displaying general result.
-if (!is_null($command->getResult())) {
-    echo $command->getResult();
+if (!is_null($command->get_result())) {
+    echo $command->get_result();
 }
 
 // Displaying successfull commands.
@@ -58,9 +58,9 @@ if (!empty($successfull_platforms)) {
     foreach ($successfull_platforms as $host => $platform) {
         echo '<tr class="r'.$i.'">'.
                 '<td><b>'.$platform.'</b></td>'.
-                '<td>'.get_string('rpcstatus'.$command->getResult($host, 'status'), 'local_vmoodle').'</td>'.
+                '<td>'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>'.
                 '<td style="width: 25%;">'.
-                $command->getResult($host, 'message').
+                $command->get_result($host, 'message').
                 '</td>'.
             '</tr>';
         $i = ($i+1)%2;
@@ -80,9 +80,9 @@ if (!empty($failed_platforms)) {
     foreach ($failed_platforms as $host => $platform) {
         echo '<tr class="r'.$i.'">' .
                 '<td><b>'.$platform.'</b></td>' .
-                '<td style="text-align: left;">'.get_string('rpcstatus'.$command->getResult($host, 'status'), 'local_vmoodle').'</td>' .
+                '<td style="text-align: left;">'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>' .
                 '<td style="width: 25%;">';
-        if ($command->getResult($host, 'status') > 200 && $command->getResult($host, 'status') < 520) {
+        if ($command->get_result($host, 'status') > 200 && $command->get_result($host, 'status') < 520) {
             echo $OUTPUT->single_button(new moodle_url('view.php', array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($host))), get_string('runcmdagain', 'local_vmoodle'), 'get');
         } else {
             echo '&nbsp;';
@@ -91,7 +91,7 @@ if (!empty($failed_platforms)) {
             '</tr>' .
             '<tr class="r'.$i.'" valign="top">' .
                 '<td>'.get_string('details', 'local_vmoodle').'</td>' .
-                '<td colspan="2">'.implode('<br/>', $command->getResult($host, 'errors')).'</td>' .
+                '<td colspan="2">'.implode('<br/>', $command->get_result($host, 'errors')).'</td>' .
             '</tr>';
         $i = ($i+1)%2;
     }

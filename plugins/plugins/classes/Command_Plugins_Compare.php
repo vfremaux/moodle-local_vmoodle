@@ -78,7 +78,7 @@ class Command_Plugins_Compare extends Command {
         }
 
         // Getting plugin type.
-        $plugintype = $this->getParameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->getValue();
 
         // Creating XMLRPC client to read plugins configurations.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -140,10 +140,10 @@ class Command_Plugins_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->isRunned())
+        if (!$this->has_run())
             throw new Command_Exception('commandnotrun');
 
         // Checking host (general result isn't provide in this kind of command).
@@ -178,12 +178,12 @@ class Command_Plugins_Compare extends Command {
         $renderer = $PAGE->get_renderer('local_vmoodle');
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
         // Getting examined plugintype.
-        $plugintype = $this->getParameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->getValue();
 
         // Getting hosts.
         $hosts = array_keys($this->plugins);

@@ -24,11 +24,11 @@
 define('CLI_SCRIPT', true);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/clilib.php'); // cli only functions
+require_once($CFG->libdir.'/clilib.php'); // Cli only functions.
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
-require_once('clilib.php'); // vmoodle cli only functions
-require_once($CFG->libdir.'/adminlib.php'); // various admin-only functions
-require_once($CFG->libdir.'/upgradelib.php'); // general upgrade/install related functions
+require_once('clilib.php'); // Vmoodle cli only functions.
+require_once($CFG->libdir.'/adminlib.php'); // Various admin-only functions.
+require_once($CFG->libdir.'/upgradelib.php'); // General upgrade/install related functions.
 
 // Fakes an admin identity for all the process.
 $USER = get_admin();
@@ -72,7 +72,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkcreatenodes.php
-"; //TODO: localize - to be translated later when everything is finished
+"; //TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;

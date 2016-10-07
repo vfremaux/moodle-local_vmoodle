@@ -101,10 +101,10 @@ class Command_Plugin_Set_State extends Command {
             throw new Command_Exception('insuffisantcapabilities');
 
         // Getting plugin.
-        list($type, $plugin) = explode('/', $this->getParameter('plugin')->getValue());
+        list($type, $plugin) = explode('/', $this->get_parameter('plugin')->getValue());
 
         // Getting the state.
-        $state = $this->getParameter('state')->getValue();
+        $state = $this->get_parameter('state')->getValue();
 
         $pm = \plugin_manager::instance();
 
@@ -180,10 +180,10 @@ class Command_Plugin_Set_State extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
