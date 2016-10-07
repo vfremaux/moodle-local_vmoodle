@@ -77,7 +77,7 @@ if ($remotehost || $test) {
          * at this time, the local platform may not have self key, or may inherit 
          * an obsolete key from the template SQL backup.
          * we must fix that forcing a local key replacemen
-         */t
+         */
         $MNET = new mnet_environment();
         $MNET->init();
         $MNET->name = '';
