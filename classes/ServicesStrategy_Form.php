@@ -90,7 +90,7 @@ class ServicesStrategy_Form extends \moodleform {
                         $langmodule = ($version['plugintype'] == 'mod' ? '' : ($version['plugintype'] . '_')).$version['pluginname'];
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
-                        $description = '[['$defaultservice->name.'_name]]';
+                        $description = '[['.$defaultservice->name.'_name]]';
                     }
                 }
 

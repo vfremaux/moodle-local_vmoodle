@@ -137,7 +137,7 @@ switch ($view) {
     case 'sadmin':
         include($CFG->dirroot.'/local/vmoodle/views/sadmin.main.php');
         break;
-    case 'services': {
+    case 'services':
         include($CFG->dirroot.'/local/vmoodle/views/services.main.php');
         break;
 }

@@ -150,7 +150,7 @@ foreach ($assistedcommands_conffiles as $conffile) {
     $params = array('action' => 'enablecommands', 'commands' => $category);
     $button1 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('enable'), 'get');
     $params = array('action' => 'disablecommands', 'commands' => $category);
-    $button2 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('disable'), 'get')
+    $button2 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('disable'), 'get');
 
     $label = get_string('elements', 'local_vmoodle');
     $table->data[] = array($vmoodle_category->getName().'<br/> > '.$vmoodle_category->count().' '.$label,
