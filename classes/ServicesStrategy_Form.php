@@ -87,8 +87,8 @@ class ServicesStrategy_Form extends \moodleform {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
                         // TODO there should be a moodle-wide way to do this.
-                        $versioninfo = ($version['plugintype'] . '_')).$version['pluginname'];
-                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versioninfo;
+                        $versionprf = $version['plugintype'] . '_';
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versionprf).$version['pluginname'];
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
                         $description = '[['.$defaultservice->name.'_name]]';
@@ -124,8 +124,8 @@ class ServicesStrategy_Form extends \moodleform {
                 if (empty($description)) {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
-                        $versioninfo = ($version['plugintype'] . '_')).$version['pluginname'];
-                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versioninfo;
+                        $versionprf = $version['plugintype'] . '_';
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versionprf).$version['pluginname'];
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
                         $description = '[['.$defaultservice->name.'_name]]';
