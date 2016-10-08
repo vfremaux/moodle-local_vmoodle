@@ -78,7 +78,7 @@ class Command_Plugins_Compare extends Command {
         }
 
         // Getting plugin type.
-        $plugintype = $this->get_parameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->get_value();
 
         // Creating XMLRPC client to read plugins configurations.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -183,7 +183,7 @@ class Command_Plugins_Compare extends Command {
         }
 
         // Getting examined plugintype.
-        $plugintype = $this->get_parameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->get_value();
 
         // Getting hosts.
         $hosts = array_keys($this->plugins);

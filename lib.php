@@ -435,7 +435,7 @@ function replace_parameters_values($matches, $params, $parameters_replace = true
         $value = $vmcommandconstants[$matches[2]];
         // Parsing parameter.
     } else if ($parameters_replace && !empty($matches[1]) && array_key_exists($matches[2], $params)) {
-        $value = $params[$matches[2]]->getValue();
+        $value = $params[$matches[2]]->get_value();
     } else {
         // Leave untouched.
         return array($matches[2], $matches[0]);
@@ -1415,7 +1415,7 @@ function vmoodle_get_string($identifier, $subplugin, $a = '', $lang = '') {
  * @global stdClass $DB The global moodle_database instance.
  * @return void|bool Returns true when finished setting up $DB. Returns void when $DB has already been set.
  */
-function vmoodle_setup_DB($vmoodle) {
+function vmoodle_setup_db($vmoodle) {
     global $CFG;
 
     if (!isset($vmoodle->vdblogin)) {

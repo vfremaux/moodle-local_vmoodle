@@ -23,7 +23,7 @@
  */
 
 if ((defined('CLI_SCRIPT') && CLI_SCRIPT) && !defined('WEB_CRON_EMULATED_CLI') && !defined('CLI_VMOODLE_OVERRIDE')) return;
-require_once $CFG->dirroot."/local/vmoodle/bootlib.php";
+require_once $CFG->dirroot.'/local/vmoodle/bootlib.php';
 
 // This configurations settings will tell where VMoodle can rely on a local_vmoodle virtual moodling
 // records.

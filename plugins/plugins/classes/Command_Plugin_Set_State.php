@@ -101,10 +101,10 @@ class Command_Plugin_Set_State extends Command {
             throw new Command_Exception('insuffisantcapabilities');
 
         // Getting plugin.
-        list($type, $plugin) = explode('/', $this->get_parameter('plugin')->getValue());
+        list($type, $plugin) = explode('/', $this->get_parameter('plugin')->get_value());
 
         // Getting the state.
-        $state = $this->get_parameter('state')->getValue();
+        $state = $this->get_parameter('state')->get_value();
 
         $pm = \plugin_manager::instance();
 

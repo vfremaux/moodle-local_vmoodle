@@ -101,8 +101,8 @@ class Command_SetConfig extends Command {
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config');
-        $rpc_client->add_param($this->get_parameter('key')->getValue(), 'string');
-        $rpc_client->add_param($this->get_parameter('value')->getValue(), 'string');
+        $rpc_client->add_param($this->get_parameter('key')->get_value(), 'string');
+        $rpc_client->add_param($this->get_parameter('value')->get_value(), 'string');
         $rpc_client->add_param(null, 'string');
         $rpc_client->add_param($command, 'boolean');
 

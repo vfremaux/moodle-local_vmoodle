@@ -29,7 +29,7 @@ class Command_Parameter {
     /**
      * Types of parameter allowed
      */
-    const parameter_types_allowed = 'boolean|enum|text|ltext|internal';
+    const PARAMETER_TYPES_ALLOWED = 'boolean|enum|text|ltext|internal';
 
     /**
      * Parameter's name
@@ -78,7 +78,7 @@ class Command_Parameter {
         }
 
         // Checking parameter's type.
-        if (!in_array($type, explode('|', self::parameter_types_allowed))) {
+        if (!in_array($type, explode('|', self::PARAMETER_TYPES_ALLOWED))) {
             throw new Command_Exception('parameterforbiddentype', $this->name);
         } else {
             $this->type = $type;
@@ -118,7 +118,7 @@ class Command_Parameter {
      * Get parameter's type.
      * @return string Parameter's type.
      */
-    public function getType() {
+    public function get_type() {
         return $this->type;
     }
 
@@ -134,7 +134,7 @@ class Command_Parameter {
      * Get parameter's default value.
      * @return mixed Parameter's default.
      */
-    public function getDefault() {
+    public function get_default() {
         return $this->default;
     }
 
@@ -142,7 +142,7 @@ class Command_Parameter {
      * Get parameter's choices (in case of enum).
      * @return array Parameter's choices.
      */
-    public function getChoices() {
+    public function get_choices() {
         return $this->choices;
     }
 
@@ -151,7 +151,7 @@ class Command_Parameter {
      * @return mixed Parameter's value.
      * @throws Command_Exception
      */
-    public function getValue() {
+    public function get_value() {
         if (is_null($this->value)) {
             throw new Command_Exception('paramtervaluenotdefined', $this->name);
         }
@@ -162,7 +162,7 @@ class Command_Parameter {
      * Set parameter's value.
      * @param $value mixed Parameter's value.
      */
-    public function setValue($value) {
+    public function set_value($value) {
         $this->value = $value;
     }
 }

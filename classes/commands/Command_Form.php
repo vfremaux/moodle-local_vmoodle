@@ -24,6 +24,8 @@
  */
 namespace local_vmoodle;
 
+defined('MOODLE_INTERNAL') || die;
+
 use \local_vmoodle\commands\Command_Exception;
 use \local_vmoodle\commands\Command;
 
@@ -39,7 +41,7 @@ class Command_Form extends \moodleform {
     const MODE_DISPLAY_COMMAND = 3;
 
     /**
-     * Command linked to the form 
+     * Command linked to the form
      */
     public $command;
 
@@ -104,7 +106,7 @@ class Command_Form extends \moodleform {
             $mform->addElement('hidden', 'category_name', $command->get_category()->get_name());
             $mform->setType('category_name', PARAM_TEXT);
 
-            $mform->addElement('hidden', 'category_plugin_name', $command->get_category()->getPluginName());
+            $mform->addElement('hidden', 'category_plugin_name', $command->get_category()->get_plugin_name());
             $mform->setType('category_plugin_name', PARAM_TEXT);
 
             $mform->addElement('hidden', 'command_index', $command->get_index());
@@ -117,12 +119,15 @@ class Command_Form extends \moodleform {
         // Adding elements depending on command's parameter.
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
-                switch ($parameter->getType()) {
+                switch ($parameter->get_type()) {
                     case 'boolean':
                         $mform->addElement('checkbox', $parameter->get_name(), $parameter->get_description());
                         break;
                     case 'enum':
-                        $mform->addElement('select', $parameter->get_name(), $parameter->get_description(), $parameter->getChoices());
+                        $label = $parameter->get_name();
+                        $desc = $parameter->get_description();
+                        $options = $parameter->get_choices();
+                        $mform->addElement('select', $label, $desc, $options);
                         break;
                     case 'text':
                         $mform->addElement('text', $parameter->get_name(), $parameter->get_description());
@@ -138,10 +143,10 @@ class Command_Form extends \moodleform {
                 }
                 // Defining value.
                 if ($this->mode == self::MODE_DISPLAY_COMMAND) {
-                    $mform->setDefault($parameter->get_name(), $parameter->getValue());
+                    $mform->setDefault($parameter->get_name(), $parameter->get_value());
                     $mform->freeze($parameter->get_name());
-                } else if (!is_null($parameter->getDefault())) {
-                    $mform->setDefault($parameter->get_name(), $parameter->getDefault());
+                } else if (!is_null($parameter->get_default())) {
+                    $mform->setDefault($parameter->get_name(), $parameter->get_default());
                 }
             }
         }

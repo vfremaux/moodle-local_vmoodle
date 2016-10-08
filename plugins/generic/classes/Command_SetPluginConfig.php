@@ -102,13 +102,13 @@ class Command_SetPluginConfig extends Command {
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config');
 
-        $pluginkey = $this->get_parameter('key')->getValue();
+        $pluginkey = $this->get_parameter('key')->get_value();
         $parts = explode('/', $pluginkey);
         $key = array_pop($parts); // Take last as key.
         $plugin = implode('/', $parts); // Take the rest as plugin (minds those plugins as auth/cas or auth/ldap).
 
         $rpc_client->add_param($key, 'string');
-        $rpc_client->add_param($this->get_parameter('value')->getValue(), 'string');
+        $rpc_client->add_param($this->get_parameter('value')->get_value(), 'string');
         $rpc_client->add_param($plugin, 'string');
         $rpc_client->add_param($command, 'boolean');
 

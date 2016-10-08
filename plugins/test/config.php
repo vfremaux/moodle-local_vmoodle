@@ -32,7 +32,7 @@ $cmd = new Command_Sql(
     'Command without parameter.',
     'SELECT aa FROM bb'
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /********************************/
 
@@ -46,7 +46,7 @@ $cmd = new Command_Sql(
         'The boolean'
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /********************************/
 
@@ -61,7 +61,7 @@ $cmd = new Command_Sql(
         true
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /********************************/
 
@@ -76,7 +76,7 @@ $cmd = new Command_Sql(
         false
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /********************************/
 
@@ -97,7 +97,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /********************************/
 
@@ -118,7 +118,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*********************************/
 
@@ -133,7 +133,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /************************************/
 
@@ -149,7 +149,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /**************************************/
 
@@ -164,7 +164,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*****************************************/
 
@@ -180,7 +180,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*****************************/
 
@@ -216,7 +216,7 @@ $cmd = new Command_Sql(
            $param3
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*********************************/
 
@@ -252,7 +252,7 @@ $cmd = new Command_Sql(
         $param3
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 $cmd = new Command_Sql(
     'Command 13',
@@ -263,7 +263,7 @@ $cmd = new Command_Sql(
         'vmoodleadminset_test\\CommandWrapper::myTestFunction'
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 $test_rpcommad = new Command_Sql(
     'Command 14',
@@ -295,12 +295,12 @@ $cmd = new Command_Sql(
 );
 
 $test_rpcommad->attach_rpc_ommand($cmd);
-$category->addCommand($test_rpcommad);
+$category->add_command($test_rpcommad);
 
-$category->addCommand(new Command_Role_Sync());
-$category->addCommand(new Command_Role_Capability_Sync());
-$category->addCommand(new Command_Role_Compare());
-$category->addCommand(new Command_Upgrade());
+$category->add_command(new Command_Role_Sync());
+$category->add_command(new Command_Role_Capability_Sync());
+$category->add_command(new Command_Role_Compare());
+$category->add_command(new Command_Upgrade());
     
 // Returning the category
 return $category;

@@ -36,7 +36,7 @@ class Target_Form extends \moodleform {
         $attrs = array('onsubmit' => 'submit_target_form()');
         parent::__construct(new \moodle_url('/local/vmoodle/view.php'), $customdata, 'post', '', $attrs);
     }
-    
+
     /**
      * Describes form.
      */

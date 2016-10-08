@@ -71,37 +71,37 @@ if ($action == 'add') {
 
         // Default configuration (automated schema).
         if (@$config->automatedschema) {
-            $platform_form = new StdClass();
-            $platform_form->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost' ;
-            $platform_form->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli' ;
-            $platform_form->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost' ;
-            $platform_form->vdblogin = $config->vdblogin;
-            $platform_form->vdbpass = $config->vdbpass;
-            $platform_form->vdbname = $config->vdbbasename;
-            $platform_form->vdbprefix = (@$config->vdbprefix) ? $config->vdbprefix : 'mdl_' ;
-            $platform_form->vdbpersist = (@$config->vdbpersist) ? 1 : 0 ;
-            $platform_form->vdatapath = stripslashes($config->vdatapathbase);
+            $platformform = new StdClass();
+            $platformform->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost' ;
+            $platformform->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli' ;
+            $platformform->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost' ;
+            $platformform->vdblogin = $config->vdblogin;
+            $platformform->vdbpass = $config->vdbpass;
+            $platformform->vdbname = $config->vdbbasename;
+            $platformform->vdbprefix = (@$config->vdbprefix) ? $config->vdbprefix : 'mdl_' ;
+            $platformform->vdbpersist = (@$config->vdbpersist) ? 1 : 0 ;
+            $platformform->vdatapath = stripslashes($config->vdatapathbase);
 
             if ($config->mnet == 'NEW') {
                 $lastsubnetwork = $DB->get_field('local_vmoodle', 'MAX(mnet)', array());
-                $platform_form->mnet = $lastsubnetwork + 1;
+                $platformform->mnet = $lastsubnetwork + 1;
             } else {
-                $platform_form->mnet = 0 + @$config->mnet;
+                $platformform->mnet = 0 + @$config->mnet;
             }
         
-            $platform_form->services = $config->services;
+            $platformform->services = $config->services;
 
             // Try to get crontab (Linux).
             if ($CFG->ostype != 'WINDOWS') {
                 $crontabcmd = escapeshellcmd('crontab -l');
-                $platform_form->crontab = passthru($crontabcmd);
+                $platformform->crontab = passthru($crontabcmd);
             }
 
             // Data are placed in session for displaying.
             unset($SESSION->vmoodledata);
             echo $OUTPUT->header();
             $form = new \local_vmoodle\Host_Form('add');
-            $form->set_data($platform_form);
+            $form->set_data($platformform);
             $form->display();
             echo $OUTPUT->footer();
             die;
@@ -122,10 +122,10 @@ if ($action == 'doadd') {
 
         // Retrieve submitted data, from the add form.
         unset($SESSION->vmoodle_mg['dataform']);
-        $platform_form = new \local_vmoodle\Host_Form('add', null);
+        $platformform = new \local_vmoodle\Host_Form('add', null);
 
         // Check if form is cancelled.
-        if ($platform_form->is_cancelled()) {
+        if ($platformform->is_cancelled()) {
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
             die;
         }
@@ -133,7 +133,7 @@ if ($action == 'doadd') {
 
     // If there is submitted data from form or in session (no errors).
     if (!isset($SESSION->vmoodledata)) {
-        $submitteddata = $SESSION->vmoodledata = $platform_form->get_data();
+        $submitteddata = $SESSION->vmoodledata = $platformform->get_data();
     } else {
         $submitteddata = $SESSION->vmoodledata;
     }
@@ -489,7 +489,7 @@ if ($action == 'edit') {
 
     // Retrieve the vmoodle platform data.
     $id = required_param('id', PARAM_INT);
-    if ($platform_form = $DB->get_record('local_vmoodle', array('id' => $id))) {
+    if ($platformform = $DB->get_record('local_vmoodle', array('id' => $id))) {
 
         // Print title (heading).
         echo $OUTPUT->header();
@@ -498,7 +498,7 @@ if ($action == 'edit') {
         echo $OUTPUT->box_start();
         // Displays the form with data (and errors).
         $form = new \local_vmoodle\Host_Form('edit');
-        $form->set_data($platform_form);
+        $form->set_data($platformform);
         $form->display();
 
         // Print ending of a box.
@@ -512,15 +512,15 @@ if ($action == 'edit') {
 
 if ($action == 'doedit') {
     // Retrieves data from the edit form.
-    $platform_form = new \local_vmoodle\Host_Form('edit');
+    $platformform = new \local_vmoodle\Host_Form('edit');
 
     // Checks if form is cancelled.
-    if ($platform_form->is_cancelled()) {
+    if ($platformform->is_cancelled()) {
         redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
     }
 
     // If there is submitted data (no errors).
-    if ($submitteddata = $platform_form->get_data()) {
+    if ($submitteddata = $platformform->get_data()) {
 
         // Updates the host, with all data.
         $olddata = $DB->get_record('local_vmoodle', array('id' => $submitteddata->id));

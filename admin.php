@@ -16,7 +16,7 @@
 
 /**
  * admin.php
- * 
+ *
  * This file is the administration page of super-administration.
  *
  * @package local_vmoodle
@@ -59,17 +59,17 @@ switch ($action) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
             break;
         }
-        $plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/'.$commands;
-        $new_plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/'.substr($commands, 1);
+        $pluginpath = $CFG->dirroot.'/local/vmoodle/plugins/'.$commands;
+        $newpluginpath = $CFG->dirroot.'/local/vmoodle/plugins/'.substr($commands, 1);
 
         // Checking if plugin exists.
-        if (!is_dir($plugin_path)) {
+        if (!is_dir($pluginpath)) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
             break;
         }
 
         // Enabling plugin.
-        if (!rename($plugin_path, $new_plugin_path)) {
+        if (!rename($pluginpath, $newpluginpath)) {
             echo $OUTPUT->notification(get_string('pluginnotenabled', 'local_vmoodle'));
             break;
         }
@@ -86,16 +86,16 @@ switch ($action) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
             break;
         }
-        $plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/'.$commands;
-        $new_plugin_path = $CFG->dirroot.'/local/vmoodle/plugins/_'.$commands;
+        $pluginpath = $CFG->dirroot.'/local/vmoodle/plugins/'.$commands;
+        $newpluginpath = $CFG->dirroot.'/local/vmoodle/plugins/_'.$commands;
         // Checking if plugin exists.
-        if (!is_dir($plugin_path)) {
+        if (!is_dir($pluginpath)) {
             echo $OUTPUT->notification(get_string('wrongplugin', 'local_vmoodle'));
             break;
         }
 
         // Disabling plugin.
-        if (!rename($plugin_path, $new_plugin_path)) {
+        if (!rename($pluginpath, $newpluginpath)) {
             echo $OUTPUT->notification(get_string('pluginnotdisabled', 'local_vmoodle'));
             break;
         }
@@ -118,8 +118,8 @@ switch ($action) {
         include_once($CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/lib.php');
 
         // Removing plugin library.
-        $uninstall_function = $plugin.'_uninstall';
-        if ((function_exists($uninstall_function) && !$uninstall_function()) || !unset_config('vmoodle_lib_'.$plugin.'_version')) {
+        $uninstallfunction = $plugin.'_uninstall';
+        if ((function_exists($uninstallfunction) && !$uninstallfunction()) || !unset_config('vmoodle_lib_'.$plugin.'_version')) {
             echo $OUTPUT->notification(get_string('pluginnotuninstalled', 'local_vmoodle', $plugin));
             break;
         }
@@ -132,7 +132,7 @@ switch ($action) {
 }
 
 // Retrieving commands plugins.
-$assistedcommands_conffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
+$assistedcommandsconffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
 
 // Creating table.
 $table = new stdclass;
@@ -142,10 +142,10 @@ $table->size = array('70%', '30%');
 $table->width = '80%';
 
 // Adding commands plugins.
-foreach ($assistedcommands_conffiles as $conffile) {
+foreach ($assistedcommandsconffiles as $conffile) {
     $path = explode('/', $conffile);
-    $category = $path[count($path)-2];
-    $vmoodle_category = load_vmplugin($category);
+    $category = $path[count($path) - 2];
+    $vmoodlecategory = load_vmplugin($category);
 
     $params = array('action' => 'enablecommands', 'commands' => $category);
     $button1 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('enable'), 'get');
@@ -153,7 +153,7 @@ foreach ($assistedcommands_conffiles as $conffile) {
     $button2 = $OUTPUT->single_button(new moodle_url('/local/vmoodle/admin.php', $params), get_string('disable'), 'get');
 
     $label = get_string('elements', 'local_vmoodle');
-    $table->data[] = array($vmoodle_category->get_name().'<br/> > '.$vmoodle_category->count().' '.$label,
+    $table->data[] = array($vmoodlecategory->get_name().'<br/> > '.$vmoodlecategory->count().' '.$label,
                            ($category[0] == '_' ? $button1 : $button2));
 }
 
@@ -192,7 +192,8 @@ echo html_writer::table($table);
 
 // Adding go back menu.
 echo '<br/><center>';
-echo $OUTPUT->single_button(new moodle_url('view.php', array('view' => 'sadmin')), get_string('tabpoolsadmin', 'local_vmoodle'), 'get');
+$buttonurl = new moodle_url('view.php', array('view' => 'sadmin'));
+echo $OUTPUT->single_button($buttonurl, get_string('tabpoolsadmin', 'local_vmoodle'), 'get');
 echo '</center>';
 
 // Adding footer.

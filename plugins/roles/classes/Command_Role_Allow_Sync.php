@@ -67,11 +67,11 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Getting role.
-        $role = $this->get_parameter('role')->getValue();
+        $role = $this->get_parameter('role')->get_value();
         // Getting table.
-        $table = $this->get_parameter('table')->getValue();
+        $table = $this->get_parameter('table')->get_value();
         // Checking hosts.
-        $platform = $this->get_parameter('platform')->getValue();
+        $platform = $this->get_parameter('platform')->get_value();
 
         if (array_key_exists($platform, $hosts)) {
             $platforms = get_available_platforms();
@@ -80,7 +80,7 @@ class Command_Role_Allow_Sync extends Command {
 
         // Creating peer to read role configuration.
         $mnet_host = new \mnet_peer();
-        if (!$mnet_host->bootstrap($this->get_parameter('platform')->getValue(), null, 'moodle')) {
+        if (!$mnet_host->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
                             'status' => RPC_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)

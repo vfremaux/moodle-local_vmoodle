@@ -66,7 +66,7 @@ class Command_Role_Allow_Compare extends Command {
             throw new Command_Exception('insuffisantcapabilities');
 
         // Getting role
-        $table = $this->get_parameter('table')->getValue();
+        $table = $this->get_parameter('table')->get_value();
 
         // Creating XMLRPC client to read role configuration
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -166,7 +166,7 @@ class Command_Role_Allow_Compare extends Command {
         }
 
         // Getting table name.
-        $table = $this->get_parameter('table')->getValue();
+        $table = $this->get_parameter('table')->get_value();
           
         // Getting hosts.
         $hosts = array_keys($this->capabilities);

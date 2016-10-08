@@ -70,10 +70,10 @@ class Command_Plugins_Sync extends Command {
         }
 
         // Getting plugintype.
-        $plugintype = $this->get_parameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->get_value();
 
         // Checking hosts.
-        $platform = $this->get_parameter('platform')->getValue();
+        $platform = $this->get_parameter('platform')->get_value();
         if (array_key_exists($platform, $hosts)) {
             $platforms = get_available_platforms();
             throw new Command_Plugins_Exception('syncwithitself');
@@ -81,7 +81,7 @@ class Command_Plugins_Sync extends Command {
 
         // Creating peer to read plugins configuration from the designated peer.
         $mnet_host = new mnet_peer();
-        if (!$mnet_host->bootstrap($this->get_parameter('platform')->getValue(), null, 'moodle')) {
+        if (!$mnet_host->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
                             'status' => MNET_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)

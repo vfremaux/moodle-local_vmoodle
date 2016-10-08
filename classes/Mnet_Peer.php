@@ -24,29 +24,31 @@
  * @package mnet
  * @version Moodle 2.2
  */
-
 namespace local_vmoodle;
-Use \StdClass;
+
+defined('MOODLE_INTERNAL') || die();
+
+use \StdClass;
 
 require_once($CFG->libdir.'/filelib.php'); // Download_file_content() used here.
 
 class Mnet_Peer {
 
-    var $id                 = 0;
-    var $wwwroot            = '';
-    var $ip_address         = '';
-    var $name               = '';
-    var $public_key         = '';
-    var $public_key_expires = 0;
-    var $deleted             = 0;
-    var $last_connect_time  = 0;
-    var $last_log_id        = 0;
-    var $force_theme        = 0;
-    var $theme              = '';
-    var $applicationid      = 1; // Default of 1 == Moodle.
-    var $keypair            = array();
-    var $error              = array();
-    var $bootstrapped       = false; // Set when the object is populated.
+    public $id                 = 0;
+    public $wwwroot            = '';
+    public $ipaddress          = '';
+    public $name               = '';
+    public $publickey          = '';
+    public $publickeyexpires   = 0;
+    public $deleted            = 0;
+    public $lastconnecttime    = 0;
+    public $lastlogid          = 0;
+    public $forcetheme         = 0;
+    public $theme              = '';
+    public $applicationid      = 1; // Default of 1 == Moodle.
+    public $keypair            = array();
+    public $error              = array();
+    public $bootstrapped       = false; // Set when the object is populated.
 
     public function __construct() {
         $this->updateparams = new StdClass();
@@ -77,10 +79,10 @@ class Mnet_Peer {
              * Get the IP address for that host - if this fails, it will
              * return the hostname string
              */
-            $ip_address = gethostbyname($hostname);
+            $ipaddress = gethostbyname($hostname);
 
             // Couldn't find the IP address?
-            if ($ip_address === $hostname && !preg_match('/^\d+\.\d+\.\d+.\d+$/',$hostname)) {
+            if ($ipaddress === $hostname && !preg_match('/^\d+\.\d+\.\d+.\d+$/',$hostname)) {
                 $this->errors[] = 'ErrCode 2 - '.get_string("noaddressforhost", 'mnet');
                 return false;
             }
@@ -108,8 +110,8 @@ class Mnet_Peer {
 
             $this->wwwroot = stripslashes($wwwroot);
             $this->updateparams->wwwroot = $wwwroot;
-            $this->ip_address = $ip_address;
-            $this->updateparams->ip_address = $ip_address;
+            $this->ipaddress = $ipaddress;
+            $this->updateparams->ipaddress = $ipaddress;
             $this->deleted = 0;
             $this->updateparams->deleted = 0;
 
@@ -131,20 +133,20 @@ class Mnet_Peer {
             } else {
                 $pubkeytemp = clean_param($pubkey, PARAM_PEM);
             }
-            $this->public_key_expires = $this->check_common_name($pubkeytemp);
+            $this->publickeyexpires = $this->check_common_name($pubkeytemp);
 
-            if ($this->public_key_expires == false) {
+            if ($this->publickeyexpires == false) {
                 return false;
             }
-            $this->updateparams->public_key_expires = $this->public_key_expires;
+            $this->updateparams->publickeyexpires = $this->publickeyexpires;
 
-            $this->updateparams->public_key = $pubkeytemp;
+            $this->updateparams->publickey = $pubkeytemp;
             $this->public_key = $pubkeytemp;
 
-            $this->last_connect_time = 0;
-            $this->updateparams->last_connect_time = 0;
-            $this->last_log_id = 0;
-            $this->updateparams->last_log_id = 0;
+            $this->lastconnecttime = 0;
+            $this->updateparams->lastconnecttime = 0;
+            $this->lastlogid = 0;
+            $this->updateparams->lastlogid = 0;
         }
 
         return true;
@@ -207,9 +209,11 @@ class Mnet_Peer {
     public function check_credentials($key) {
         $credentials = openssl_x509_parse($key);
         if ($credentials == false) {
-            $this->error[] = array('code' => 3, 'text' => get_string("nonmatchingcert", 'mnet', array('subject' => '','host' => '')));
+            $params = array('subject' => '','host' => '');
+            $this->error[] = array('code' => 3, 'text' => get_string("nonmatchingcert", 'mnet', $params));
             return false;
-        } else if (array_key_exists('subjectAltName', $credentials['subject']) && $credentials['subject']['subjectAltName'] != $this->wwwroot) {
+        } else if (array_key_exists('subjectAltName', $credentials['subject']) &&
+                $credentials['subject']['subjectAltName'] != $this->wwwroot) {
             $a['subject'] = $credentials['subject']['subjectAltName'];
             $a['host'] = $this->wwwroot;
             $this->error[] = array('code' => 5, 'text' => get_string("nonmatchingcert", 'mnet', $a));
@@ -235,17 +239,17 @@ class Mnet_Peer {
 
         $obj = new StdClass();
 
-        $obj->wwwroot               = $this->wwwroot;
-        $obj->ip_address            = $this->ip_address;
-        $obj->name                  = $this->name;
-        $obj->public_key            = $this->public_key;
-        $obj->public_key_expires    = $this->public_key_expires;
-        $obj->deleted               = $this->deleted;
-        $obj->last_connect_time     = $this->last_connect_time;
-        $obj->last_log_id           = $this->last_log_id;
-        $obj->force_theme           = $this->force_theme;
-        $obj->theme                 = $this->theme;
-        $obj->applicationid         = $this->applicationid;
+        $obj->wwwroot                 = $this->wwwroot;
+        $obj->ip_address              = $this->ipaddress;
+        $obj->name                    = $this->name;
+        $obj->public_key              = $this->publickey;
+        $obj->public_key_expires      = $this->publickeyexpires;
+        $obj->deleted                 = $this->deleted;
+        $obj->last_connect_time       = $this->lastconnecttime;
+        $obj->last_log_id             = $this->lastlogid;
+        $obj->force_theme             = $this->forcetheme;
+        $obj->theme                   = $this->theme;
+        $obj->applicationid           = $this->applicationid;
 
         if (isset($this->id) && $this->id > 0) {
             $obj->id = $this->id;
@@ -257,7 +261,7 @@ class Mnet_Peer {
     }
 
     public function touch() {
-        $this->last_connect_time = time();
+        $this->lastconnecttime = time();
         $this->commit();
     }
 
@@ -305,12 +309,13 @@ class Mnet_Peer {
         }
 
         $sql = "
-                SELECT
-                    h.*
-                FROM
-                    {mnet_host} h
-                WHERE
-                    h.id = ?";
+            SELECT
+                h.*
+            FROM
+                {mnet_host} h
+            WHERE
+                h.id = ?
+        ";
 
         if ($hostinfo = $DB->get_record_sql($sql, array($id))) {
             $this->populate($hostinfo);
@@ -331,27 +336,27 @@ class Mnet_Peer {
 
         $this->id                   = $hostinfo->id;
         $this->wwwroot              = $hostinfo->wwwroot;
-        $this->ip_address           = $hostinfo->ip_address;
+        $this->ipaddress            = $hostinfo->ip_address;
         $this->name                 = $hostinfo->name;
         $this->deleted              = $hostinfo->deleted;
-        $this->public_key           = $hostinfo->public_key;
-        $this->public_key_expires   = $hostinfo->public_key_expires;
-        $this->last_connect_time    = $hostinfo->last_connect_time;
-        $this->last_log_id          = $hostinfo->last_log_id;
-        $this->force_theme          = $hostinfo->force_theme;
+        $this->publickey            = $hostinfo->public_key;
+        $this->publickeyexpires     = $hostinfo->public_key_expires;
+        $this->lastconnecttime      = $hostinfo->last_connect_time;
+        $this->lastlogid            = $hostinfo->last_log_id;
+        $this->forcetheme           = $hostinfo->force_theme;
         $this->theme                = $hostinfo->theme;
         $this->applicationid        = $hostinfo->applicationid;
-        $this->application = $DB->get_record('mnet_application', array('id'=>$this->applicationid));
+        $this->application = $DB->get_record('mnet_application', array('id' => $this->applicationid));
         $this->bootstrapped = true;
         $this->visible = @$hostinfo->visible; // Let it flexible if not using the host visibility hack.
     }
 
     public function get_public_key() {
-        if (isset($this->public_key_ref)) {
-            return $this->public_key_ref;
+        if (isset($this->publickeyref)) {
+            return $this->publickeyref;
         }
-        $this->public_key_ref = openssl_pkey_get_public($this->public_key);
+        $this->publickeyref = openssl_pkey_get_public($this->publickey);
 
-        return $this->public_key_ref;
+        return $this->publickeyref;
     }
 }

@@ -22,6 +22,8 @@
  */
 namespace local_vmoodle;
 
+defined('MOODLE_INTERNAL') || die;
+
 require_once($CFG->libdir.'/formslib.php');
 
 /**
@@ -37,7 +39,7 @@ class Target_Value_Form extends \moodleform {
     /**
      * Constructor.
      */
-    function __construct() {
+    public function __construct() {
         $params = array('view' => 'sadmin', 'what' => 'gettargetbyvalue');
         parent::__construct(new moodle_url('/local/vmoodle/view.php', $params));
     }

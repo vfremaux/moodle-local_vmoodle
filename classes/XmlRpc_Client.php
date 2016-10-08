@@ -22,6 +22,8 @@
  */
 namespace local_vmoodle;
 
+defined('MOODLE_INTERNAL') || die;
+
 require_once($CFG->dirroot.'/mnet/peer.php');
 require_once($CFG->dirroot.'/mnet/xmlrpc/client.php');
 
@@ -44,7 +46,7 @@ class XmlRpc_Client extends \mnet_xmlrpc_client {
     /**
      * Errors by host
      */
-    private $host_errors = array();
+    private $hosterrors = array();
 
     /**
      * Create a client and set the user.
@@ -59,11 +61,11 @@ class XmlRpc_Client extends \mnet_xmlrpc_client {
         // Checking user.
         if (is_null($user)) {
             // Creating current user.
-            if (!($user_mnet_host = $DB->get_record('mnet_host', array('id' => $USER->mnethostid)))) {
+            if (!($usermnethost = $DB->get_record('mnet_host', array('id' => $USER->mnethostid)))) {
                 throw new \local_vmoodle\commands\Command_Exception('unknownuserhost');
             }
             $user = array('username' => $USER->username,
-                          'remoteuserhostroot' => $user_mnet_host->wwwroot,
+                          'remoteuserhostroot' => $usermnethost->wwwroot,
                           'remotehostroot' => $CFG->wwwroot);
             $this->add_param($user, 'array');
         } else if (array_key_exists('username', $user) &&
@@ -104,9 +106,9 @@ class XmlRpc_Client extends \mnet_xmlrpc_client {
      */
     public function get_errors($host = null) {
         if (is_null($host)) {
-            return $this->host_errors;
-        } else if (array_key_exists($host->wwwroot, $this->host_errors)) {
-            return $this->host_errors[$host->wwwroot];
+            return $this->hosterrors;
+        } else if (array_key_exists($host->wwwroot, $this->hosterrors)) {
+            return $this->hosterrors[$host->wwwroot];
         } else {
             return null;
         }
@@ -149,7 +151,7 @@ class XmlRpc_Client extends \mnet_xmlrpc_client {
         }
 
         // Capturing host errors.
-        $this->host_errors[$host->wwwroot] = $this->error;
+        $this->hosterrors[$host->wwwroot] = $this->error;
         // Reseting errors for next send.
         $this->error = array();
 

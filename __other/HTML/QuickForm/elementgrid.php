@@ -317,12 +317,12 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @access    public
      * @return    mixed
      */
-    function getValue()
+    function get_value()
     {
         $values = array();
         foreach (array_keys($this->_rows) as $key) {
             foreach (array_keys($this->_rows[$key]) as $key2) {
-                $values[$this->_rows[$key][$key2]->get_name()] = $this->_rows[$key][$key2]->getValue();
+                $values[$this->_rows[$key][$key2]->get_name()] = $this->_rows[$key][$key2]->get_value();
             }
         }
         return $values;

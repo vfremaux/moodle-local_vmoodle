@@ -61,7 +61,7 @@ switch ($action) {
 
         // Invoking a form.
         try {
-            $command = $command_category->getCommands($index);
+            $command = $command_category->get_commands($index);
         } catch (Command_Exception $vce) {
             return 0;
         }

@@ -57,9 +57,9 @@ class ServicesStrategy_Form extends \moodleform {
         $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
 
         // Get version info to get real names.
-        $self_mnet_peer = new \mnet_peer();
-        $self_mnet_peer->set_id($CFG->mnet_localhost_id);
-        $myservices = mnet_get_service_info($self_mnet_peer);
+        $selfmnetpeer = new \mnet_peer();
+        $selfmnetpeer->set_id($CFG->mnet_localhost_id);
+        $myservices = mnet_get_service_info($selfmnetpeer);
 
         if (!empty($defaultservices)) {
             // Services fieldset.
@@ -87,7 +87,8 @@ class ServicesStrategy_Form extends \moodleform {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
                         // TODO there should be a moodle-wide way to do this.
-                        $langmodule = ($version['plugintype'] == 'mod' ? '' : ($version['plugintype'] . '_')).$version['pluginname'];
+                        $versioninfo = ($version['plugintype'] . '_')).$version['pluginname'];
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versioninfo;
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
                         $description = '[['.$defaultservice->name.'_name]]';
@@ -123,7 +124,8 @@ class ServicesStrategy_Form extends \moodleform {
                 if (empty($description)) {
                     if (!empty($myservices[$defaultservice->name])) {
                         $version = current($myservices[$defaultservice->name]);
-                        $langmodule = ($version['plugintype'] == 'mod' ? '' : ($version['plugintype'] . '_')).$version['pluginname'];
+                        $versioninfo = ($version['plugintype'] . '_')).$version['pluginname'];
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versioninfo;
                         $description = get_string($defaultservice->name.'_name', $langmodule);
                     } else {
                         $description = '[['.$defaultservice->name.'_name]]';
@@ -141,12 +143,12 @@ class ServicesStrategy_Form extends \moodleform {
 
         } else {
             // Confirmation message.
-            $message_object = new \stdclass();
-            $message_object->message = get_string('badservicesnumber', 'local_vmoodle');
-            $message_object->style = 'notifyproblem';
+            $messageobject = new \stdclass();
+            $messageobject->message = get_string('badservicesnumber', 'local_vmoodle');
+            $messageobject->style = 'notifyproblem';
 
             // Save confirm message before redirection.
-            $SESSION->vmoodle_ma['confirm_message'] = $message_object;
+            $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
             new moodle_url('/local/vmoodle/view.php', array('view' => 'management'));
         }
     }

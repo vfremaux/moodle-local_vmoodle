@@ -28,7 +28,7 @@ Use \local_vmoodle\commands\Command_Category;
 // Creating category
 $category = new Command_Category('upgrade');
 
-$category->addCommand(new Command_Upgrade(
+$category->add_command(new Command_Upgrade(
     'Upgrade databases',
     'Drives the logical upgrade of all Moodles in the network'));
 

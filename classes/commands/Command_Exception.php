@@ -25,6 +25,8 @@
 
 namespace local_vmoodle\commands;
 
+defined('MOODLE_INTERNAL') || die;
+
 class Command_Exception extends \Exception {
 
     /**

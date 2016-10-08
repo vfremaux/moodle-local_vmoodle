@@ -49,7 +49,7 @@ class Command_MultiSql extends Command {
             throw new Command_Sql_Exception('sqlemtpycommand', $this->name);
         } else {
             // Looking for parameters
-            preg_match_all(Command::placeholder, $sqls, $sql_vars);
+            preg_match_all(Command::PLACEHOLDER, $sqls, $sql_vars);
             // Checking parameters to show
             foreach($sql_vars[2] as $key => $sql_var) {
                 $is_param = !(empty($sql_vars[1][$key]));
@@ -196,7 +196,7 @@ class Command_MultiSql extends Command {
      * @return string The final SQL command to execute.
      */
     private function _getGeneratedCommand() {
-        return preg_replace_callback(self::placeholder, array($this, '_replaceParametersValues'), $this->getSql());
+        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replaceParametersValues'), $this->getSql());
     }
 
     /**

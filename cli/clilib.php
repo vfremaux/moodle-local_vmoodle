@@ -15,9 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
+defined('MOODLE_INTERNAL') || die;
+
+/**
  * Opens and parses/checks a VMoodle instance definition file
  * @param string $location 
- *
  */
 function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
     global $CFG;
@@ -74,8 +81,8 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
             'mnet' => 1);
 
     $optionaldefaults = array(
-            'mnet' => 1, 
-            'vdbtype' => 'mysqli', 
+            'mnet' => 1,
+            'vdbtype' => 'mysqli',
             'vdbhost' => $CFG->dbhost,
             'vdbpersist' => $CFG->dboptions['dbpersist'],
             'vdbprefix' => 'mdl_',
@@ -109,7 +116,7 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
 
         // Make a new base record.
         $vnode = new StdClass();
-        foreach ($optionalDefaults as $key => $value) {
+        foreach ($optionaldefaults as $key => $value) {
             $vnode->$key = $value;
         }
 
@@ -159,14 +166,14 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
         }
         $vnodes[] = $vnode;
     }
-    
+
     return $vnodes;
 }
 
 /**
  * Opens and parses/checks a VMoodle nodelist for snapshotting. Basically
  * compatible with nodelist format.
- * @param string $nodelistlocation 
+ * @param string $nodelistlocation
  */
 function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     global $CFG;
@@ -205,8 +212,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     }
 
     // Make arrays of valid fields for error checking.
-    $required = array('vhostname' => 1,
-            );
+    $required = array('vhostname' => 1);
 
     // this will allow using a node creation list to operate
     $optional = array(
@@ -258,7 +264,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
 
         // Make a new base record.
         $vnode = new StdClass();
-        foreach ($optionalDefaults as $key => $value) {
+        foreach ($optionaldefaults as $key => $value) {
             $vnode->$key = $value;
         }
 
@@ -281,7 +287,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
         }
         $vnodes[] = $vnode;
     }
-    
+
     return $vnodes;
 }
 
@@ -359,7 +365,7 @@ function vmoodle_check_headers($headers, $optional, $optionaldefaults, $required
 
     // Check for required fields.
     foreach ($required as $key => $value) {
-        if ($value) { 
+        if ($value) {
             // Required field missing.
             cli_error(get_string('fieldrequired', 'error', $key));
             return false;

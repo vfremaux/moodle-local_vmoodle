@@ -25,12 +25,14 @@
  */
 namespace local_vmoodle\commands;
 
+defined('MOODLE_INTERNAL') || die;
+
 abstract class Command {
 
     /**
      * Define placeholder
      */
-    const placeholder = '#\[\[(\??)(\w+)(?::(\w+))?\]\]#';
+    const PLACEHOLDER = '#\[\[(\??)(\w+)(?::(\w+))?\]\]#';
 
     /**
      * Command's name
@@ -53,7 +55,7 @@ abstract class Command {
     protected $results = array();
 
     /**
-     * Retrieve platforms command 
+     * Retrieve platforms command
      */
     protected $rpcommand = null;
 
@@ -67,7 +69,8 @@ abstract class Command {
      * Build parameters array whatever is received in parameters input.
      * @param $name string Command's name.
      * @param $description string Command's description.
-     * @param $parameters mixed Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
+     * @param $parameters mixed Command's parameters (optional / could be null, Command_Parameter object
+     * or Command_Parameter array).
      * @throws Command_Exception
      */
     protected function __construct($name, $description, $parameters = null) {
@@ -94,11 +97,11 @@ abstract class Command {
                 $parameters = array($parameters);
             }
 
-            $i_parameters = array();
+            $iparameters = array();
             if (is_array($parameters)) {
                 foreach ($parameters as $parameter) {
                     if ($parameter instanceof Command_Parameter) {
-                        $i_parameters[$parameter->get_name()] = $parameter;
+                        $iparameters[$parameter->get_name()] = $parameter;
                     } else {
                         throw new Command_Exception('commandnotaparameter', $this->name);
                     }
@@ -106,7 +109,7 @@ abstract class Command {
             } else {
                 throw new Command_Exception('commandwrongparametertype', $this->name);
             }
-            $this->parameters = $i_parameters;
+            $this->parameters = $iparameters;
         }
     }
 
@@ -122,10 +125,10 @@ abstract class Command {
         // Setting parameters' values.
         foreach ($parameters as $parameter) {
             if (!($parameter instanceof Command_Parameter_Internal)) {
-                if ($parameter->getType() == 'boolean' && !property_exists($data, $parameter->get_name())) {
-                    $parameter->setValue('0');
+                if ($parameter->get_type() == 'boolean' && !property_exists($data, $parameter->get_name())) {
+                    $parameter->set_value('0');
                 } else {
-                    $parameter->setValue($data->{$parameter->get_name()});
+                    $parameter->set_value($data->{$parameter->get_name()});
                 }
             }
         }
@@ -133,7 +136,7 @@ abstract class Command {
          // Retrieving internal parameters' value.
         foreach ($parameters as $parameter) {
             if ($parameter instanceof Command_Parameter_Internal) {
-                $parameter->retrieveValue($parameters);
+                $parameter->retrieve_value($parameters);
             }
         }
     }
@@ -151,7 +154,7 @@ abstract class Command {
     public function has_run() {
         return !empty($this->results);
     }
-    
+
     /**
      * Get the result of command execution for one host.
      * @param string $host The host to retrieve result (optional, if null, returns general result).
@@ -217,7 +220,7 @@ abstract class Command {
      * @throws Command_Exception
      */
     public function attach_rpc_ommand($rpcommand) {
-        // Checking retrieve platforms command
+        // Checking retrieve platforms command.
         if (!(is_null($rpcommand) || $rpcommand instanceof Command)) {
             throw new Command_Exception('commandwrongrpcommand', $this->name);
         } else {
@@ -242,21 +245,22 @@ abstract class Command {
     }
 
     /**
-     * Get command's index on this category. 
+     * Get command's index on this category.
      * @returm mixed The index of the command if is in a category or null otherwise.
      */
     public function get_index() {
-        if (is_null($this->category))
+        if (is_null($this->category)) {
             return null;
-        else
-            return $this->category->getCommandIndex($this);
+        } else {
+            return $this->category->get_command_index($this);
+        }
     }
 
     /**
      * Safe comparator.
      * @param Command $command The commande to compare to.
      * @return boolean True if the compared command is the same of command parameter, false otherwise.
-     */    
+     */
     public function equals($command) {
         return ($command->get_name() == $this->name);
     }

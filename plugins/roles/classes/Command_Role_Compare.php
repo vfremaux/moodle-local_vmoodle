@@ -70,7 +70,7 @@ class Command_Role_Compare extends Command {
         }
 
         // Getting role.
-        $role = $this->get_parameter('role')->getValue();
+        $role = $this->get_parameter('role')->get_value();
 
         // Creating XMLRPC client to read role configuration.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -188,7 +188,7 @@ class Command_Role_Compare extends Command {
         );
 
         // Getting role name.
-        $role = $this->get_parameter('role')->getValue();
+        $role = $this->get_parameter('role')->get_value();
         $role = $DB->get_record('role', array('shortname' => $role));
           
         // Getting hosts.

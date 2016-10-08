@@ -88,14 +88,14 @@ $cmd = new Command_MultiSql(
     $sql,
     array($param1,$param2));
 
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 $cmd = new Command_PurgeCaches(
     'Vmoodle Purge Caches',
     'Purge remote caches'
 );
 
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 // Distribute a config value to all nodes (Using SetConfig).
 
@@ -118,7 +118,7 @@ $cmd = new Command_SetConfig(
     'Distributing a configuration value',
     array($param1,$param2));
 
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 
 $param1 = new Command_Parameter(
@@ -139,6 +139,6 @@ $cmd = new Command_SetPluginConfig(
     'Vmoodle Plugin Config Value',
     'Distributing a configuration value in Config Plugin',
     array($param1,$param2));
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 return $category;

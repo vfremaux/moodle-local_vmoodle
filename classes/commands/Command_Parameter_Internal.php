@@ -70,13 +70,13 @@ class Command_Parameter_Internal extends Command_Parameter {
      * @param mixed $datas Values of Command's parameters (optional).
      * @throws Command_Exception
      */
-    public function retrieveValue($datas = null) {
+    public function retrieve_value($datas = null) {
         global $vmcommandconstants;
 
         // Looking for parameters to replace.
         if (!is_null($this->parameters)) {
             foreach ($this->parameters as $parameter) {
-                preg_match_all(Command::placeholder, $parameter, $vars);
+                preg_match_all(Command::PLACEHOLDER, $parameter, $vars);
                 // Check if parameters and constants are given.
                 foreach ($vars[2] as $key => $var) {
                     if (empty($vars[1][$key]) && !array_key_exists($var, $vmcommandconstants)) {
@@ -90,7 +90,8 @@ class Command_Parameter_Internal extends Command_Parameter {
             }
             // Replace placeholders by theirs values.
             $this->datas = $datas;
-            $this->parameters = preg_replace_callback(Command::placeholder, array($this, '_replaceParametersValues'), $this->parameters);
+            $func = array($this, '_replace_parameters_values');
+            $this->parameters = preg_replace_callback(Command::PLACEHOLDER, $func, $this->parameters);
             unset($this->datas);
         }
 
@@ -113,7 +114,7 @@ class Command_Parameter_Internal extends Command_Parameter {
      * @param array $matches The placeholders found.
      * @return string|array The parameters' values.
      */
-    private function _replaceParametersValues($matches) {
+    private function _replace_parameters_values($matches) {
         return replace_parameters_values($matches, $this->datas);
     }
 }

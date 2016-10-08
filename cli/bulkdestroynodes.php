@@ -59,8 +59,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line VMoodle Destructor.
+    $help = "
+Command line VMoodle Destructor.
 Please note you must execute this script with the same uid as apache!
 
 Options:
@@ -72,7 +72,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkcreatenodes.php
-"; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -112,7 +112,7 @@ if (empty($options['nodes'])) {
 $nodes = vmoodle_parse_csv_nodelist($options['nodes']);
 
 if ($options['lint']) {
-    print_object($nodes);
+    var_dump($nodes);
     die;
 }
 
@@ -147,7 +147,7 @@ foreach ($nodes as $n) {
         $input = readline("Continue (y/n|r) ?\n");
         if ($input == 'r' || $input == 'R') {
             $vmoodlestep--;
-        } elseif ($input == 'n' || $input == 'N') {
+        } else if ($input == 'n' || $input == 'N') {
             echo "finishing\n";
             exit;
         }

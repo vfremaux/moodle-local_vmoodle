@@ -55,8 +55,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line VMoodle Snapshot.
+    $help = "
+Command line VMoodle Snapshot.
 Please note you must execute this script with the same uid as apache!
 
 Options:
@@ -67,7 +67,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulksnapshot.php -nodes=nodelist.csv
-"; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -118,7 +118,7 @@ foreach ($nodes as $n) {
 
     $n->forcedns = 0;
     $wwwroot = $n->vhostname;
-    
+
     if (empty($wwwroot)) {
         continue;
     }
@@ -137,9 +137,9 @@ foreach ($nodes as $n) {
 
     $automation = true;
 
-    for ($vmoodlestep = 0 ; $vmoodlestep <= 2; $vmoodlestep++) {
+    for ($vmoodlestep = 0; $vmoodlestep <= 2; $vmoodlestep++) {
         mtrace(get_string('clisnapstep', 'local_vmoodle', $vmoodlestep));
-        $return = include $CFG->dirroot.'/local/vmoodle/controller.management.php';
+        $return = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
         if ($return == -1) {
             cli_error(get_string('cliprocesserror', 'local_vmoodle'));
         }
@@ -147,7 +147,7 @@ foreach ($nodes as $n) {
             $input = readline("Continue (y/n|r) ?\n");
             if ($input == 'r' || $input == 'R') {
                 $vmoodlestep--;
-            } elseif ($input == 'n' || $input == 'N') {
+            } else if ($input == 'n' || $input == 'N') {
                 echo "finishing\n";
                 exit;
             }

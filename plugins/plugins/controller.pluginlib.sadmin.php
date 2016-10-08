@@ -80,7 +80,7 @@ switch ($action) {
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         }
 
-        $plugintype = $command->get_parameter('plugintype')->getValue();
+        $plugintype = $command->get_parameter('plugintype')->get_value();
 
         // Saving previous context.
         $SESSION->vmoodle_sa['rolelib']['command'] = $SESSION->vmoodle_sa['command'];
@@ -88,9 +88,9 @@ switch ($action) {
 
         // Creating Plugins Sync Command.
         $rolesync_command = new Command_Role_Capability_Sync();
-        $rolesync_command->get_parameter('platform')->setValue($source_platform);
-        $rolesync_command->get_parameter('role')->setValue($role);
-        $rolesync_command->get_parameter('capability')->setValue($capability);
+        $rolesync_command->get_parameter('platform')->set_value($source_platform);
+        $rolesync_command->get_parameter('role')->set_value($role);
+        $rolesync_command->get_parameter('capability')->set_value($capability);
 
         // Running command.
         $rolesync_command->run($platforms);

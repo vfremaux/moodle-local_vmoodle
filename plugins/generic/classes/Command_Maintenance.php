@@ -105,7 +105,7 @@ class Command_Maintenance extends Command {
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance');
-        $rpc_client->add_param($this->get_parameter('message')->getValue(), 'string');
+        $rpc_client->add_param($this->get_parameter('message')->get_value(), 'string');
         $rpc_client->add_param($command, 'boolean');
 
         // Maintenance. Sending requests.

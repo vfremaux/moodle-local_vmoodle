@@ -32,9 +32,9 @@ use \vmoodleadminset_plugins\Command_Plugins_Compare;
 $category = new Command_Category('plugins');
 
 // Adding commands.
-$category->addCommand(new Command_Plugin_Set_State());
-$category->addCommand(new Command_Plugins_Sync());
-$category->addCommand(new Command_Plugins_Compare());
+$category->add_command(new Command_Plugin_Set_State());
+$category->add_command(new Command_Plugins_Sync());
+$category->add_command(new Command_Plugins_Compare());
 
 // Returning the category.
 return $category;

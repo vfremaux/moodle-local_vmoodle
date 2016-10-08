@@ -38,7 +38,7 @@ class AdvancedCommand_Form extends \moodleform {
         $params = array('view' => 'sadmin', 'what' => 'validateadvancedcommand');
         parent::__construct(new moodle_url('/local/vmoodle/view.php', $params));
     }
-    
+
     /**
      * Describes form depending on command.
      */

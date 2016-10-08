@@ -59,8 +59,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line VMoodle Generator.
+    $help = "
+Command line VMoodle Generator.
 Please note you must execute this script with the same uid as apache!
 
 Options:
@@ -72,7 +72,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkcreatenodes.php
-"; //TODO: localize - to be translated later when everything is finished.
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -112,7 +112,7 @@ if (empty($options['nodes'])) {
 $nodes = vmoodle_parse_csv_nodelist($options['nodes']);
 
 if ($options['lint']) {
-    print_object($nodes);
+    var_dump($nodes);
     die;
 }
 
@@ -151,9 +151,9 @@ foreach ($nodes as $n) {
 
     $automation = true;
 
-    for ($vmoodlestep = 0 ; $vmoodlestep <= 4; $vmoodlestep++) {
+    for ($vmoodlestep = 0; $vmoodlestep <= 4; $vmoodlestep++) {
         mtrace(get_string('climakestep', 'local_vmoodle', $vmoodlestep));
-        $return = include $CFG->dirroot.'/local/vmoodle/controller.management.php';
+        $return = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
         if ($return == -1) {
             cli_error(get_string('cliprocesserror', 'local_vmoodle'));
         }
@@ -161,39 +161,41 @@ foreach ($nodes as $n) {
             $input = readline("Continue (y/n|r) ?\n");
             if ($input == 'r' || $input == 'R') {
                 $vmoodlestep--;
-            } elseif ($input == 'n' || $input == 'N') {
+            } else if ($input == 'n' || $input == 'N') {
                 echo "finishing\n";
                 exit;
             }
         }
     }
 
-    // Once all steps done on, this node, process extra settings from CSV file using a side connection
+    // Once all steps done on, this node, process extra settings from CSV file using a side connection.
 
-    $VDB = vmoodle_setup_DB($n);
+    $vdb = vmoodle_setup_db($n);
 
-    // special fix for deployed networks : 
-    // Fix the master node name in mnet_host
-    // We need overseed the issue of loosing the name of the master node in the deploied instance
-    // TODO : this is a turnaround quick fix.
-    if ($remote_vhost = $VDB->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
+    /*
+     * special fix for deployed networks :
+     * Fix the master node name in mnet_host
+     * We need overseed the issue of loosing the name of the master node in the deploied instance
+     * TODO : this is a turnaround quick fix.
+     */
+    if ($remotevhost = $vdb->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
         global $SITE;
-        $remote_vhost->name = $SITE->fullname;
-        $VDB->update_record('mnet_host', $remote_vhost, 'id');
+        $remotevhost->name = $SITE->fullname;
+        $vdb->update_record('mnet_host', $remotevhost, 'id');
     }
 
     if (!empty($n->config)) {
         $confiarr = (array) $n->config;
         foreach ($confiarr as $key => $value) {
             mtrace("Setting up main config {$key} to $value");
-            if ($oldrec = $VDB->get_record('config', array('name' => $key))) {
+            if ($oldrec = $vdb->get_record('config', array('name' => $key))) {
                 $oldrec->value = $value;
-                $VDB->update_record('config', $oldrec);
+                $vdb->update_record('config', $oldrec);
             } else {
                 $rec = new StdClass;
                 $rec->name = $key;
                 $rec->value = $value;
-                $VDB->insert_record('config', $rec);
+                $vdb->insert_record('config', $rec);
             }
         }
     }
@@ -203,15 +205,16 @@ foreach ($nodes as $n) {
             mtrace("Setting up local_{$pluginname} :\n");
             foreach ($plugin as $setting => $value) {
                 mtrace("Setting up local_{$pluginname} {$setting} to $value");
-                if ($oldrec = $VDB->get_record('config_plugins', array('plugin' => 'local_'.$pluginname, 'name' => $setting))) {
+                $params = array('plugin' => 'local_'.$pluginname, 'name' => $setting);
+                if ($oldrec = $vdb->get_record('config_plugins', $params)) {
                     $oldrec->value = $value;
-                    $VDB->update_record('config_plugins', $oldrec);
+                    $vdb->update_record('config_plugins', $oldrec);
                 } else {
                     $rec = new StdClass;
                     $rec->plugin = 'local_'.$pluginname;
                     $rec->name = $setting;
                     $rec->value = $value;
-                    $VDB->insert_record('config_plugins', $rec);
+                    $vdb->insert_record('config_plugins', $rec);
                 }
             }
         }
@@ -222,15 +225,16 @@ foreach ($nodes as $n) {
             mtrace("Setting up block_{$plugin} :\n");
             foreach ($plugin as $setting => $value) {
                 mtrace("Setting up block_{$pluginkey} to $value");
-                if ($oldrec = $VDB->get_record('config_plugins', array('plugin' => 'block_'.$plugin, 'name' => $setting))) {
+                $params = array('plugin' => 'block_'.$plugin, 'name' => $setting);
+                if ($oldrec = $vdb->get_record('config_plugins', $params)) {
                     $oldrec->value = $value;
-                    $VDB->update_record('config_plugins', $oldrec);
+                    $vdb->update_record('config_plugins', $oldrec);
                 } else {
                     $rec = new StdClass;
                     $rec->plugin = 'block_'.$plugin;
                     $rec->name = $setting;
                     $rec->value = $value;
-                    $VDB->insert_record('config_plugins', $rec);
+                    $vdb->insert_record('config_plugins', $rec);
                 }
             }
         }
@@ -241,15 +245,16 @@ foreach ($nodes as $n) {
             mtrace("Setting up mod_{$plugin} :\n");
             foreach ($plugin as $setting => $value) {
                 mtrace("Setting up mod_{$pluginkey} to $value");
-                if ($oldrec = $VDB->get_record('config_plugins', array('plugin' => 'mod_'.$plugin, 'name' => $setting))) {
+                $params = array('plugin' => 'mod_'.$plugin, 'name' => $setting);
+                if ($oldrec = $vdb->get_record('config_plugins', $params)) {
                     $oldrec->value = $value;
-                    $VDB->update_record('config_plugins', $oldrec);
+                    $vdb->update_record('config_plugins', $oldrec);
                 } else {
                     $rec = new StdClass;
                     $rec->plugin = 'mod_'.$plugin;
                     $rec->name = $setting;
                     $rec->value = $value;
-                    $VDB->insert_record('config_plugins', $rec);
+                    $vdb->insert_record('config_plugins', $rec);
                 }
             }
         }
@@ -260,15 +265,16 @@ foreach ($nodes as $n) {
             mtrace("Setting up format_{$plugin} :\n");
             foreach ($plugin as $setting => $value) {
                 mtrace("Setting up format_{$pluginkey} to $value");
-                if ($oldrec = $VDB->get_record('config_plugins', array('plugin' => 'format_'.$plugin, 'name' => $setting))) {
+                $params = array('plugin' => 'format_'.$plugin, 'name' => $setting);
+                if ($oldrec = $vdb->get_record('config_plugins', $params)) {
                     $oldrec->value = $value;
-                    $VDB->update_record('config_plugins', $oldrec);
+                    $vdb->update_record('config_plugins', $oldrec);
                 } else {
                     $rec = new StdClass;
                     $rec->plugin = 'format_'.$plugin;
                     $rec->name = $setting;
                     $rec->value = $value;
-                    $VDB->insert_record('config_plugins', $rec);
+                    $vdb->insert_record('config_plugins', $rec);
                 }
             }
         }
@@ -279,15 +285,16 @@ foreach ($nodes as $n) {
             mtrace("Setting up auth/{$pluginkey} :\n");
             foreach ($plugin as $setting => $value) {
                 mtrace("Setting up auth/{$pluginkey}|{$setting} to $value");
-                if ($oldrec = $VDB->get_record('config_plugins', array('plugin' => 'auth/'.$pluginkey, 'name' => $setting))) {
+                $params = array('plugin' => 'auth/'.$pluginkey, 'name' => $setting);
+                if ($oldrec = $vdb->get_record('config_plugins', $params)) {
                     $oldrec->value = $value;
-                    $VDB->update_record('config_plugins', $oldrec);
+                    $vdb->update_record('config_plugins', $oldrec);
                 } else {
                     $rec = new StdClass;
                     $rec->plugin = 'auth/'.$pluginkey;
                     $rec->name = $setting;
                     $rec->value = $value;
-                    $VDB->insert_record('config_plugins', $rec);
+                    $vdb->insert_record('config_plugins', $rec);
                 }
             }
         }

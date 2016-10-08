@@ -35,7 +35,7 @@ class Command_Category {
     /**
      * Category's plugin name
      */
-    private $plugin_name;
+    private $pluginname;
 
     /**
      * Category's commands
@@ -47,16 +47,16 @@ class Command_Category {
      * @param $name string The category's name.
      * @param $plugin_name string The category's file.
      */
-    public function __construct($plugin_name) {
+    public function __construct($pluginname) {
         global $CFG;
 
         // Checking category's name.
-        $this->name = vmoodle_get_string('pluginname', 'vmoodleadminset_'.$plugin_name);
+        $this->name = vmoodle_get_string('pluginname', 'vmoodleadminset_'.$pluginname);
         // Checking category's plugin name.
-        if (!is_string($plugin_name) || empty($plugin_name)) {
+        if (!is_string($pluginname) || empty($pluginname)) {
             throw new Command_Exception('categorywrongpluginname', $name);
         } else {
-            $this->plugin_name = $plugin_name;
+            $this->pluginname = $pluginname;
         }
     }
 
@@ -72,15 +72,15 @@ class Command_Category {
      * Get category's file.
      * @return string The category's plugin name.
      */
-    public function getPluginName() {
-        return $this->plugin_name;
+    public function get_plugin_name() {
+        return $this->pluginname;
     }
 
     /**
      * Add a command to the category.
      * @param $command Command Command to add to the category.
      */
-    public function addCommand(Command $command) {
+    public function add_command(Command $command) {
         $this->commands[] = $command;
         $command->set_category($this);
     }
@@ -90,7 +90,7 @@ class Command_Category {
      * @param $index Index of a command (optional).
      * @return mixed Array of Command or the requested Command.
      */
-    public function getCommands($index=null) {
+    public function get_commands($index = null) {
         if (!is_null($index)) {
             if (!array_key_exists($index, $this->commands)) {
                 throw new Command_Exception('commandnotexits');
@@ -107,9 +107,9 @@ class Command_Category {
      * @param $command Command Command.
      * @return mixed Index of the command if is contained by the catogory or false otherwise.
      */
-    public function getCommandIndex(Command $command) {
-        $nbr_commands = count($this->commands);
-        for ($index=0; $index<$nbr_commands; $index++) {
+    public function get_command_index(Command $command) {
+        $nbrcommands = count($this->commands);
+        for ($index = 0; $index < $nbrcommands; $index++) {
             if ($command->equals($this->commands[$index])) {
                 return $index;
             }
