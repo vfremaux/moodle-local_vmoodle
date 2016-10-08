@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Opens and parses/checks a VMoodle instance definition file
- * @param string $location 
+ * @param string $location
  */
 function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
     global $CFG;
@@ -214,7 +214,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     // Make arrays of valid fields for error checking.
     $required = array('vhostname' => 1);
 
-    // this will allow using a node creation list to operate
+    // This will allow using a node creation list to operate.
     $optional = array(
             'name' => 1,
             'shortname' => 1,

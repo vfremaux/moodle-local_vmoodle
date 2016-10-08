@@ -121,25 +121,25 @@ if (!empty($options['file'])) {
 
         if (!empty($CFG->proxyhost)) {
             if (empty($CFG->proxyport)) {
-                $proxy_host = $CFG->proxyhost;
+                $proxyhost = $CFG->proxyhost;
             } else {
-                $proxy_host = $CFG->proxyhost.':'.$CFG->proxyport;
+                $proxyhost = $CFG->proxyhost.':'.$CFG->proxyport;
             }
-            curl_setopt($ch, CURLOPT_PROXY, $proxy_host);
+            curl_setopt($ch, CURLOPT_PROXY, $proxyhost);
 
             if (!empty($CFG->proxyuser) and !empty($CFG->proxypassword)) {
-                $proxy_auth = $CFG->proxyuser.':'.$CFG->proxypassword;
+                $proxyauth = $CFG->proxyuser.':'.$CFG->proxypassword;
                 curl_setopt($ch, CURL_AUTHHTTP, CURLAUTH_BASIC);
-                curl_setopt($ch, CURL_PROXYAUTH, $proxy_auth);
+                curl_setopt($ch, CURL_PROXYAUTH, $proxyauth);
             }
 
             if (!empty($CFG->proxytype)) {
                 if ($CFG->proxytype == 'SOCKS5') {
-                    $proxy_type = CURLPROXY_SOCKS5;
+                    $proxytype = CURLPROXY_SOCKS5;
                 } else {
-                    $proxy_type = CURLPROXY_HTTP;
+                    $proxytype = CURLPROXY_HTTP;
                 }
-                curl_setopt($ch, CURL_PROXYTYPE, $proxy_type);
+                curl_setopt($ch, CURL_PROXYTYPE, $proxytype);
             }
         }
 
@@ -196,7 +196,7 @@ if (!empty($notification)) {
     mtrace($faulttype);
     mtrace($notification);
 
-    $admins = $DB->get_records_list('user', 'id', explode(',',$CFG->siteadmins));
+    $admins = $DB->get_records_list('user', 'id', explode(',', $CFG->siteadmins));
 
     foreach ($admins as $a) {
         email_to_user($a, $a, '['.$SITE->shortname.':'.$faulttype.'] Cron Monitoring system', $notification);

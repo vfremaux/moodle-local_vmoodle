@@ -260,7 +260,7 @@ foreach ($nodes as $n) {
         }
     }
 
-    if (!empty($n->format)){
+    if (!empty($n->format)) {
         foreach ($n->format as $plugin) {
             mtrace("Setting up format_{$plugin} :\n");
             foreach ($plugin as $setting => $value) {

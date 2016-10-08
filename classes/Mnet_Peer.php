@@ -82,7 +82,7 @@ class Mnet_Peer {
             $ipaddress = gethostbyname($hostname);
 
             // Couldn't find the IP address?
-            if ($ipaddress === $hostname && !preg_match('/^\d+\.\d+\.\d+.\d+$/',$hostname)) {
+            if ($ipaddress === $hostname && !preg_match('/^\d+\.\d+\.\d+.\d+$/', $hostname)) {
                 $this->errors[] = 'ErrCode 2 - '.get_string("noaddressforhost", 'mnet');
                 return false;
             }
@@ -209,7 +209,7 @@ class Mnet_Peer {
     public function check_credentials($key) {
         $credentials = openssl_x509_parse($key);
         if ($credentials == false) {
-            $params = array('subject' => '','host' => '');
+            $params = array('subject' => '', 'host' => '');
             $this->error[] = array('code' => 3, 'text' => get_string("nonmatchingcert", 'mnet', $params));
             return false;
         } else if (array_key_exists('subjectAltName', $credentials['subject']) &&

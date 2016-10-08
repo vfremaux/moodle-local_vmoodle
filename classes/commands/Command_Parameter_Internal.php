@@ -25,6 +25,8 @@
  */
 namespace local_vmoodle\commands;
 
+defined('MOODLE_INTERNAL') || die;
+
 class Command_Parameter_Internal extends Command_Parameter {
     /** The parameter's function */
     private $fct;

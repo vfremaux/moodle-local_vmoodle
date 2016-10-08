@@ -8,13 +8,20 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package     local_vmoodle
+ * @category    local
+ * @copyright   2016 Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/*
  * This script speads as many fixture executions as required on any amount
  * of VMoodle that need complex fix to be processed.
  *
@@ -93,7 +100,7 @@ if ($options['workers'] === false) {
 
 if (!empty($options['include'])) {
     $allhosts = $DB->get_records_select('local_vmoodle', ' vhostname LIKE "'.$options['include'].'" ', array());
-} elseif(!empty($options['exclude'])) {
+} else if(!empty($options['exclude'])) {
     $allhosts = $DB->get_records_select('local_vmoodle', ' vhostname NOT LIKE "'.$options['include'].'" ', array());
 } else {
     $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
@@ -140,7 +147,7 @@ foreach ($joblist as $jl) {
     $jobids = array();
     if (!empty($jl)) {
 
-        $logattr = (!empty($options['logroot'])) ? "--logfile={$options['logroot']}/fixture_log_{$i}.log" : '' ;
+        $logattr = (!empty($options['logroot'])) ? "--logfile={$options['logroot']}/fixture_log_{$i}.log" : '';
         $hids = implode(',', $jl);
         $workercmd = "$phpcmd \"{$CFG->dirroot}/local/vmoodle/cli/fixture_worker.php\" --nodes=\"$hids\"";
         $workercmd .= " $logattr --fixture={$options['fixture']} $verboseattr";

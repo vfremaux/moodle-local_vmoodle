@@ -343,8 +343,7 @@ class Host_Form extends \moodleform {
 
             // Checks 'vdatapath', if not already used.
             if ($this->is_equal_to_another_dataroot($data['vdatapath'])) {
-                if ($data['vtemplate'] === 0) {
-                } else {
+                if ($data['vtemplate'] !== 0) {
                     $errors['vdatapath'] = get_string('badmoodledatapathalreadyused', 'local_vmoodle');
                 }
             }

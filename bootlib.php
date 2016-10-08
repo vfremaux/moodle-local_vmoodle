@@ -127,7 +127,7 @@ function vmoodle_boot_configuration() {
                 } else {
                     die ("VMoodling : No configuration for this host. May be faked.");
                 }
-                pg_close($side_cnx);
+                pg_close($sidecnx);
             } else {
                 die ("VMoodling : Could not fetch virtual moodle configuration");
             }
