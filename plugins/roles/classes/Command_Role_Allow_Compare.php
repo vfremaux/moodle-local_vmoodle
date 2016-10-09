@@ -199,7 +199,7 @@ class Command_Role_Allow_Compare extends Command {
          */
 
         // Creating header.
-        $label = get_string($table.'table', 'vmoodleadminset_roles'));
+        $label = get_string($table.'table', 'vmoodleadminset_roles');
         $help = help_button_vml('rolelib', 'allowcompare', 'vmoodleadminset_roles');
         $this->report = '<h3>'.get_string('allowcompare', 'vmoodleadminset_roles', $label.$help.'</h3>';
         // Adding edit role link.
