@@ -1,17 +1,18 @@
 /*
  * Active filters
  */
+// jshint undef:false unused:false
 var pfilters = new Array();
 var pfilters_counter = 0;
 
-/**
+/*
  * Define a filter platform
  */
 function Pfilter(type, value) {
     // Checking parameters.
     if (type != 'contains' && type != 'notcontains' && type != 'regexp' || value == '')
         return;
-    
+
     // Defining members.
     this.type = type;
     this.value = value;
@@ -25,7 +26,7 @@ function Pfilter(type, value) {
         this.negate = true;
         break;
     case 'regexp':
-        // Getting regexp
+        // Getting regexp.
         if (value[0] != '/') {
             alert(vmoodle_badregexp);
             return;
@@ -46,11 +47,10 @@ function Pfilter(type, value) {
         } else {
             this.negate = false;
         }
-        // Creating filter
+        // Creating filter.
         try {
             this.filter = new RegExp(value, modifiers);
-        }
-        catch (e) {
+        } catch (e) {
             alert(vmoodle_badregexp)
             return;
         }
@@ -58,17 +58,17 @@ function Pfilter(type, value) {
     }
     // Validating construction attributing an id.
     this.id = pfilters_counter++;
-    
-    // Defining methods
+
+    // Defining methods.
     /*
      * Draw and insert the HTML of Pfilter.
      */
     this.draw = function() {
-        // Getting HTMLelement
+        // Getting HTMLelement.
         var el_form = document.getElementById('pfilterform');
-        // Creating HTMLelemnt
+        // Creating HTMLelemnt.
         var el_pfilter = document.createElement('div');
-        
+
         el_pfilter.id = 'pfilter'+this.id;
         el_pfilter.innerHTML = '<table class="pfilter">'+
                                     '<tr>'+
@@ -81,33 +81,33 @@ function Pfilter(type, value) {
                                 '</table>';
         el_form.appendChild(el_pfilter);
     };
-    
+
     /*
      * Clear the HTML on Pfilter.
      */
     this.clear = function() {
-        // Getting HTMLelements
+        // Getting HTMLelements.
         var el_form = document.getElementById('pfilterform');
         var el_pfilter = document.getElementById('pfilter'+this.id);
-        // Removing child
+        // Removing child.
         el_form.removeChild(el_pfilter);
     };
-    
+
     /*
      * Apply pfilter on the available and selected platforms.
      */
     this.apply = function() {
-        // Getting HTMLelement
+        // Getting HTMLelement.
         var el_achoices = document.getElementById('id_aplatforms');
         var el_schoices = document.getElementById('id_splatforms');
-        // Applying filter
+        // Applying filter.
         apply_filter(this, el_achoices);
         apply_filter(this, el_schoices);
     };
-    
+
     /*
      * Test the filter on a string.
-     * @param    value        string            String to test.
+     * @param string value String to test.
      */
     this.test = function(value) {
         var test = this.filter.test(value);
@@ -122,18 +122,18 @@ function Pfilter(type, value) {
  * Add a platform filter.
  */
 function add_filter() {
-    // Retrieve values from the form
+    // Retrieve values from the form.
     var type = document.getElementById('id_filterparam_filtertype').value;
     var value = document.getElementById('id_filterparam_filtervalue').value;
-    // Create a new filter
+    // Create a new filter.
     var pfilter = new Pfilter(type, value);
     if (pfilter.id == null)
         return;
-    // Adding to the form
+    // Adding to the form.
     pfilter.draw();
-    // Filter choices
+    // Filter choices.
     pfilter.apply();
-    // Add to active filter
+    // Add to active filter.
     pfilters[pfilter.id] = pfilter;
 }
 
@@ -214,7 +214,7 @@ function populate_achoices() {
 
         // Checking if option isn't selected.
         selected = false;
-        for (var i = 0 ; i < sselect.length; i++) {
+        for (var i = 0; i < sselect.length; i++) {
             if (sselect.item(i).text == values[index] && sselect.item(i).value == index) {
                 selected = true;
                 break;
@@ -304,7 +304,7 @@ function move_selected_options(from, to) {
     var option;
 
     // Moving option to the selected select.
-    for (var i = 0 ; i < from.length ; i++) {
+    for (var i = 0; i < from.length; i++) {
         if (from.item(i).selected) {
             // Checking if none value.
             if (from.item(i).value == 0 && from.item(i).text == vmoodle_none)
@@ -339,11 +339,11 @@ function move_selected_options(from, to) {
  * Sort option of a select.
  */
 function sort_select(select) {
-    // Cloning options to sort
+    // Cloning options to sort.
     var options = new Array();
 
     // Getting data.
-    for (var i = 0; i < select.length ; i++) {
+    for (var i = 0; i < select.length; i++) {
         options[i] = new Array();
         options[i][0] = select.item(i).text;
         options[i][1] = select.item(i).value;
@@ -354,7 +354,7 @@ function sort_select(select) {
     options = options.sort();
 
     // Setting sorted data.
-    for (var i = 0 ; i < select.length ; i++) {
+    for (var i = 0; i < select.length; i++) {
         select.item(i).text = options[i][0];
         select.item(i).value = options[i][1];
         select.item(i).selected = options[i][2];
@@ -369,7 +369,7 @@ function submit_target_form() {
     var select = document.getElementById('id_splatforms');
 
     // Selecting all elements.
-    for (var i = 0; i < select.length ; i++)
+    for (var i = 0; i < select.length; i++)
         select.item(i).selected = true;
 
     // Validating form.

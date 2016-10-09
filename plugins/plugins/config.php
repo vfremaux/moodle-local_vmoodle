@@ -14,11 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use \local_vmoodle\commands\Command_Category;
-use \vmoodleadminset_plugins\Command_Plugin_Set_State;
-use \vmoodleadminset_plugins\Command_Plugins_Sync;
-use \vmoodleadminset_plugins\Command_Plugins_Compare;
-
 /**
  * Description of assisted commands for role purpose.
  *
@@ -27,6 +22,12 @@ use \vmoodleadminset_plugins\Command_Plugins_Compare;
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command_Category;
+use \vmoodleadminset_plugins\Command_Plugin_Set_State;
+use \vmoodleadminset_plugins\Command_Plugins_Sync;
+use \vmoodleadminset_plugins\Command_Plugins_Compare;
 
 // Creating category.
 $category = new Command_Category('plugins');

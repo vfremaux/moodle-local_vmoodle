@@ -22,10 +22,10 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 function xmldb_vmoodleadminset_example_upgrade($oldversion = 0) {
-    // Initializing
+    // Initializing.
     $result = true;
 
-    // Moodle 2.0 breakline
+    // Moodle 2.0 breakline.
 
     return $result;
 }

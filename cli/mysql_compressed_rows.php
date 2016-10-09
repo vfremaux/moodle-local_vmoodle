@@ -26,7 +26,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -34,12 +34,20 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php');         // cli only functions
+require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
 
-list($options, $unrecognized) = cli_get_params(
-    array('help' => false, 'info' => false, 'list' => false, 'fix' => false, 'showsql' => false, 'host' => true),
-    array('h' => 'help', 'i' => 'info', 'l' => 'list', 'f' => 'fix', 's' => 'showsql', 'H' => 'host')
-);
+list($options, $unrecognized) = cli_get_params(array('help' => false,
+                                                     'info' => false,
+                                                     'list' => false,
+                                                     'fix' => false,
+                                                     'showsql' => false,
+                                                     'host' => true),
+                                               array('h' => 'help',
+                                                     'i' => 'info',
+                                                     'l' => 'list',
+                                                     'f' => 'fix',
+                                                     's' => 'showsql',
+                                                     'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -47,8 +55,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-$help =
-    "Script for detection of row size problems in MySQL InnoDB tables.
+$help = "
+Script for detection of row size problems in MySQL InnoDB tables.
 
 By default InnoDB storage table is using legacy Antelope file format
 which has major restriction on database row size.
@@ -73,7 +81,7 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
@@ -91,7 +99,6 @@ if ($engine !== 'innodb' and $engine !== 'xtradb') {
     cli_error('This script is for MySQL servers using InnoDB or XtraDB engines only.');
 }
 
-/** @var mysql_sql_generator $generator */
 $generator = $DB->get_manager()->generator;
 
 $info = $DB->get_server_info();
@@ -103,9 +110,9 @@ $prefix = $DB->get_prefix();
 $database = $CFG->dbname;
 
 if (!empty($options['info'])) {
-    echo "Database version:      " . $info['description'] . "\n";
+    echo "Database version:      ".$info['description']."\n";
     echo "Database name:         $database\n";
-    echo "Database engine:       " . $DB->get_dbengine() . "\n";
+    echo "Database engine:       ".$DB->get_dbengine()."\n";
     echo "innodb_file_per_table: $filepertable\n";
     echo "innodb_file_format:    $fileformat\n";
 
@@ -124,13 +131,11 @@ if (!empty($options['info'])) {
         echo str_pad($prefix . $table, 32, ' ', STR_PAD_RIGHT);
         echo str_pad($format, 11, ' ', STR_PAD_RIGHT);
 
-        if ($format === 'Compact' or $format === 'Redundant') {
+        if ($format === 'Compact' || $format === 'Redundant') {
             $problem = true;
             echo " (needs fixing)\n";
-
-        } else if ($format !== 'Compressed' and $format !== 'Dynamic') {
+        } else if ($format !== 'Compressed' && $format !== 'Dynamic') {
             echo " (unknown)\n";
-
         } else {
             echo "\n";
         }
@@ -150,7 +155,7 @@ if (!empty($options['info'])) {
         if ($size <= $generator::ANTELOPE_MAX_ROW_SIZE) {
             continue;
         }
-        if ($format === 'Compact' or $format === 'Redundant') {
+        if ($format === 'Compact' || $format === 'Redundant') {
             $fixtables[$table] = $table;
         }
     }
@@ -199,7 +204,7 @@ if (!empty($options['info'])) {
         if ($size <= $generator::ANTELOPE_MAX_ROW_SIZE) {
             continue;
         }
-        if ($format === 'Compact' or $format === 'Redundant') {
+        if ($format === 'Compact' || $format === 'Redundant') {
             $fixtables[$table] = $table;
         }
     }
@@ -218,7 +223,4 @@ if (!empty($options['info'])) {
     }
     echo "\n";
     exit(0);
-
 }
-
-

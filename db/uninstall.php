@@ -17,7 +17,7 @@
 function xmldb_local_vmoodle_uninstall() {
     global $DB,$CFG;
 
-    // note this should be NOT really required if standard uninstall does the full job.
+    // Note this should be NOT really required if standard uninstall does the full job.
 
     // Dismount all XML-RPC.
     if ($service = $DB->get_record('mnet_service', array('name' => 'mnetadmin'))) {

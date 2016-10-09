@@ -30,11 +30,6 @@ use \StdClass;
 
 /**
  * Describes meta-administration plugin's SQL command.
- * 
- * @package local_vmoodle
- * @category local
- * @author Bruce Bujon (bruce.bujon@gmail.com)
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 class Command_Sql extends Command {
 
@@ -134,7 +129,7 @@ class Command_Sql extends Command {
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
-        $rpc_client->add_param($this->_getGeneratedCommand(), 'string');
+        $rpc_client->add_param($this->_get_generated_command(), 'string');
         $rpc_client->add_param($this->values, 'array');
         $rpc_client->add_param($return, 'boolean');
 
@@ -194,7 +189,7 @@ class Command_Sql extends Command {
      * Get SQL command.
      * @return                            SQL command.
      */
-    public function getSql() {
+    public function get_sql() {
         return $this->sql;
     }
 
@@ -218,8 +213,8 @@ class Command_Sql extends Command {
      * Get the command to execute.
      * @return                        string                The final SQL command to execute.
      */
-    private function _getGeneratedCommand() {
-        return preg_replace_callback(self::placeholder, array($this, '_replaceParametersValues'), $this->getSql());
+    private function _get_generated_command() {
+        return preg_replace_callback(self::placeholder, array($this, '_replaceParametersValues'), $this->get_sql());
     }
 
     /**
@@ -227,7 +222,7 @@ class Command_Sql extends Command {
      * @param    $matches            array                The placeholders found.
      * @return                        string|array        The parameters' values.
      */
-    private function _replaceParametersValues($matches) {
+    private function _replace_parameters_values($matches) {
 
         list($paramname, $paramvalue) = replace_parameters_values($matches, $this->get_parameters(), true, false);
     

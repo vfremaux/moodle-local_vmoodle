@@ -1,18 +1,35 @@
 <?php
-
-namespace vmoodleadminset_sql;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \StdClass;
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Describes meta-administration multiple SQL (script) command.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.Fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_sql;
+
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \StdClass;
+
 class Command_MultiSql extends Command {
 
     /**
@@ -111,7 +128,7 @@ class Command_MultiSql extends Command {
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
-        $rpc_client->add_param($this->_getGeneratedCommand(), 'string');
+        $rpc_client->add_param($this->_get_generated_command(), 'string');
         $rpc_client->add_param($this->values, 'array');
         $rpc_client->add_param(false, 'boolean');
         $rpc_client->add_param(true, 'boolean'); // telling other side we are a multiple command
@@ -171,7 +188,7 @@ class Command_MultiSql extends Command {
      * Get SQL command.
      * @return SQL command.
      */
-    public function getSql() {
+    public function get_sql() {
         return $this->sqls;
     }
 
@@ -195,8 +212,8 @@ class Command_MultiSql extends Command {
      * Get the command to execute.
      * @return string The final SQL command to execute.
      */
-    private function _getGeneratedCommand() {
-        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replaceParametersValues'), $this->getSql());
+    private function _get_generated_command() {
+        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replaceParametersValues'), $this->get_sql());
     }
 
     /**
@@ -204,7 +221,7 @@ class Command_MultiSql extends Command {
       * @param array $matches The placeholders found.
       * @return string|array The parameters' values.
      */
-    private function _replaceParametersValues($matches) {
+    private function _replace_parameters_values($matches) {
 
         list($paramname, $paramvalue) = replace_parameters_values($matches, $this->get_parameters(), true, false);
 

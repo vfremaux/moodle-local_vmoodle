@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * this script scans all virtual instances to perform a cronmonitor worker 
  * action on each.
@@ -28,19 +27,17 @@ define('CLI_SCRIPT', true);
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
-global $VCRON;
+global $vcron;
 
-$VCRON = new StdClass;
-$VCRON->MODE = 'cli';                    // choose vcron rotation mode
-$VCRON->TIMEOUT = 300;                                 // time out for CURL call to effective cron
+$vcron = new StdClass;
+$vcron->mode = 'cli';    // Choose vcron rotation mode.
+$vcron->timeout = 300;   // Time out for CURL call to effective cron.
 
 /**
  * fire a cron URL using cli exec
- *
- *
  */
 function exec_vhost_cron($vhost, $options = array()) {
-    global $VCRON, $CFG;
+    global $vcron, $CFG;
 
     $cmd = 'php "'.$CFG->dirroot.'/local/vmoodle/cli/cronmonitor.php" --host='.$vhost->vhostname;
 
@@ -51,7 +48,7 @@ function exec_vhost_cron($vhost, $options = array()) {
     if (array_key_exists('mode', $options)) {
         $cmd .= ' --mode='.$options['mode'];
     } else {
-        $cmd .= ' --mode='.$VCRON->MODE;
+        $cmd .= ' --mode='.$vcron->mode;
     }
 
     mtrace('');
@@ -74,7 +71,7 @@ mtrace("Moodle VCronMonitor... start");
 
 $options = array();
 
-foreach($allvhosts as $vhost) {
+foreach ($allvhosts as $vhost) {
 
     if (!empty($CFG->vlogfilepattern)) {
         $logfile = str_replace('%%VHOSTNAME%%', $vhost->vhostname, $CFG->vlogfilepattern);

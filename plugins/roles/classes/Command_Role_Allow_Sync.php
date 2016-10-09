@@ -1,53 +1,73 @@
 <?php
-
-namespace vmoodleadminset_roles;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command_Parameter;
-Use \context_system;
-Use \StdClass;
-Use \moodle_url;
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Describes a role syncrhonisation command.
- * 
+ * Describes a role allowance sync command.
+ *
  * @package local_vmoodle
  * @category local
- * @author Bruce Bujon (valery.fremaux@gmail.com)
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+
+namespace vmoodleadminset_roles;
+
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command_Parameter;
+use \context_system;
+use \StdClass;
+use \moodle_url;
+
 class Command_Role_Allow_Sync extends Command {
 
     /**
      * Constructor.
      * @throws Command_Exception.
      */
-    function __construct() {
+    public function __construct() {
         global $DB;
 
         // Getting command description.
-        $cmd_name = vmoodle_get_string('cmdallowsyncname', 'vmoodleadminset_roles');
-        $cmd_desc = vmoodle_get_string('cmdallowsyncdesc', 'vmoodleadminset_roles');
+        $cmdname = vmoodle_get_string('cmdallowsyncname', 'vmoodleadminset_roles');
+        $cmddesc = vmoodle_get_string('cmdallowsyncdesc', 'vmoodleadminset_roles');
 
-        // Creating platform parameter
-        $platform_param = new Command_Parameter('platform',    'enum', vmoodle_get_string('platformparamsyncdesc', 'vmoodleadminset_roles'), null, get_available_platforms());
+        // Creating platform parameter.
+        $label = get_string('platformparamsyncdesc', 'vmoodleadminset_roles');
+        $platformparam = new Command_Parameter('platform', 'enum', $label, null, get_available_platforms());
 
-        // Creating table parameter
+        // Creating table parameter.
         $tables['assign'] = vmoodle_get_string('assigntable', 'vmoodleadminset_roles');
         $tables['override'] = vmoodle_get_string('overridetable', 'vmoodleadminset_roles');
         $tables['switch'] = vmoodle_get_string('switchtable', 'vmoodleadminset_roles');
-        $table_param = new Command_Parameter('table', 'enum', vmoodle_get_string('tableparamdesc', 'vmoodleadminset_roles'), null, $tables);
+        $tableparam = new Command_Parameter('table', 'enum', get_string('tableparamdesc', 'vmoodleadminset_roles'), null, $tables);
 
-        // Creating role parameter
+        // Creating role parameter.
         $roles = role_fix_names(get_all_roles(), \context_system::instance(), ROLENAME_ORIGINAL);
         $rolemenu = array();
         foreach ($roles as $r) {
             $rolemenu[$r->shortname] = $r->localname;
         }
-        $role_param = new Command_Parameter('role', 'enum', vmoodle_get_string('roleparamsyncdesc', 'vmoodleadminset_roles'), null, $rolemenu);
+        $label = get_string('roleparamsyncdesc', 'vmoodleadminset_roles');
+        $roleparam = new Command_Parameter('role', 'enum', $label, null, $rolemenu);
 
-        // Creating command
-        parent::__construct($cmd_name, $cmd_desc, array($platform_param, $table_param, $role_param));
+        // Creating command.
+        parent::__construct($cmdname, $cmddesc, array($platformparam, $tableparam, $roleparam));
     }
 
     /**
@@ -55,7 +75,7 @@ class Command_Role_Allow_Sync extends Command {
      * @param mixed $hosts The host where run the command (may be wwwroot or an array).
      * @throws Command_Exception
      */
-    function run($hosts) {
+    public function run($hosts) {
         global $CFG, $USER;
 
         // Adding constants.
@@ -79,8 +99,8 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Creating peer to read role configuration.
-        $mnet_host = new \mnet_peer();
-        if (!$mnet_host->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
+        $mnethost = new \mnet_peer();
+        if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
                             'status' => RPC_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
@@ -92,44 +112,44 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Creating XMLRPC client to read role configuration in self.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
-        $rpc_client->add_param($table, 'string');
-        $rpc_client->add_param($role, 'string');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
+        $rpcclient->add_param($table, 'string');
+        $rpcclient->add_param($role, 'string');
 
         // Checking result.
-        if (!($rpc_client->send($mnet_host) && ($response = json_decode($rpc_client->response)) && $response->status == RPC_SUCCESS)) {
+        if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
             // Creating response.
             if (!isset($response)) {
                 $response = new \StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
-                $response->error = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
             }
             if (debugging()) {
                 echo '<pre>';
-                var_dump($rpc_client);
+                var_dump($rpcclient);
                 ob_flush();
                 echo '</pre>';
             }
-            // Saving results
+            // Saving results.
             foreach ($hosts as $host => $name) {
                 $this->results[$host] = $response;
             }
             return;
         }
 
-        /// cleaning up some memory
+        // Cleaning up some memory.
         unset($response);
 
         $responses = array();
 
-        // Creating peers
-        $mnet_hosts = array();
+        // Creating peers.
+        $mnethosts = array();
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
                 $responses[$host] = (object) array(
                                         'status' => MNET_FAILURE,
@@ -139,33 +159,33 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
-        $rpc_client->add_param($table, 'string');
-        $rpc_client->add_param($role, 'string');
-        $rpc_client->add_param(true, 'boolean');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
+        $rpcclient->add_param($table, 'string');
+        $rpcclient->add_param($role, 'string');
+        $rpcclient->add_param(true, 'boolean');
 
         // Sending requests.
-        foreach ($mnet_hosts as $mnet_host) {
-            // Sending request
-            if (!$rpc_client->send($mnet_host)) {
+        foreach ($mnethosts as $mnethost) {
+            // Sending request.
+            if (!$rpcclient->send($mnethost)) {
                 $response = new \StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
                 $response->error = 'Set remote role capability : Remote call error';
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpc_client);
+                    var_dump($rpcclient);
                     ob_flush();
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
-            // Recording response
-            $responses[$mnet_host->wwwroot] = $response;
+            // Recording response.
+            $responses[$mnethost->wwwroot] = $response;
         }
-        // Saving results
+        // Saving results.
         $this->results = $responses + $this->results;
     }
 
@@ -176,7 +196,7 @@ class Command_Role_Allow_Sync extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    function get_result($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
         if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
@@ -186,10 +206,10 @@ class Command_Role_Allow_Sync extends Command {
             return null;
         }
         $result = $this->results[$host];
-        // Checking key
+        // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;

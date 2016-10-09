@@ -16,14 +16,14 @@
 
 /**
  * Chains commands of pluginlib plugin library.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
- 
-Use \vmoodleadminset_roles\Command_Role_Capability_Sync;
+
+use \vmoodleadminset_roles\Command_Role_Capability_Sync;
 
 // Adding requirements.
 require('../../../../config.php');
@@ -42,12 +42,11 @@ if (!has_capability('local/vmoodle:managevmoodles', context_system::instance()))
 // Declaring parameters.
 $action = optional_param('what', '', PARAM_TEXT);
 
-// Checking action to do.
 switch ($action) {
+    // Checking action to do.
 
-    // Run sync role command.
     case 'syncplugin':
-
+        // Run sync role command.
         // Getting parameters.
         $plugin = optional_param('plugin', '', PARAM_RAW);
         $pluginstate = optional_param('state', '', PARAM_RAW);
@@ -57,7 +56,7 @@ switch ($action) {
         // Checking platforms.
         $valid = true;
         $available_plaforms = get_available_platforms();
-        if (!array_key_exists($source_platform, $available_plaforms)){
+        if (!array_key_exists($source_platform, $available_plaforms)) {
             $valid = false;
         } else {
             $platforms = array();
@@ -74,9 +73,10 @@ switch ($action) {
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         }
 
-        // Retrieving previous command
+        // Retrieving previous command.
         $command = unserialize($SESSION->vmoodle_sa['command']);
-        if ($SESSION->vmoodle_sa['wizardnow'] != 'report' || !($command instanceof \vmoodleadminset_roles\Command_Plugins_Compare)) {
+        if ($SESSION->vmoodle_sa['wizardnow'] != 'report' ||
+                !($command instanceof \vmoodleadminset_roles\Command_Plugins_Compare)) {
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         }
 
@@ -103,8 +103,8 @@ switch ($action) {
         redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         break;
 
-    // Going back to role comparison.
     case 'backtocomparison':
+        // Going back to role comparison.
         // Getting old command.
         if (!isset($SESSION->vmoodle_sa['rolelib']['command']) 
                 || !isset($SESSION->vmoodle_sa['rolelib']['platforms']) 
@@ -113,16 +113,16 @@ switch ($action) {
         }
         $command = unserialize($SESSION->vmoodle_sa['rolelib']['command']);
         $platforms = $SESSION->vmoodle_sa['rolelib']['platforms'];
-        // Running command to actualize
+        // Running command to actualize.
         $command->run($platforms);
-        // Saving new context
+        // Saving new context.
         $SESSION->vmoodle_sa['command'] = serialize($command);
         $SESSION->vmoodle_sa['platforms'] = $platforms;
-        // Moving to the report
+        // Moving to the report.
         redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
         break;
 
-    // Redirecting to super admin view.
     default:
+        // Redirecting to super admin view.
         redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -13,8 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-header('Content-type: text/css');
+
 require_once('../../../config.php');
+header('Content-type: text/css');
 ?>
 div.bvmc {
     border: 1px solid #B9BABB;
@@ -75,7 +76,7 @@ table.pfilter td.pfilter_action {
 }
 <?php
 
-// Adding plugin libraries styles
+// Adding plugin libraries styles.
 $manager = core_plugin_manager::instance();
 $plugins = $manager->get_plugins_of_type('vmoodleadminset');
 foreach ($plugins as $plugin) {

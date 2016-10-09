@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace vmoodleadminset_plugins;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command_Parameter;
-
-require_once($CFG->libdir.'/accesslib.php');
-require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');
-require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/lib.php');
-
 /**
  * Describes a role comparison command.
  * 
@@ -31,6 +22,18 @@ require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/lib.php');
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_plugins;
+
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command_Parameter;
+
+require_once($CFG->libdir.'/accesslib.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/lib.php');
+
 class Command_Plugin_Set_State extends Command {
 
     /**
@@ -50,14 +53,14 @@ class Command_Plugin_Set_State extends Command {
 
     /**
      * Constructor.
-     * @throws            Command_Exception.
+     * @throws Command_Exception.
      */
     public function __construct() {
         global $DB, $STANDARD_PLUGIN_TYPES;
-        
+
         // Getting command description.
-        $cmd_name = vmoodle_get_string('cmdpluginsetupname', 'vmoodleadminset_plugins');
-        $cmd_desc = vmoodle_get_string('cmdpluginsetupdesc', 'vmoodleadminset_plugins');
+        $cmdname = get_string('cmdpluginsetupname', 'vmoodleadminset_plugins');
+        $cmddesc = get_string('cmdpluginsetupdesc', 'vmoodleadminset_plugins');
 
         $pm = \core_plugin_manager::instance();
 
@@ -74,21 +77,23 @@ class Command_Plugin_Set_State extends Command {
 
         asort($pluginlist, SORT_STRING);
 
-        $plugin_param = new Command_Parameter('plugin', 'enum', vmoodle_get_string('pluginparamdesc', 'vmoodleadminset_plugins'), null, $pluginlist);
+        $label = get_string('pluginparamdesc', 'vmoodleadminset_plugins');
+        $pluginparam = new Command_Parameter('plugin', 'enum', $label, null, $pluginlist);
 
         $states = array();
         $states['enable'] = vmoodle_get_string('enable', 'vmoodleadminset_plugins');
         $states['disable'] = vmoodle_get_string('disable', 'vmoodleadminset_plugins');
-        $state_param = new Command_Parameter('state', 'enum', vmoodle_get_string('pluginstateparamdesc', 'vmoodleadminset_plugins'), null, $states);
+        $label = get_string('pluginstateparamdesc', 'vmoodleadminset_plugins');
+        $stateparam = new Command_Parameter('state', 'enum', $label, null, $states);
 
         // Creating command.
-        parent :: __construct($cmd_name, $cmd_desc, array($plugin_param, $state_param));
+        parent :: __construct($cmdname, $cmddesc, array($pluginparam, $stateparam));
     }
 
     /**
      * Execute the command.
-     * @param    $hosts        mixed            The host where run the command (may be wwwroot or an array).
-     * @throws                Command_Exception.
+     * @param mixed $hosts The host where run the command (may be wwwroot or an array).
+     * @throws Command_Exception.
      */
     public function run($hosts) {
         global $CFG, $USER;
@@ -120,20 +125,20 @@ class Command_Plugin_Set_State extends Command {
         $plugininfos[$plugin] = (array)$plugininfo;
 
         // Creating XMLRPC client to change remote configuration.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
-        $rpc_client->add_param($plugininfos, 'array');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
+        $rpcclient->add_param($plugininfos, 'array');
 
         // Initializing responses.
         $responses = array();
 
         // Creating peers.
-        $mnet_hosts = array();
+        $mnethosts = array();
         if (!empty($hosts)) {
             foreach ($hosts as $host => $name) {
-                $mnet_host = new \mnet_peer();
-                if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                    $mnet_hosts[] = $mnet_host;
+                $mnethost = new \mnet_peer();
+                if ($mnethost->bootstrap($host, null, 'moodle')) {
+                    $mnethosts[] = $mnethost;
                 } else {
                     $responses[$host] = (object) array(
                         'status' => MNET_FAILURE,
@@ -144,31 +149,31 @@ class Command_Plugin_Set_State extends Command {
         }
 
         // Sending requests.
-        foreach($mnet_hosts as $mnet_host) {
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new \StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpc_client);
+                    var_dump($rpcclient);
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
 
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
 
             // Recording plugin descriptors.
             if ($response->status == RPC_SUCCESS) {
-                $this->plugins[$mnet_host->wwwroot] = @$response->value;
+                $this->plugins[$mnethost->wwwroot] = @$response->value;
             }
         }
 
-        // Saving results
+        // Saving results.
         $this->results = $responses + $this->results;
 
     }
