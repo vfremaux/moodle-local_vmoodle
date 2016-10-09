@@ -113,6 +113,7 @@ class Command_Parameter_Internal extends Command_Parameter {
 
     /**
      * Bind the replace_parameters_values function to create a callback.
+     * Indirect use off the function
      * @param array $matches The placeholders found.
      * @return string|array The parameters' values.
      */

@@ -46,7 +46,7 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help = " 
+    $help = "
 Invalidates all Moodle internal caches
 
 Options:

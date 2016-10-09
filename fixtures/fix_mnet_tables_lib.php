@@ -12,15 +12,17 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die;
 
 function fix_mnet_tables_fixture() {
     global $DB;
 
-    $RPCS = array();
-    $SERVICES = array();
-    $BADRPCS = array();
-    $BADSERVICES = array();
+    $rpcs = array();
+    $services = array();
+    $badrpcs = array();
+    $badservices = array();
 
     echo "<pre>\n";
 
@@ -38,14 +40,14 @@ function fix_mnet_tables_fixture() {
         $g = 0;
         $b = 0;
         foreach ($allrpcs as $rpc) {
-            if (array_key_exists($rpc->xmlrpcpath, $RPCS)) {
+            if (array_key_exists($rpc->xmlrpcpath, $rpcs)) {
                 // Register and remove.
-                $BADRPCS[$rpc->id] = $RPCS[$rpc->xmlrpcpath]->id;
+                $badrpcs[$rpc->id] = $rpcs[$rpc->xmlrpcpath]->id;
                 $DB->delete_records('mnet_rpc', array('id' => $rpc->id));
                 $b++;
             } else {
                 // Record xmlRPC and indexes.
-                $RPCS[$rpc->xmlrpcpath] = $rpc;
+                $rpcs[$rpc->xmlrpcpath] = $rpc;
                 $RPCIDS[$rpc->id] = $rpc->xmlrpcpath;
                 $g++;
             }
@@ -58,15 +60,15 @@ function fix_mnet_tables_fixture() {
         $b = 0;
         $allservices = $DB->get_records('mnet_service', array(), 'id');
         foreach ($allservices as $s) {
-            if (array_key_exists($s->name, $SERVICES)) {
+            if (array_key_exists($s->name, $services)) {
                 // Register and remove.
-                $BADSERVICES[$s->id] = $SERVICES[$s->name]->id;
+                $badservices[$s->id] = $services[$s->name]->id;
                 $DB->delete_records('mnet_service', array('id' => $s->id));
                 $b++;
             } else {
                 // Record service and indexes.
-                $SERVICES[$s->name] = $s;
-                $SERVICEIDS[$s->id] = $s->name;
+                $services[$s->name] = $s;
+                $servicesids[$s->id] = $s->name;
                 $g++;
             }
         }
@@ -74,13 +76,14 @@ function fix_mnet_tables_fixture() {
 
         // Now control if some bad services were host bound.
         mtrace('Checking RPC to Service bindings');
-        foreach ($BADRPCS as $badid => $goodid) {
+        foreach ($badrpcs as $badid => $goodid) {
             if ($bindings = $DB->get_records('mnet_service2rpc', array('rpcid' => $badid))) {
                 foreach ($bindings as $b) {
-                    if (array_key_exists($b->serviceid, $BADSERVICES)) {
+                    if (array_key_exists($b->serviceid, $badservices)) {
                         // Bad rpc is registered in bad service. Just check good ones are bind them correctly if missing.
-                        $goodservice = $SERVICEIDS[$BADSERVICES[$b->serviceid]];
-                        if (!$goodbind = $DB->get_record('mnet_service2rpc', array('rpcid' => $goodid, 'serviceid' => $goodservice))) {
+                        $goodservice = $servicesids[$badservices[$b->serviceid]];
+                        $params = array('rpcid' => $goodid, 'serviceid' => $goodservice);
+                        if (!$goodbind = $DB->get_record('mnet_service2rpc', $params)) {
                             $binding = new StdClass();
                             $binding->rpcid = $goodrpc;
                             $binding->serviceid = $goodservice;
@@ -103,14 +106,14 @@ function fix_mnet_tables_fixture() {
         $g = 0;
         if ($hostbindings = $DB->get_records('mnet_host2service')) {
             mtrace("fixing host bindings");
-            foreach($hostbindings as $hb) {
-                if (array_key_exists($hb->serviceid, $SERVICEIDS)) {
+            foreach ($hostbindings as $hb) {
+                if (array_key_exists($hb->serviceid, $servicesids)) {
                     // This is a good case. Good serviceid.
                     $g++;
                     continue;
                 }
-                if (array_key_exists($hb->serviceid, $BADSERVICES)) {
-                    $goodservice = $SERVICEIDS[$BADSERVICES[$hb->serviceid]];
+                if (array_key_exists($hb->serviceid, $badservices)) {
+                    $goodservice = $servicesids[$badservices[$hb->serviceid]];
                     if (!$goodbind = $DB->get_record('mnet_host2service', array('hostid' => $hb->hostid, 'serviceid' => $goodservice))) {
                         $binding = new StdClass();
                         $binding->hostid = $hb->hostid;

@@ -64,7 +64,7 @@ class Command_Upgrade extends Command {
 
     /**
      * Constructor.
-     * @throws                Command_Exception.
+     * @throws Command_Exception.
      */
     public function __construct() {
 
@@ -77,7 +77,7 @@ class Command_Upgrade extends Command {
     }
 
     public function run($hosts) {
-        global $CFG, $USER, $DB;
+        global $CFG;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -97,12 +97,13 @@ class Command_Upgrade extends Command {
 
         // Creating peers.
         $mnethosts = array();
-        foreach ($hosts as $host => $name) {
+        foreach (array_keys($hosts) as $host) {
             $mnethost = new \mnet_peer();
             if ($mnethost->bootstrap($host, null, 'moodle')) {
                 $mnethosts[] = $mnethost;
             } else {
-                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
+                $label = get_string('couldnotcreateclient', 'local_vmoodle', $host);
+                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => $label);
             }
         }
 

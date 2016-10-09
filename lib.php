@@ -16,7 +16,7 @@
 
 /**
  * lib.php
- * 
+ *
  * General library for vmoodle.
  *
  * @package local_vmoodle
@@ -39,7 +39,7 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE', 500);
     define('RPC_FAILURE_USER', 501);
     define('RPC_FAILURE_CONFIG', 502);
-    define('RPC_FAILURE_DATA', 503); 
+    define('RPC_FAILURE_DATA', 503);
     define('RPC_FAILURE_CAPABILITY', 510);
     define('MNET_FAILURE', 511);
     define('RPC_FAILURE_RECORD', 520);
@@ -48,11 +48,11 @@ if (!defined('RPC_SUCCESS')) {
 
 /* Define commands' constants */
 $vmcommandconstants = array('prefix' => $CFG->prefix,
-                              'wwwroot' => $CFG->wwwroot);
+                            'wwwroot' => $CFG->wwwroot);
 
 // Loading plugin librairies.
-$plugin_libs = glob($CFG->dirroot.'/local/vmoodle/plugins/*/lib.php');
-foreach ($plugin_libs as $lib) {
+$pluginlibs = glob($CFG->dirroot.'/local/vmoodle/plugins/*/lib.php');
+foreach ($pluginlibs as $lib) {
     require_once $lib;
 }
 
@@ -82,17 +82,17 @@ function vmoodle_setup_mnet_environment($vmoodle, $cnx) {
     $config = get_config('local_vmoodle');
 
     // Make an empty mnet environment.
-    $mnet_env = new mnet_environment();
+    $mnetenv = new mnet_environment();
 
-    $mnet_env->wwwroot              = $vmoodle->vhostname;
-    $mnet_env->ip_address           = $config->vmoodleip;
-    $mnet_env->keypair              = array();
-    $mnet_env->keypair              = mnet_generate_keypair(null);
-    $mnet_env->public_key           = $mnet_env->keypair['certificate'];
-    $details                        = openssl_x509_parse($mnet_env->public_key);
-    $mnet_env->public_key_expires   = $details['validTo_time_t'];
+    $mnetenv->wwwroot              = $vmoodle->vhostname;
+    $mnetenv->ip_address           = $config->vmoodleip;
+    $mnetenv->keypair              = array();
+    $mnetenv->keypair              = mnet_generate_keypair(null);
+    $mnetenv->public_key           = $mnetenv->keypair['certificate'];
+    $details                        = openssl_x509_parse($mnetenv->public_key);
+    $mnetenv->public_key_expires   = $details['validTo_time_t'];
 
-    return $mnet_env;
+    return $mnetenv;
 }
 
 /**
@@ -102,8 +102,8 @@ function vmoodle_setup_mnet_environment($vmoodle, $cnx) {
  * @param handle $cnx a connection to the target bdd
  * @param object $services an object that holds service setup data
  */
-function vmoodle_add_services(&$vmoodle, $mnet_env, $cnx, $services) {
-    if (!$mnet_env->id) {
+function vmoodle_add_services(&$vmoodle, $mnetenv, $cnx, $services) {
+    if (!$mnetenv->id) {
         return false;
     }
 
@@ -117,7 +117,7 @@ function vmoodle_add_services(&$vmoodle, $mnet_env, $cnx, $services) {
                   publish,
                   subscribe)
                VALUES (
-                  {$mnet_env->id},
+                  {$mnetenv->id},
                   $service,
                   {$keys['publish']},
                   {$keys['subscribe']}
@@ -137,15 +137,15 @@ function vmoodle_get_service_desc() {
 
     $services = $DB->get_records('mnet_service', array('offer' => 1));
 
-    $service_descriptor = array();
+    $servicedescriptor = array();
 
     if ($services) {
         foreach ($services as $service) {
-            $service_descriptor[$service->id]['publish'] = 1;
-            $service_descriptor[$service->id]['subscribe'] = 1;
+            $servicedescriptor[$service->id]['publish'] = 1;
+            $servicedescriptor[$service->id]['subscribe'] = 1;
         }
     }
-    return $service_descriptor;
+    return $servicedescriptor;
 }
 
 /**
@@ -156,10 +156,10 @@ function vmoodle_get_service_desc() {
  * @param handle $cnx
  * @return the inserted mnet_env object
  */
-function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
-    $mnet_array = get_object_vars($mnet_env);
-    if (empty($mnet_env->id)) {
-        foreach ($mnet_array as $key => $value) {
+function vmoodle_register_mnet_peer(&$vmoodle, $mnetenv, $cnx) {
+    $mnetarray = get_object_vars($mnetenv);
+    if (empty($mnetenv->id)) {
+        foreach ($mnetarray as $key => $value) {
             if ($key == 'id') {
                 continue;
             }
@@ -177,9 +177,9 @@ function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
                 {$valueset}
             )
         ";
-        $mnet_env->id = vmoodle_execute_query($vmoodle, $sql, $cnx);
+        $mnetenv->id = vmoodle_execute_query($vmoodle, $sql, $cnx);
     } else {
-        foreach ($mnet_array as $key => $value) {
+        foreach ($mnetarray as $key => $value) {
             $valuelist[] = "$key = '$value'";
         }
         unset($valuelist['id']);
@@ -190,11 +190,11 @@ function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
             SET
                 {$valueset}
             WHERE
-                id = {$mnet_array['id']}
+                id = {$mnetarray['id']}
         ";
         vmoodle_execute_query($vmoodle, $sql, $cnx);
     }
-    return $mnet_env;
+    return $mnetenv;
 }
 
 /**
@@ -205,8 +205,8 @@ function vmoodle_register_mnet_peer(&$vmoodle, $mnet_env, $cnx) {
 function vmoodle_get_mnet_env(&$vmoodle) {
     global $DB;
 
-    $mnet_env = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname));
-    return $mnet_env;
+    $mnetenv = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname));
+    return $mnetenv;
 }
 
 /**
@@ -255,9 +255,9 @@ function vmoodle_unregister_mnet(&$vmoodle, $fromvmoodle ) {
  */
 function vmoodle_drop_database(&$vmoodle, $cnx = null) {
     // Try to delete database.
-    $local_cnx = 0;
+    $localcnx = 0;
     if (!$cnx) {
-        $local_cnx = 1;
+        $localcnx = 1;
         $cnx = vmoodle_make_connection($vmoodle);
     }
 
@@ -283,7 +283,7 @@ function vmoodle_drop_database(&$vmoodle, $cnx = null) {
             $erroritem->on = 'db';
             return $erroritem;
         }
-        if ($local_cnx) {
+        if ($localcnx) {
             vmoodle_close_connection($vmoodle, $cnx);
         }
     }
@@ -300,11 +300,11 @@ function vmoodle_drop_database(&$vmoodle, $cnx = null) {
 function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars = null, $filter = null) {
     global $CFG;
 
-    $local_cnx = 0;
+    $localcnx = 0;
     if (is_null($cnx) || $vmoodle->vdbtype == 'postgres') {
         // Postgress MUST make a new connection to ensure db is bound to handle.
         $cnx = vmoodle_make_connection($vmoodle, true);
-        $local_cnx = 1;
+        $localcnx = 1;
     }
 
     // Get dump file.
@@ -359,7 +359,7 @@ function vmoodle_load_db_template(&$vmoodle, $bulkfile, $cnx = null, $vars = nul
     }
 
     echo "loaded : $i queries succeeded, $j queries failed<br/>";
-    if ($local_cnx) {
+    if ($localcnx) {
         vmoodle_close_connection($vmoodle, $cnx);
     }
     return false;
@@ -375,7 +375,7 @@ function get_available_platforms() {
     $config = get_config('local_vmoodle');
 
     // Getting description of master host.
-    $master_host = $DB->get_record('course', array('id' => 1));
+    $masterhost = $DB->get_record('course', array('id' => 1));
 
     // Setting available platforms.
     $aplatforms = array();
@@ -412,7 +412,7 @@ function get_available_platforms() {
 function help_button_vml($library, $helpitem, $title) {
     global $OUTPUT;
 
-    //WAFA: help icon no longer take links, it now takes identifiers to 
+    // WAFA: help icon no longer take links.
     return '';
 }
 
@@ -425,16 +425,16 @@ function help_button_vml($library, $helpitem, $title) {
  * @param bool $contants_replace True if constants should be replaced (optional).
  * @return string The parameters' values.
  */
-function replace_parameters_values($matches, $params, $parameters_replace = true, $constants_replace = true) {
+function replace_parameters_values($matches, $params, $parametersreplace = true, $constantsreplace = true) {
     global $vmcommandconstants;
 
     // Parsing constants.
-    if ($constants_replace
+    if ($constantsreplace
             && empty($matches[1])
                     && array_key_exists($matches[2], $vmcommandconstants)) {
         $value = $vmcommandconstants[$matches[2]];
         // Parsing parameter.
-    } else if ($parameters_replace && !empty($matches[1]) && array_key_exists($matches[2], $params)) {
+    } else if ($parametersreplace && !empty($matches[1]) && array_key_exists($matches[2], $params)) {
         $value = $params[$matches[2]]->get_value();
     } else {
         // Leave untouched.
@@ -457,7 +457,7 @@ function replace_parameters_values($matches, $params, $parameters_replace = true
  * @param string $displayed True if the block is displayed by default, false otherwise.
  */
 function print_collapsable_bloc_start($id, $caption, $classes = '', $displayed = true) {
-    global $CFG, $OUTPUT;
+    global $OUTPUT;
 
     $caption = strip_tags($caption);
 
@@ -548,7 +548,7 @@ function vmoodle_make_this(){
     $thismoodle->vdblogin = $CFG->dbuser;
     $thismoodle->vdbpass = $CFG->dbpass;
     $thismoodle->vdbname = $CFG->dbname;
-    $thismoodle->vdbprefix    = $CFG->prefix;
+    $thismoodle->vdbprefix = $CFG->prefix;
 
     return $thismoodle;
 }
@@ -570,7 +570,8 @@ function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
             return false;
         }
         if ($newid = mysql_insert_id($cnx)) {
-            $res = $newid; // Get the last insert id in case of an INSERT.
+            // Get the last insert id in case of an INSERT.
+            $res = $newid;
         }
     } else if ($vmoodle->vdbtype == 'postgres') {
         // If database is PostgresSQL typed.
@@ -579,11 +580,12 @@ function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
             return false;
         }
         if ($newid = pg_last_oid($res)) {
-            $res = $newid; // Get the last insert id in case of an INSERT.
+            // Get the last insert id in case of an INSERT.
+            $res = $newid;
         }
     } else {
         // If database not supported.
-        echo "vmoodle_execute_query() : Database not supported<br/>" ;
+        echo "vmoodle_execute_query() : Database not supported<br/>";
         return false;
     }
 
@@ -629,7 +631,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
     // By default, empty password.
     $pass = '';
     $pgm = null;
-  
+
     if ($vmoodle->vdbtype == 'mysql' || $vmoodle->vdbtype == 'mysqli') {
         // Default port.
         if (empty($port)) {
@@ -693,18 +695,18 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $cmd = $pgm.' '.$cmd;
 
         // Prints log messages in the page and in 'cmd.log'.
-        if ($LOG = fopen(dirname($outputfile).'/cmd.log', 'a')) {
-            fwrite($LOG, $cmd."\n");
+        if ($log = fopen(dirname($outputfile).'/cmd.log', 'a')) {
+            fwrite($log, $cmd."\n");
         }
 
         // Executes the SQL command.
         exec($cmd, $execoutput, $returnvalue);
-        if ($LOG) {
+        if ($log) {
             foreach ($execoutput as $execline) {
-                fwrite($LOG, $execline."\n");
+                fwrite($log, $execline."\n");
             }
-            fwrite($LOG, $returnvalue."\n");
-            fclose($LOG);
+            fwrite($log, $returnvalue."\n");
+            fclose($log);
         }
     }
 
@@ -737,9 +739,9 @@ function vmoodle_load_database_from_template($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } elseif ($vmoodledata->vdbtype == 'mysqli') {
+    } else if ($vmoodledata->vdbtype == 'mysqli') {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } elseif ($vmoodledata->vdbtype == 'postgres') {
+    } else if ($vmoodledata->vdbtype == 'postgres') {
         $createstatement = 'CREATE SCHEMA %DATABASE% ';
     }
 
@@ -806,7 +808,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
  * @param object $this_as_host The mnet_host record that represents the master.
  * @return bool If true, fixing database from template was sucessful, otherwise false.
  */
-function vmoodle_fix_database($vmoodledata, $this_as_host) {
+function vmoodle_fix_database($vmoodledata, $thisashost) {
     global $CFG, $SITE;
 
     $manifest = vmoodle_get_vmanifest($vmoodledata->vtemplate);
@@ -816,23 +818,25 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
     // SQL files paths.
     $temporarysetup_path = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_setup_template.temp.sql';
 
-    if (!$FILE = fopen($temporarysetup_path, 'wb')) {
+    if (!$file = fopen($temporarysetup_path, 'wb')) {
         print_error('couldnotwritethesetupscript', 'local_vmoodle');
         return false;
     }
-    $PREFIX = $vmoodledata->vdbprefix;
+    $prefix = $vmoodledata->vdbprefix;
     $vmoodledata->description = str_replace("'", "''", $vmoodledata->description);
     // Setup moodle name and description.
-    fwrite($FILE, "UPDATE {$PREFIX}course SET fullname='{$vmoodledata->name}', shortname='{$vmoodledata->shortname}', summary='{$vmoodledata->description}' WHERE category = 0 AND id = 1;\n");
+    $sql = "UPDATE {$prefix}course SET fullname='{$vmoodledata->name}', shortname='{$vmoodledata->shortname}',";
+    $sql .= " summary='{$vmoodledata->description}' WHERE category = 0 AND id = 1;\n";
+    fwrite($file, $sql);
 
     // Setup a suitable cookie name.
     $cookiename = clean_param($vmoodledata->shortname, PARAM_ALPHANUM);
-    fwrite($FILE, "UPDATE {$PREFIX}config SET value='{$cookiename}' WHERE name = 'sessioncookie';\n\n");
+    fwrite($file, "UPDATE {$prefix}config SET value='{$cookiename}' WHERE name = 'sessioncookie';\n\n");
 
     // Delete all logs.
-    fwrite($FILE, "DELETE FROM {$PREFIX}log;\n\n");
-    fwrite($FILE, "DELETE FROM {$PREFIX}mnet_log;\n\n");
-    fwrite($FILE, "DELETE FROM {$PREFIX}mnet_session;\n\n"); // purge mnet logs and sessions
+    fwrite($file, "DELETE FROM {$prefix}log;\n\n");
+    fwrite($file, "DELETE FROM {$prefix}mnet_log;\n\n");
+    fwrite($file, "DELETE FROM {$prefix}mnet_session;\n\n"); // purge mnet logs and sessions
 
     /*
      * we need :
@@ -840,33 +844,39 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
      * clean mnet_hosts unless All Hosts and self record
      * rebind self record to new wwwroot, ip and cleaning public key
      */
-    fwrite($FILE, "--\n-- Cleans all mnet tables but keeping service configuration in place \n--\n");
+    fwrite($file, "--\n-- Cleans all mnet tables but keeping service configuration in place \n--\n");
 
     // We first remove all services. Services will be next rebuild based on template or minimal strategy.
     // We expect all service declaraton are ok in the template DB as the template comes from homothetic installation.
-    fwrite($FILE, "DELETE FROM {$PREFIX}mnet_host2service;\n\n");
+    fwrite($file, "DELETE FROM {$prefix}mnet_host2service;\n\n");
 
     // We first remove all services. Services will be next rebuild based on template or minimal strategy.
-    fwrite($FILE, "DELETE FROM {$PREFIX}mnet_host WHERE wwwroot != '' AND wwwroot != '{$manifest['templatewwwroot']}';\n\n");
+    fwrite($file, "DELETE FROM {$prefix}mnet_host WHERE wwwroot != '' AND wwwroot != '{$manifest['templatewwwroot']}';\n\n");
     $vmoodlenodename = str_replace("'", "''", $vmoodledata->name);
-    fwrite($FILE, "UPDATE {$PREFIX}mnet_host SET id = 1, wwwroot = '{$vmoodledata->vhostname}', name = '{$vmoodlenodename}' , public_key = '', public_key_expires = 0, ip_address = '{$cfgipaddress}'  WHERE wwwroot = '{$manifest['templatewwwroot']}';\n\n");
-    fwrite($FILE, "UPDATE {$PREFIX}config SET value = 1 WHERE name = 'mnet_localhost_id';\n\n"); // Ensure consistance.
-    fwrite($FILE, "UPDATE {$PREFIX}user SET deleted = 1 WHERE auth = 'mnet' AND username != 'admin';\n\n"); // Disable all mnet users.
+    $sql = "UPDATE {$prefix}mnet_host SET id = 1, wwwroot = '{$vmoodledata->vhostname}', name = '{$vmoodlenodename}',";
+    $sql .= " public_key = '', public_key_expires = 0, ip_address = '{$cfgipaddress}'  WHERE wwwroot = '{$manifest['templatewwwroot']}';\n\n";
+    fwrite($file, $sql);
+
+    // Ensure consistance.
+    fwrite($file, "UPDATE {$prefix}config SET value = 1 WHERE name = 'mnet_localhost_id';\n\n");
+
+    // Disable all mnet users.
+    fwrite($file, "UPDATE {$prefix}user SET deleted = 1 WHERE auth = 'mnet' AND username != 'admin';\n\n");
 
     /*
      * this is necessary when using a template from another location or deployment target as
      * the salt may have changed. We would like that all primary admins be the same techn admin.
      */
     $localadmin = get_admin();
-    fputs($FILE, "--\n-- Force physical admin with same credentials than in master.  \n--\n");
-    fwrite($FILE, "UPDATE {$PREFIX}user SET password = '{$localadmin->password}' WHERE auth = 'manual' AND username = 'admin';\n\n");
+    fputs($file, "--\n-- Force physical admin with same credentials than in master.  \n--\n");
+    fwrite($file, "UPDATE {$prefix}user SET password = '{$localadmin->password}' WHERE auth = 'manual' AND username = 'admin';\n\n");
 
-    if ($vmoodledata->mnet == -1){ // NO MNET AT ALL.
+    if ($vmoodledata->mnet == -1) { // NO MNET AT ALL.
         /*
          * we need :
          * disable mnet
          */
-        fputs($FILE, "UPDATE {$PREFIX}config SET value = 'off' WHERE name = 'mnet_dispatcher_mode';\n\n");
+        fputs($file, "UPDATE {$prefix}config SET value = 'off' WHERE name = 'mnet_dispatcher_mode';\n\n");
     } else {
         // ALL OTHER CASES.
         /*
@@ -874,41 +884,41 @@ function vmoodle_fix_database($vmoodledata, $this_as_host) {
          * enable mnet
          * push our master identity in mnet_host table
          */
-        fputs($FILE, "UPDATE {$PREFIX}config SET value = 'strict' WHERE name = 'mnet_dispatcher_mode';\n\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}mnet_host (wwwroot, ip_address, name, public_key, applicationid, public_key_expires) VALUES ('{$this_as_host->wwwroot}', '{$this_as_host->ip_address}', '{$SITE->fullname}', '{$this_as_host->public_key}', {$this_as_host->applicationid}, '{$this_as_host->public_key_expires}');\n\n");
+        fputs($file, "UPDATE {$prefix}config SET value = 'strict' WHERE name = 'mnet_dispatcher_mode';\n\n");
+        fputs($file, "INSERT INTO {$prefix}mnet_host (wwwroot, ip_address, name, public_key, applicationid, public_key_expires) VALUES ('{$this_as_host->wwwroot}', '{$this_as_host->ip_address}', '{$SITE->fullname}', '{$this_as_host->public_key}', {$this_as_host->applicationid}, '{$this_as_host->public_key_expires}');\n\n");
 
-        fputs($FILE, "--\n-- Enable the service 'mnetadmin, sso_sp and sso_ip' with host which creates this host.  \n--\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}mnet_host2service VALUES (null, (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$PREFIX}mnet_service WHERE name LIKE 'mnetadmin'), 1, 0);\n\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}mnet_host2service VALUES (null, (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$PREFIX}mnet_service WHERE name LIKE 'sso_sp'), 1, 0);\n\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}mnet_host2service VALUES (null, (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$PREFIX}mnet_service WHERE name LIKE 'sso_idp'), 0, 1);\n\n");
+        fputs($file, "--\n-- Enable the service 'mnetadmin, sso_sp and sso_ip' with host which creates this host.  \n--\n");
+        fputs($file, "INSERT INTO {$prefix}mnet_host2service VALUES (null, (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$prefix}mnet_service WHERE name LIKE 'mnetadmin'), 1, 0);\n\n");
+        fputs($file, "INSERT INTO {$prefix}mnet_host2service VALUES (null, (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$prefix}mnet_service WHERE name LIKE 'sso_sp'), 1, 0);\n\n");
+        fputs($file, "INSERT INTO {$prefix}mnet_host2service VALUES (null, (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), (SELECT id FROM {$prefix}mnet_service WHERE name LIKE 'sso_idp'), 0, 1);\n\n");
 
-        fputs($FILE, "--\n-- Insert master host user admin.  \n--\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}user (auth, confirmed, policyagreed, deleted, mnethostid, username, password) VALUES ('mnet', 1, 0, 0, (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), 'admin', '');\n\n");
+        fputs($file, "--\n-- Insert master host user admin.  \n--\n");
+        fputs($file, "INSERT INTO {$prefix}user (auth, confirmed, policyagreed, deleted, mnethostid, username, password) VALUES ('mnet', 1, 0, 0, (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'), 'admin', '');\n\n");
 
-        fputs($FILE, "--\n-- Links role and capabilites for master host admin.  \n--\n");
-        $roleid = "(SELECT id FROM {$PREFIX}role WHERE shortname LIKE 'manager')";
+        fputs($file, "--\n-- Links role and capabilites for master host admin.  \n--\n");
+        $roleid = "(SELECT id FROM {$prefix}role WHERE shortname LIKE 'manager')";
         $contextid = 1;
-        $userid = "(SELECT id FROM {$PREFIX}user WHERE auth LIKE 'mnet' AND username = 'admin' AND mnethostid = (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'))";
+        $userid = "(SELECT id FROM {$prefix}user WHERE auth LIKE 'mnet' AND username = 'admin' AND mnethostid = (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'))";
         $timemodified = time();
         $modifierid = $userid;
         $component = "''";
         $itemid = 0;
         $sortorder = 1;
-        fputs($FILE, "INSERT INTO {$PREFIX}role_assignments(id,roleid,contextid,userid,timemodified,modifierid,component,itemid,sortorder) VALUES (0, $roleid, $contextid, $userid, $timemodified, $modifierid, $component, $itemid, $sortorder);\n\n");
+        fputs($file, "INSERT INTO {$prefix}role_assignments(id,roleid,contextid,userid,timemodified,modifierid,component,itemid,sortorder) VALUES (0, $roleid, $contextid, $userid, $timemodified, $modifierid, $component, $itemid, $sortorder);\n\n");
 
-        fputs($FILE, "--\n-- Add new network admin to local siteadmins.  \n--\n");
-        $adminidsql = "(SELECT id FROM {$PREFIX}user WHERE auth LIKE 'mnet' AND username = 'admin' AND mnethostid = (SELECT id FROM {$PREFIX}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'))";
-        fputs($FILE, "UPDATE {$PREFIX}config SET value = CONCAT(value, ',', $adminidsql) WHERE name = 'siteadmins';\n");
+        fputs($file, "--\n-- Add new network admin to local siteadmins.  \n--\n");
+        $adminidsql = "(SELECT id FROM {$prefix}user WHERE auth LIKE 'mnet' AND username = 'admin' AND mnethostid = (SELECT id FROM {$prefix}mnet_host WHERE wwwroot LIKE '{$this_as_host->wwwroot}'))";
+        fputs($file, "UPDATE {$prefix}config SET value = CONCAT(value, ',', $adminidsql) WHERE name = 'siteadmins';\n");
 
-        fputs($FILE, "--\n-- Create a disposable key for renewing new host's keys.  \n--\n");
-        fputs($FILE, "INSERT INTO {$PREFIX}config (name, value) VALUES ('bootstrap_init', '{$this_as_host->wwwroot}');\n");
+        fputs($file, "--\n-- Create a disposable key for renewing new host's keys.  \n--\n");
+        fputs($file, "INSERT INTO {$prefix}config (name, value) VALUES ('bootstrap_init', '{$this_as_host->wwwroot}');\n");
     }
-    fclose($FILE);
+    fclose($file);
 
     $sqlcmd = vmoodle_get_database_dump_cmd($vmoodledata);
 
     // Make final commands to execute, depending on the database type.
-    $import    = $sqlcmd.$temporarysetup_path;
+    $import = $sqlcmd.$temporarysetup_path;
 
     // Prints log messages in the page and in 'cmd.log'.
 
@@ -947,7 +957,9 @@ function vmoodle_destroy($vmoodledata) {
     // Drop the database.
 
     $sql = "$dropstatement $vmoodledata->vdbname";
-    debug_trace("destroy_database : executing drop sql");
+    if (function_exists('debug_trace')) {
+        debug_trace("destroy_database : executing drop sql");
+    }
 
     try {
         $DB->execute($sql);
@@ -1050,9 +1062,9 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
-    } elseif ($vmoodledata->vdbtype == 'mysqli') {
+    } else if ($vmoodledata->vdbtype == 'mysqli') {
         $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
-    } elseif ($vmoodledata->vdbtype == 'postgres') {
+    } else if ($vmoodledata->vdbtype == 'postgres') {
         // Needs to point the pg_restore command.
         $pgm = (!empty($config->cmd_pgsql)) ? stripslashes($config->cmd_pgsql) : false;
     }
@@ -1088,11 +1100,11 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
         $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
-    } elseif ($vmoodledata->vdbtype == 'mysqli') {
+    } else if ($vmoodledata->vdbtype == 'mysqli') {
         $sqlcmd    = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
-    } elseif ($vmoodledata->vdbtype == 'postgres') {
+    } else if ($vmoodledata->vdbtype == 'postgres') {
         $sqlcmd    = $pgm.' -Fc -h '.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -p '.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-U '.$thisvmoodle->vdblogin.' ';
         $sqlcmd .= '-d '.$vmoodledata->vdbname.' -f ';

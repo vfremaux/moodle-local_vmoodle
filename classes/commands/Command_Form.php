@@ -91,7 +91,6 @@ class Command_Form extends \moodleform {
      * @throws Command_Exception.
      */
     public function definition() {
-        global $CFG;
 
         // Setting variables.
         $mform =& $this->_form;

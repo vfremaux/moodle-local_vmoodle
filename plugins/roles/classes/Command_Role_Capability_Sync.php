@@ -25,13 +25,14 @@ class Command_Role_Capability_Sync extends Command {
      */
     public function __construct() {
         global $DB;
-        
+
         // Getting command description.
         $cmd_name = vmoodle_get_string('cmdsynccapabilityname', 'vmoodleadminset_roles');
         $cmd_desc = vmoodle_get_string('cmdsynccapabilitydesc', 'vmoodleadminset_roles');
 
         // Creating platform parameter.
-        $platform_param = new Command_Parameter('platform',    'enum', vmoodle_get_string('platformparamsyncdesc', 'vmoodleadminset_roles'), null, get_available_platforms());
+        $label = get_string('platformparamsyncdesc', 'vmoodleadminset_roles');
+        $platformparam = new Command_Parameter('platform', 'enum', $label, null, get_available_platforms());
 
         // Getting role parameter.
         $roles = role_fix_names(get_all_roles(), \context_system::instance(), ROLENAME_ORIGINAL);
@@ -40,21 +41,23 @@ class Command_Role_Capability_Sync extends Command {
         foreach ($roles as $r) {
             $rolemenu[$r->shortname] = $r->name;
         }
-        $role_param = new Command_Parameter('role', 'enum', vmoodle_get_string('roleparamsyncdesc', 'vmoodleadminset_roles'), null, $rolemenu);
+        $label = get_string('roleparamsyncdesc', 'vmoodleadminset_roles');
+        $roleparam = new Command_Parameter('role', 'enum', $label, null, $rolemenu);
 
         // Creating capability parameter.
         $records = $DB->get_records('capabilities', null, 'name', 'name');
         $capabilities = array();
 
-        foreach($records as $record) {
+        foreach ($records as $record) {
             $capabilities[$record->name] = get_capability_string($record->name);
         }
 
         asort($capabilities);
-        $capability_param = new Command_Parameter('capability', 'enum', vmoodle_get_string('capabilityparamsyncdesc', 'vmoodleadminset_roles'), null, $capabilities);
+        $label = get_string('capabilityparamsyncdesc', 'vmoodleadminset_roles');
+        $capabilityparam = new Command_Parameter('capability', 'enum', $label, null, $capabilities);
 
         // Creating command.
-        parent::__construct($cmd_name, $cmd_desc, array($platform_param, $role_param, $capability_param));
+        parent::__construct($cmdname, $cmddesc, array($platformparam, $roleparam, $capabilityparam));
     }
 
     /**
@@ -89,8 +92,8 @@ class Command_Role_Capability_Sync extends Command {
         }
 
         // Creating peer to read role configuration.
-        $mnet_host = new \mnet_peer();
-        if (!$mnet_host->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
+        $mnethost = new \mnet_peer();
+        if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
                             'status' => MNET_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
@@ -102,13 +105,13 @@ class Command_Role_Capability_Sync extends Command {
         }
 
         // Creating XMLRPC client to read role configuration.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_capabilities');
-        $rpc_client->add_param($role, 'string');
-        $rpc_client->add_param($capability, 'string');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_capabilities');
+        $rpcclient->add_param($role, 'string');
+        $rpcclient->add_param($capability, 'string');
 
         // Checking result.
-        if (!($rpc_client->send($mnet_host) && ($response = json_decode($rpc_client->response)) && (
+        if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && (
                 $response->status == RPC_SUCCESS ||
                 ($response->status == RPC_FAILURE_RECORD && (
                     in_array($response->errors, 'No capabilites for this role.') || 
@@ -119,17 +122,17 @@ class Command_Role_Capability_Sync extends Command {
             if (!isset($response)) {
                 $response = new \StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             }
             if (debugging()) {
                 echo '<pre>';
-                var_dump($rpc_client);
+                var_dump($rpcclient);
                 ob_flush();
                 echo '</pre>';
             }
 
             // Saving results.
-            foreach($hosts as $host => $name) {
+            foreach ($hosts as $host => $name) {
                 $this->results[$host] = $response;
             }
             return;
@@ -137,9 +140,9 @@ class Command_Role_Capability_Sync extends Command {
 
         // Getting role configuration.
         if ($response->status == RPC_FAILURE_RECORD) {
-            $role_capability = array($capability => null);
+            $rolecapability = array($capability => null);
         } else {
-            $role_capability = (array) $response->value;
+            $rolecapability = (array) $response->value;
         }
         unset($response);
 
@@ -147,12 +150,12 @@ class Command_Role_Capability_Sync extends Command {
         $responses = array();
 
         // Creating peers.
-        $mnet_hosts = array();
+        $mnethosts = array();
 
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
                 $responses[$host] = (object) array(
                     'status' => MNET_FAILURE,
@@ -162,34 +165,34 @@ class Command_Role_Capability_Sync extends Command {
         }
 
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_capabilities');
-        $rpc_client->add_param($role, 'string');
-        $rpc_client->add_param($role_capability, 'string');
-        $rpc_client->add_param(false, 'boolean');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_capabilities');
+        $rpcclient->add_param($role, 'string');
+        $rpcclient->add_param($rolecapability, 'string');
+        $rpcclient->add_param(false, 'boolean');
 
         // Sending requests.
-        foreach ($mnet_hosts as $mnet_host) {
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new \StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
                 $response->error = 'Remote Set role capability : Remote proc error';
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpc_client);
+                    var_dump($rpcclient);
                     ob_flush();
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
                 $response->errors[] = implode('<br/>', $response->errors);
             }
-            // Recording response
-            $responses[$mnet_host->wwwroot] = $response;
+            // Recording response.
+            $responses[$mnethost->wwwroot] = $response;
         }
-        // Saving results
+        // Saving results.
         $this->results = $responses + $this->results;
     }
 
@@ -201,7 +204,7 @@ class Command_Role_Capability_Sync extends Command {
      * @throws Command_Exception.
      */
     public function get_result($host = null, $key = null) {
-        global $CFG, $SESSION,$DB,$OUTPUT;
+        global $CFG, $SESSION, $DB, $OUTPUT;
 
         // Checking if command has been runned.
         if (!$this->has_run()) {
@@ -211,11 +214,14 @@ class Command_Role_Capability_Sync extends Command {
         // Checking host (general result isn't provide in this kind of command).
         if (is_null($host)) {
             if (isset($SESSION->vmoodle_sa['rolelib']['command']) && isset($SESSION->vmoodle_sa['rolelib']['platforms'])) {
-                return '<center>'.$OUTPUT->single_button(new moodle_url($CFG->wwwroot.'/local/vmoodle/plugins/roles/controller.rolelib.sadmin.php', array('what' => 'backtocomparison')), get_string('backtocomparison', 'vmoodleadminset_roles'), 'get').'</center><br/>';
+                $params = array('what' => 'backtocomparison');
+                $buttonurl = new moodle_url('/local/vmoodle/plugins/roles/controller.rolelib.sadmin.php', $params);
+                $label = get_string('backtocomparison', 'vmoodleadminset_roles');
+                return '<center>'.$OUTPUT->single_button($buttonurl, $label, 'get').'</center><br/>';
             } else {
                 return null;
             }
-        } elseif (!array_key_exists($host, $this->results)) {
+        } else if (!array_key_exists($host, $this->results)) {
             return null;
         }
         $result = $this->results[$host];
@@ -223,7 +229,7 @@ class Command_Role_Capability_Sync extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;

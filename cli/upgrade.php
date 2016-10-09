@@ -110,7 +110,7 @@ if (!empty($options['test'])) {
     die;
 }
 
-require_once($CFG->libdir.'/adminlib.php');       // various admin-only functions.
+require_once($CFG->libdir.'/adminlib.php');       // Various admin-only functions.
 require_once($CFG->libdir.'/upgradelib.php');     // General upgrade/install related functions.
 require_once($CFG->libdir.'/environmentlib.php');
 
@@ -133,9 +133,9 @@ if (!moodle_needs_upgrading()) {
 }
 
 // Test environment first.
-list($envstatus, $environment_results) = check_moodle_environment(normalize_version($release), ENV_SELECT_RELEASE);
+list($envstatus, $environmentresults) = check_moodle_environment(normalize_version($release), ENV_SELECT_RELEASE);
 if (!$envstatus) {
-    $errors = environment_get_errors($environment_results);
+    $errors = environment_get_errors($environmentresults);
     cli_heading(get_string('environment', 'admin'));
     foreach ($errors as $error) {
         list($info, $report) = $error;

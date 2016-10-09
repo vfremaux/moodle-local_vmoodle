@@ -16,7 +16,7 @@
 
 /**
  * Manages the wizard of pool administration.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
@@ -54,19 +54,19 @@ switch ($action) {
 
         // Loading command's category.
         if (is_dir(VMOODLE_PLUGINS_DIR.$category) && is_readable(VMOODLE_PLUGINS_DIR.$category.'/config.php')) {
-            $command_category = load_vmplugin($_POST['category_plugin_name']);
+            $commandcategory = load_vmplugin($_POST['category_plugin_name']);
         } else {
             return 0;
         }
 
         // Invoking a form.
         try {
-            $command = $command_category->get_commands($index);
+            $command = $commandcategory->get_commands($index);
         } catch (Command_Exception $vce) {
             return 0;
         }
-        $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
-        if (!($data = $command_form->get_data())) {
+        $commandform = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
+        if (!($data = $commandform->get_data())) {
             return 0;
         }
 
@@ -101,17 +101,17 @@ switch ($action) {
     case 'validateadvancedcommand':
         // Validating the advanced command.
         // Invoking form.
-        $advancedcommand_form = new AdvancedCommand_Form();
+        $advancedcommandform = new AdvancedCommand_Form();
 
         // Checking if the fom is cancelled.
-        if ($advancedcommand_form->is_cancelled()) {
+        if ($advancedcommandform->is_cancelled()) {
             $SESSION->vmoodle_sa['wizardnow'] = 'commandchoice';
             header('Location: view.php?view=sadmin');
             return -1;
         }
 
         // Checking sql command.
-        if (!($data = $advancedcommand_form->get_data(false))) {
+        if (!($data = $advancedcommandform->get_data(false))) {
             return 0;
         }
 
@@ -130,10 +130,10 @@ switch ($action) {
     case 'uploadsqlscript':
         // Uploading a SQL script to fill Command_Sql.
         // Checking uploaded file.
-        $advancedcommand_form = new AdvancedCommand_Form();
-        $advancedcommand_upload_form = new AdvancedCommand_Upload_Form();
-        if ($file_content = $advancedcommand_upload_form->get_file_content('script')) {
-            $advancedcommand_form->set_data(array('sqlcommand' => $file_content));
+        $advancedcommandform = new AdvancedCommand_Form();
+        $advancedcommanduploadform = new AdvancedCommand_Upload_Form();
+        if ($filecontent = $advancedcommanduploadform->get_file_content('script')) {
+            $advancedcommandform->set_data(array('sqlcommand' => $filecontent));
         }
         break;
 
@@ -156,10 +156,10 @@ switch ($action) {
         }
 
         // Invoking form.
-        $rpcommand_form = new Command_Form($rpcommand, Command_Form::MODE_RETRIEVE_PLATFORM);
+        $rpcommandform = new Command_Form($rpcommand, Command_Form::MODE_RETRIEVE_PLATFORM);
 
         // Checking if form is submitted.
-        if (!($data = $rpcommand_form->get_data())) {
+        if (!($data = $rpcommandform->get_data())) {
             return 0;
         }
 
@@ -188,31 +188,31 @@ switch ($action) {
     case 'sendcommand':
         // Sending command on virtual platforms.
         // Invoking form.
-        $target_form = new Target_Form();
+        $targetform = new Target_Form();
 
         // Checking if form is cancelled.
-        if ($target_form->is_cancelled()) {
+        if ($targetform->is_cancelled()) {
             unset($SESSION->vmoodle_sa);
             header('Location: view.php?view=sadmin');
             return -1;
         }
 
         // Checking data.
-        if (!($data = $target_form->get_data())) {
+        if (!($data = $targetform->get_data())) {
             return 0;
         }
 
         // Getting platforms // BUGFIX not found why splatforms dont' come into get_data().
-        $form_platforms = optional_param_array('splatforms', array(), PARAM_URL);
-        if (empty($form_platforms) || (count($form_platforms) == 1 && $form_platforms[0] == '0')) {
+        $formplatforms = optional_param_array('splatforms', array(), PARAM_URL);
+        if (empty($formplatforms) || (count($formplatforms) == 1 && $formplatforms[0] == '0')) {
             echo $OUTPUT->header();
             throw new Command_Exception('noplatformchosen');
         }
 
         $platforms = array();
-        $all_platforms = get_available_platforms();
-        foreach ($form_platforms as $platform_root) {
-            $platforms[$platform_root] = $all_platforms[$platform_root];
+        $allplatforms = get_available_platforms();
+        foreach ($formplatforms as $platformroot) {
+            $platforms[$platformroot] = $allplatforms[$platformroot];
         }
 
         // Checking command.
@@ -283,14 +283,14 @@ switch ($action) {
 
         // Getting platform.
         $platform = required_param('platform', PARAM_URL);
-        $available_platforms = get_available_platforms();
+        $availableplatforms = get_available_platforms();
 
-        if (!array_key_exists($platform, $available_platforms)) {
+        if (!array_key_exists($platform, $availableplatforms)) {
             return -1;
         }
 
         // Running command again on single host.
-        $command->run(array($platform => $available_platforms[$platform]));
+        $command->run(array($platform => $availableplatforms[$platform]));
 
         // Saving result.
         $SESSION->vmoodle_sa['command'] = serialize($command);

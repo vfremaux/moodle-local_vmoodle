@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * this script scans all virtual instances to perform a cronmonitor worker 
+ * this script scans all virtual instances to perform a cronmonitor worker
  * action on each.
  *
  * @package block_vmoodle

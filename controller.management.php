@@ -57,8 +57,8 @@ $messageobject->message = '';
 $messageobject->style = 'notifyproblem';
 
 // Execution time can take more than 30 sec (PHP default value).
-$initial_max_execution_time = ini_get('max_execution_time');
-if ($initial_max_execution_time > 0) {
+$initialmaxexectime = ini_get('max_execution_time');
+if ($initialmaxexectime > 0) {
     set_time_limit(0);
 }
 
@@ -72,14 +72,14 @@ if ($action == 'add') {
         // Default configuration (automated schema).
         if (@$config->automatedschema) {
             $platformform = new StdClass();
-            $platformform->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost' ;
-            $platformform->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli' ;
-            $platformform->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost' ;
+            $platformform->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost';
+            $platformform->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli';
+            $platformform->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost';
             $platformform->vdblogin = $config->vdblogin;
             $platformform->vdbpass = $config->vdbpass;
             $platformform->vdbname = $config->vdbbasename;
-            $platformform->vdbprefix = (@$config->vdbprefix) ? $config->vdbprefix : 'mdl_' ;
-            $platformform->vdbpersist = (@$config->vdbpersist) ? 1 : 0 ;
+            $platformform->vdbprefix = (@$config->vdbprefix) ? $config->vdbprefix : 'mdl_';
+            $platformform->vdbpersist = (@$config->vdbpersist) ? 1 : 0;
             $platformform->vdatapath = stripslashes($config->vdatapathbase);
 
             if ($config->mnet == 'NEW') {
@@ -88,7 +88,7 @@ if ($action == 'add') {
             } else {
                 $platformform->mnet = 0 + @$config->mnet;
             }
-        
+
             $platformform->services = $config->services;
 
             // Try to get crontab (Linux).
@@ -218,7 +218,7 @@ if ($action == 'doadd') {
             }
 
             // Do we have a "self" host record ?
-            if (!$this_as_host = $DB->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
+            if (!$thisashost = $DB->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
                 // If loading this host's data has failed.
                 $messageobject->message = get_string('badthishostdata', 'local_vmoodle');
 
@@ -250,30 +250,31 @@ if ($action == 'doadd') {
                 if (empty($automation)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->box(get_string('vmoodledoadd1', 'local_vmoodle'));
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'doadd', 'step' => 1)));
+                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 1);
+                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
                     echo $OUTPUT->footer();
                     die;
                 }
                 return 0;
             }
 
-        // Fix remote database for Mnet operations.
+            // Fix remote database for Mnet operations.
 
-        /*
-         * Fixing database will rewrite and prepare the remote mnet_host table for having 
-         * consistant identity of the VMoodle Master node.
-         * Additionnaly, some data from instance addition form should be forced into 
-         * the SQL template, whatever the configuration of the original Moodle was.
-         *
-         * A script backup is available in vmoodle data directory as 
-         *
-         * vmoodle_setup_template.temp.sql 
-         *
-         * with all fixing SQL instructions processed.
-         */
+            /*
+             * Fixing database will rewrite and prepare the remote mnet_host table for having
+             * consistant identity of the VMoodle Master node.
+             * Additionnaly, some data from instance addition form should be forced into
+             * the SQL template, whatever the configuration of the original Moodle was.
+             *
+             * A script backup is available in vmoodle data directory as
+             *
+             * vmoodle_setup_template.temp.sql
+             *
+             * with all fixing SQL instructions processed.
+             */
 
             if ($vmoodlestep == 1) {
-                if (!vmoodle_fix_database($submitteddata, $this_as_host, $CFG->dataroot.'/vmoodle')) {
+                if (!vmoodle_fix_database($submitteddata, $thisashost, $CFG->dataroot.'/vmoodle')) {
                     // If fixing database has failed.
                     unset($SESSION->vmoodledata);
                     $messageobject->message = get_string('couldnotfixdatabase', 'local_vmoodle');
@@ -289,14 +290,17 @@ if ($action == 'doadd') {
                     echo $OUTPUT->header();
                     echo $OUTPUT->box(get_string('vmoodledoadd2', 'local_vmoodle'));
                     if (debugging()) {
-                        $opts['view'] = 'management';
-                        $opts['what'] = 'doadd';
-                        $opts['step'] = 2;
+                        $params = array();
+                        $params['view'] = 'management';
+                        $params['what'] = 'doadd';
+                        $params['step'] = 2;
                         echo '<center>';
-                        echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $opts), get_string('skip', 'local_vmoodle'), 'get');
+                        $label = get_string('skip', 'local_vmoodle');
+                        echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
                         echo '</center>';
                     }
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'doadd', 'step' => 2)));
+                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 2);
+                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
                     echo $OUTPUT->footer();
                     die;
                 }
@@ -310,7 +314,8 @@ if ($action == 'doadd') {
                 if (empty($automation)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->box(get_string('vmoodledoadd3', 'local_vmoodle'));
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'doadd', 'step' => 3)));
+                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 3);
+                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
                     echo $OUTPUT->footer();
                     die;
                 }
@@ -321,14 +326,14 @@ if ($action == 'doadd') {
 
             if ($vmoodlestep == 3) {
                 // Adds the new virtual instance record, with all data if everything is done.
-                $submitteddata->timecreated    = time();
+                $submitteddata->timecreated = time();
                 $submitteddata->vhostname = preg_replace("/\/$/", '', $submitteddata->vhostname); // Fix possible misslashing.
 
                 if ($submitteddata->mnet == 'NEW') {
                     $maxmnet = vmoodle_get_last_subnetwork_number();
                     $submitteddata->mnet = $maxmnet + 1;
                 }
-            
+
                 if (!$idnewblock = $DB->insert_record('local_vmoodle', $submitteddata)) {
                     // If inserting data in 'local_vmoodle' table has failed.
                     $messageobject->message = get_string('badblockinsert', 'local_vmoodle');
@@ -343,7 +348,8 @@ if ($action == 'doadd') {
                 if (empty($automation)) {
                     echo $OUTPUT->header();
                     echo $OUTPUT->box(get_string('vmoodledoadd4', 'local_vmoodle'));
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'doadd', 'step' => 4)));
+                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 4);
+                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
                     echo $OUTPUT->footer();
                     die;
                 }
@@ -353,15 +359,15 @@ if ($action == 'doadd') {
             // Mnet bind from master side.
             if ($vmoodlestep == 4) {
 
-                $newmnet_host = new \local_vmoodle\Mnet_Peer();
-                $newmnet_host->set_wwwroot($submitteddata->vhostname);
-                $newmnet_host->set_name($submitteddata->name);
+                $newmnethost = new \local_vmoodle\Mnet_Peer();
+                $newmnethost->set_wwwroot($submitteddata->vhostname);
+                $newmnethost->set_name($submitteddata->name);
 
                 // If the new host is not using MNET, we discard it from us. There will be no more MNET contact with this host.
                 // vmoodle_fix_database should have disabled all mnet operations in the remote moodle.
                 if ($submitteddata->mnet == -1) {
-                    $newmnet_host->updateparams->deleted = 1;
-                    $newmnet_host->commit();
+                    $newmnethost->updateparams->deleted = 1;
+                    $newmnethost->commit();
                     $messageobject->message = get_string('successaddnewhostwithoutmnet', 'local_vmoodle');
                     $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
                     if (empty($automation)) {
@@ -373,7 +379,7 @@ if ($action == 'doadd') {
                 // Force renew using remote keyboot.php access.
                 $uri = $submitteddata->vhostname.'/local/vmoodle/keyboot.php';
 
-                $rq = 'pk='.urlencode($this_as_host->public_key);
+                $rq = 'pk='.urlencode($thisashost->public_key);
                 $ch = curl_init("$uri");
                 curl_setopt($ch, CURLOPT_TIMEOUT, 60);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -409,7 +415,7 @@ if ($action == 'doadd') {
 
                 // Force new virtual host to renew our key and send his own to us.
 
-                if (!$newmnet_host->bootstrap($submitteddata->vhostname, null, 'moodle', 1, $submitteddata->name)) {
+                if (!$newmnethost->bootstrap($submitteddata->vhostname, null, 'moodle', 1, $submitteddata->name)) {
                     // If bootstraping the new host has failed.
                     if (empty($automation)) {
                         $SESSION->vmoodle_ma['confirm_message'] = 'bootstrap failure';
@@ -426,10 +432,10 @@ if ($action == 'doadd') {
                     mtrace('bootstrap failure');
                     return -1;
                 }
-                $newmnet_host->updateparams->deleted = 0; // in case already there and needs revive.
-                $newmnet_host->commit();
+                $newmnethost->updateparams->deleted = 0; // In case already there and needs revive.
+                $newmnethost->commit();
 
-                // we need to start output here in case of exceptions.
+                // We need to start output here in case of exceptions.
 
                 // Service 'mnetadmin' is needed to speak with new host. Set it our side.
                 $slavehost = $DB->get_record('mnet_host', array('wwwroot' => $submitteddata->vhostname));
@@ -462,7 +468,7 @@ if ($action == 'doadd') {
 
                 // MNET subnetworking, unless completely isolated.
                 if ($submitteddata->mnet > 0) {
-                    vmoodle_bind_to_network($submitteddata, $newmnet_host);
+                    vmoodle_bind_to_network($submitteddata, $newmnethost);
                 }
             }
 
@@ -534,21 +540,23 @@ if ($action == 'doedit') {
         }
 
         // Updates MNET state, if required.
-        if($olddata->mnet != $submitteddata->mnet) {
+        if ($olddata->mnet != $submitteddata->mnet) {
 
             // Creating the needed mnet_peer object, to do actions.
             $editedhost = new \local_vmoodle\Mnet_Peer();
             if (!$editedhost->bootstrap($olddata->vhostname, null, 'moodle', 1)) {
                 // If bootstraping the host has failed.
-                $messageobject->message = get_string('badbootstraphost', 'local_vmoodle', $olddata->vhostname).' = '.$submitteddata->mnet;
+                $badstr = get_string('badbootstraphost', 'local_vmoodle', $olddata->vhostname);
+                $messageobject->message = $badstr.' = '.$submitteddata->mnet;
+                $manageurl = new moodle_url('/local/moodle/view.php', array('view' => 'management'));
                 if (debugging()) {
                     echo $OUTPUT->header();
                     echo implode('<br/>', $editedhost->errors);
-                    echo $OUTPUT->continue_button('view.php?view=management');
+                    echo $OUTPUT->continue_button($manageurl);
                     echo $OUTPUT->footer();
                 } else {
                     $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                    redirect($manageurl);
                 }
                 die;
             }
@@ -566,12 +574,12 @@ if ($action == 'doedit') {
                         mnet = ? AND
                         enabled = 1
                 ';
-                $lastsubnetwork_members = $DB->get_records_sql($sql, array($olddata->id, $olddata->mnet));
-                if (!empty($lastsubnetwork_members)) {
-                    foreach ($lastsubnetwork_members as $lastsubnetwork_member) {
+                $lastsubnetworkmembers = $DB->get_records_sql($sql, array($olddata->id, $olddata->mnet));
+                if (!empty($lastsubnetworkmembers)) {
+                    foreach ($lastsubnetworkmembers as $lastsubnetworkmember) {
                         $temphost = new stdClass();
-                        $temphost->wwwroot = $lastsubnetwork_member->vhostname;
-                        $temphost->name = utf8_decode($lastsubnetwork_member->name);
+                        $temphost->wwwroot = $lastsubnetworkmember->vhostname;
+                        $temphost->name = utf8_decode($lastsubnetworkmember->name);
                         $lastsubnetworkhosts[] = $temphost;
                     }
                 }
@@ -592,10 +600,10 @@ if ($action == 'doedit') {
                 ';
                 $subnetworkmembers = $DB->get_records_sql($sql);
                 if (!empty($subnetworkmembers)) {
-                    foreach ($subnetworkmembers as $subnetwork_member) {
+                    foreach ($subnetworkmembers as $subnetworkmember) {
                         $temphost = new stdClass();
-                        $temphost->wwwroot = $subnetwork_member->vhostname;
-                        $temphost->name = utf8_decode($subnetwork_member->name);
+                        $temphost->wwwroot = $subnetworkmember->vhostname;
+                        $temphost->name = utf8_decode($subnetworkmember->name);
                         $subnetworkhosts[] = $temphost;
                     }
                 }
@@ -622,8 +630,8 @@ if ($action == 'doedit') {
                     $tempmember->set_wwwroot($lastsubnetworkhost->wwwroot);
                     // RPC error.
                     if (!$rpcclient->send($tempmember)) {
-                       echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($tempmember)));
-                       if (debugging()) {
+                        echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($tempmember)));
+                        if (debugging()) {
                             echo '<pre>';
                             var_dump($rpcclient);
                             echo '</pre>';
@@ -650,7 +658,6 @@ if ($action == 'doedit') {
                             var_dump($rpcclient2);
                             echo '</pre>';
                         }
-                        // echo $OUTPUT->footer();
                     }
                     unset($rpcclient2);
                 }
@@ -793,7 +800,7 @@ if ($action == 'snapshot') {
 
         // End of process.
 
-        // copy moodle data and protect against copy recursion.
+        // Copy moodle data and protect against copy recursion.
         filesystem_copy_tree($vdatapath, $absolutedatadir, $vdatabase, array("^$templatefoldername\$"));
         // Remove Vmoodle clone session, temp and cache dir.
         filesystem_clear_dir($relativedatadir.$separator.'sessions', true);
@@ -801,12 +808,12 @@ if ($action == 'snapshot') {
         filesystem_clear_dir($relativedatadir.$separator.'cache', true);
 
         // Store original hostname for further database replacements.
-        $FILE = fopen($absolutesqldir.$separator.'manifest.php', 'w');
-        fwrite($FILE, "<?php\n ");
-        fwrite($FILE, "\$templatewwwroot = '".$wwwroot."';\n");
-        fwrite($FILE, "\$templatevdbprefix = '".$CFG->prefix."';\n ");
-        fwrite($FILE, "?>");
-        fclose($FILE);
+        $file = fopen($absolutesqldir.$separator.'manifest.php', 'w');
+        fwrite($file, "<?php\n ");
+        fwrite($file, "\$templatewwwroot = '".$wwwroot."';\n");
+        fwrite($file, "\$templatevdbprefix = '".$CFG->prefix."';\n ");
+        fwrite($file, "?>");
+        fclose($file);
 
         if (empty($automation)) {
             // Every step was SUCCESS.
@@ -830,10 +837,10 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
     $id = required_param('id', PARAM_INT);
     // Unmarks the Vmoodle in everyplace (subnetwork, common).
     if ($vmoodle = $DB->get_record('local_vmoodle', array('id' => $id))) {
-        if($vmoodle_host = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
-            if (($vmoodle_host->deleted == 0)) {
-                $vmoodle_host->deleted    = 1;
-                $DB->update_record('mnet_host', $vmoodle_host);
+        if ($vmoodlehost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
+            if (($vmoodlehost->deleted == 0)) {
+                $vmoodlehost->deleted    = 1;
+                $DB->update_record('mnet_host', $vmoodlehost);
             }
 
             if (($vmoodle->enabled == 1)) {
@@ -841,9 +848,9 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
                 // Deletes(unmarking) the local record and host. It could be regenerated.
                 $vmoodle->enabled = 0;
                 $vmoodle->vdatapath = addslashes($vmoodle->vdatapath);
-                $vmoodle_host->deleted = 1;
+                $vmoodlehost->deleted = 1;
                 $DB->update_record('local_vmoodle', $vmoodle);
-                $DB->update_record('mnet_host', $vmoodle_host);
+                $DB->update_record('mnet_host', $vmoodlehost);
 
                 // Members of the subnetwork delete the host.
                 if ($vmoodle->mnet > 0) {
@@ -862,10 +869,10 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
                     ";
                     $subnetworkmembers = $DB->get_records_sql($sql, array($vmoodle->vhostname, $vmoodle->mnet));
                     if (!empty($subnetworkmembers)) {
-                        foreach ($subnetworkmembers as $subnetwork_member) {
+                        foreach ($subnetworkmembers as $subnetworkmember) {
                             $temphost = new stdClass();
-                            $temphost->wwwroot = $subnetwork_member->vhostname;
-                            $temphost->name = utf8_decode($subnetwork_member->name);
+                            $temphost->wwwroot = $subnetworkmember->vhostname;
+                            $temphost->name = utf8_decode($subnetworkmember->name);
                             $subnetworkhosts[] = $temphost;
                         }
                     }
@@ -874,12 +881,12 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
                         $rpcclient = new \local_vmoodle\XmlRpc_Client();
                         $rpcclient->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_unbind_peer');
                         $rpcclient->add_param($vmoodle->vhostname, 'string');
-                        foreach ($subnetworkhosts as $subnetwork_host) {
-                            $temp_member = new mnet_peer();
-                            $temp_member->set_wwwroot($subnetwork_host->wwwroot);
+                        foreach ($subnetworkhosts as $subnetworkhost) {
+                            $tempmember = new mnet_peer();
+                            $tempmember->set_wwwroot($subnetworkhost->wwwroot);
                             // RPC error.
-                            if (!$rpcclient->send($temp_member)) {
-                                echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($temp_member)));
+                            if (!$rpcclient->send($tempmember)) {
+                                echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($tempmember)));
                                 if (debugging()) {
                                     echo '<pre>';var_dump($rpcclient);echo '</pre>';
                                 }
@@ -889,11 +896,11 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
                         $rpcclient = new \local_vmoodle\XmlRpc_Client();
                         $rpcclient->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_disconnect_from_subnetwork');
                         $rpcclient->add_param($subnetworkhosts, 'array');
-                        $deleted_peer = new mnet_peer();
-                        $deleted_peer->set_wwwroot($vmoodle_host->wwwroot);
+                        $deletedpeer = new mnet_peer();
+                        $deletedpeer->set_wwwroot($vmoodlehost->wwwroot);
                         // RPC error.
-                        if (!$rpcclient->send($deleted_peer)) {
-                            echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($deleted_peer)));
+                        if (!$rpcclient->send($deletedpeer)) {
+                            echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($deletedpeer)));
                             if (debugging()) {
                                 echo '<pre>';var_dump($rpcclient);echo '</pre>';
                             }
@@ -911,10 +918,10 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
             // If local_vmoodles and host are not synchronized.
             $sqlrequest = '
                 DELETE FROM
-                    {local_vmoodle} 
+                    {local_vmoodle}
                 WHERE
                     id = '.$id;
-            if($DB->execute($sqlrequest)) {
+            if ($DB->execute($sqlrequest)) {
                 $messageobject->message = get_string('successdeletehost', 'local_vmoodle');
                 $messageobject->style = 'notifysuccess';
             } else {
@@ -944,7 +951,9 @@ if ($action == 'destroy') {
     }
 
     if ($submitteddata) {
-        debug_trace('Destroying vmoodle host');
+        if (function_exists('debug_trace')) {
+            debug_trace('Destroying vmoodle host');
+        }
         vmoodle_destroy($submitteddata);
     }
 }
@@ -954,7 +963,7 @@ if ($action == 'renewall') {
     // Self renew.
     echo $OUTPUT->header();
     echo '<pre>';
-    $renewuri = $CFG->wwwroot.'/admin/cron.php?forcerenew=1';
+    $renewuri = new moodle_url('/admin/cron.php', array('forcerenew' => 1));
     echo "Running on : $renewuri\n";
 
     echo "#############################\n";
@@ -1048,10 +1057,10 @@ if ($action == 'generateconfigs') {
             $configvm = preg_replace("#'dbpersist'\s+=\s+.*?,#", "'dbpersist' = true,", $configvm);
         }
 
-        if ($CONFIG = fopen($configpath.'/config-'.$vm->shortname.'.php', 'w')) {
+        if ($configfile = fopen($configpath.'/config-'.$vm->shortname.'.php', 'w')) {
             $generated[] = 'config-'.$vm->shortname.'.php';
-            fputs($CONFIG, $configvm);
-            fclose($CONFIG);
+            fputs($configfile, $configvm);
+            fclose($configfile);
         }
     }
     if (!empty($generated)) {
@@ -1116,4 +1125,4 @@ if ($action == 'deleteinstances') {
 }
 
 // Return to initial 'max_execution_time' value, in every case.
-set_time_limit($initial_max_execution_time);
+set_time_limit($initialmaxexectime);

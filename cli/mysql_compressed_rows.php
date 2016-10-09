@@ -55,7 +55,7 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-$help = "
+    $help = "
 Script for detection of row size problems in MySQL InnoDB tables.
 
 By default InnoDB storage table is using legacy Antelope file format

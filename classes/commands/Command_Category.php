@@ -50,13 +50,12 @@ class Command_Category {
      * @param $plugin_name string The category's file.
      */
     public function __construct($pluginname) {
-        global $CFG;
 
         // Checking category's name.
         $this->name = vmoodle_get_string('pluginname', 'vmoodleadminset_'.$pluginname);
         // Checking category's plugin name.
         if (!is_string($pluginname) || empty($pluginname)) {
-            throw new Command_Exception('categorywrongpluginname', $name);
+            throw new Command_Exception('categorywrongpluginname', $pluginname);
         } else {
             $this->pluginname = $pluginname;
         }

@@ -37,7 +37,7 @@ if (!isset($CFG->dirroot)) {
 
 require_once($CFG->dirroot.'/lib/clilib.php');         // Cli only functions.
 
-// now get cli options
+// Now get cli options.
 list($options, $unrecognized) = cli_get_params(array('help' => false,
                                                      'host' => true),
                                                array('h' => 'help',

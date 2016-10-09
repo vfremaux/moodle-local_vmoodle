@@ -42,8 +42,8 @@ if ($action == 'redefineservices') {
     if (!empty($defaultservices)) {
 
         // Retrieve submitted data, from the services strategy form.
-        $services_form = new ServicesStrategy_Form();
-        $submitteddata = $services_form->get_data();
+        $servicesform = new ServicesStrategy_Form();
+        $submitteddata = $servicesform->get_data();
 
         // Saves default services strategy.
         set_config('local_vmoodle_services_strategy', serialize($submitteddata));

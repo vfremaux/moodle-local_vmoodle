@@ -314,7 +314,7 @@ function mnetadmin_rpc_set_role_capabilities($user, $role, $rolecapabilities, $c
                 $response->errors[] = 'Set role capability : Unable to insert role capability "'.$record->capability.'"'.$errstr;
                 $response->error = 'Set role capability : Unable to insert role capability "'.$record->capability.'"'.$errstr;
             }
-        } elseif (!$clear && array_key_exists($name, $currentrolecapabilities) &&
+        } else if (!$clear && array_key_exists($name, $currentrolecapabilities) &&
                 $current_role_capabilities[$name]->permission != $rolecapability->permission) {
             // Checking if role capability should be updated.
             // Modifying record.

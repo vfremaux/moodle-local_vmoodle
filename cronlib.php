@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die;
+
 /**
  * fire a cron URL using CURL.
  *
@@ -32,15 +34,15 @@ function fire_vhost_cron($vhost) {
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
-    $timestamp_send = time();
+    $timestampsend = time();
     $rawresponse = curl_exec($ch);
-    $timestamp_receive = time();
+    $timestampreceive = time();
 
     if ($rawresponse === false) {
         $error = curl_errno($ch) .':'. curl_error($ch);
-        echo "VCron started on $vhost->vhostname : $timestamp_send\n";
+        echo "VCron started on $vhost->vhostname : $timestampsend\n";
         echo "VCron Error : $error \n";
-        echo "VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n";
+        echo "VCron stop on $vhost->vhostname : $timestampreceive\n#################\n\n";
         return false;
     }
 
@@ -57,9 +59,7 @@ function exec_vhost_cron($vhost) {
 
     $cmd = 'php "'.$CFG->dirroot.'/local/vmoodle/cli/cron.php" --host='.$vhost->vhostname;
 
-    $timestamp_send = time();
     exec($cmd, $rawresponse);
-    $timestamp_receive = time();
 
     vcron_process_result($vhost, $rawresponse);
 }

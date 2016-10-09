@@ -107,7 +107,7 @@ if ($vmoodles) {
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {
             $strmnet = get_string('mnetdisabled', 'local_vmoodle');
-        } elseif ($strmnet == 0) {
+        } else if ($strmnet == 0) {
             $strmnet = get_string('mnetfree', 'local_vmoodle');
         }
 

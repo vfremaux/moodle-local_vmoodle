@@ -73,12 +73,12 @@ function xmldb_local_vmoodle_late_install() {
     }
 
     // We need to replace the word "vmoodleadminset/" with real subplugin path "local/vmoodle/plugins/".
-    $rpcs = $DB->get_records('mnet_rpc',array('plugintype' => 'vmoodleadminset'));
+    $rpcs = $DB->get_records('mnet_rpc', array('plugintype' => 'vmoodleadminset'));
 
     if (!empty($rpcs)) {
         foreach ($rpcs as $rpc) {
             $rpc->xmlrpcpath = str_replace('vmoodleadminset/', 'local/vmoodle/plugins/', $rpc->xmlrpcpath);
-            $DB->update_record('mnet_rpc',$rpc);
+            $DB->update_record('mnet_rpc', $rpc);
         }
     }
 

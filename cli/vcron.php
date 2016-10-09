@@ -16,8 +16,8 @@
 
 /**
  * This file is a cron microclock script.
- * It will be used as replacement of setting individual 
- * cron lines for all virtual instances. 
+ * It will be used as replacement of setting individual
+ * cron lines for all virtual instances.
  *
  * Setup this vcron to run at the smallest period possible, as
  * it will schedule all availables vmoodle to be run as required.
@@ -25,7 +25,7 @@
  * or may be run more than one cron.
  *
  * If used on a big system with clustering, ensure hostnames are adressed
- * at the load balancer entry and not on physical hosts 
+ * at the load balancer entry and not on physical hosts
  *
  * @package local_vmoodle
  * @category local
@@ -45,8 +45,8 @@ global $vcron;
 
 $vcron = new StdClass;
 $vcron->activation = 'cli';                         // Choose how individual cron are launched.
-$vcron->strategy = ROUND_ROBIN ;                    // Choose vcron rotation mode.
-$vcron->period = 15 * MINSECS ;                     // Used if LOWEST_POSSIBLE_GAP to setup the max gap.
+$vcron->strategy = ROUND_ROBIN;                     // Choose vcron rotation mode.
+$vcron->period = 15 * MINSECS;                      // Used if LOWEST_POSSIBLE_GAP to setup the max gap.
 $vcron->timeout = 300;                              // Time out for CURL call to effective cron.
 $vcron->trace = $CFG->dataroot.'/vcrontrace.log';   // Trace file where to collect cron outputs.
 $vcron->trace_enable = false;                       // Enables tracing.

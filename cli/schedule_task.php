@@ -51,9 +51,8 @@ Options:
 -h, --help            Print out this help
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php ".
-"--execute=\\\\core\\\\task\\\\session_cleanup_task --host=http://vmoodle1.mydomain.fr
-";
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php ";
+    $help .= "--execute=\\\\core\\\\task\\\\session_cleanup_task --host=http://vmoodle1.mydomain.fr";
 
     echo $help;
     die;

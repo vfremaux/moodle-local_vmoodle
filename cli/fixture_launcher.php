@@ -100,7 +100,7 @@ if ($options['workers'] === false) {
 
 if (!empty($options['include'])) {
     $allhosts = $DB->get_records_select('local_vmoodle', ' vhostname LIKE "'.$options['include'].'" ', array());
-} else if(!empty($options['exclude'])) {
+} else if (!empty($options['exclude'])) {
     $allhosts = $DB->get_records_select('local_vmoodle', ' vhostname NOT LIKE "'.$options['include'].'" ', array());
 } else {
     $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));

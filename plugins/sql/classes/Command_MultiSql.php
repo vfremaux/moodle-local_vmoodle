@@ -72,7 +72,7 @@ class Command_MultiSql extends Command {
                 $is_param = !(empty($sql_vars[1][$key]));
                 if (!$is_param && !array_key_exists($sql_var, $vmcommandconstants)) {
                     throw new Command_Sql_Exception('sqlconstantnotgiven', (object)array('constant_name' => $sql_var, 'command_name' => $this->name));
-                } elseif ($is_param && !array_key_exists($sql_var, $this->parameters)) {
+                } else if ($is_param && !array_key_exists($sql_var, $this->parameters)) {
                     throw new Command_Sql_Exception('sqlparameternotgiven', (object)array('parameter_name' => $sql_var, 'command_name' => $this->name));
                 }
             }
@@ -88,7 +88,7 @@ class Command_MultiSql extends Command {
      * @throws Command_Sql_Exception
      */
     public function run($hosts) {
-        global $CFG, $USER;
+        global $CFG;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -107,13 +107,13 @@ class Command_MultiSql extends Command {
         $responses = array();
 
         // Creating peers.
-        $mnet_hosts = array();
+        $mnethosts = array();
 
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
+            $mnethost = new \mnet_peer();
 
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
                 $responses[$host] = (object) array(
                     'status' => MNET_FAILURE,
@@ -122,33 +122,27 @@ class Command_MultiSql extends Command {
             }
         }
 
-        // Getting command.
-        // $command = $this->is_returned();
-
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
-        $rpc_client->add_param($this->_get_generated_command(), 'string');
-        $rpc_client->add_param($this->values, 'array');
-        $rpc_client->add_param(false, 'boolean');
-        $rpc_client->add_param(true, 'boolean'); // telling other side we are a multiple command
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
+        $rpcclient->add_param($this->_get_generated_command(), 'string');
+        $rpcclient->add_param($this->values, 'array');
+        $rpcclient->add_param(false, 'boolean');
+        $rpcclient->add_param(true, 'boolean'); // Telling other side we are a multiple command.
 
         // Sending requests.
-        foreach($mnet_hosts as $mnet_host) {
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
-                if (debugging()) {
-                    print_object($rpc_client);
-                }
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
 
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
         }
 
         // Saving results.
@@ -177,7 +171,7 @@ class Command_MultiSql extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;
@@ -213,13 +207,14 @@ class Command_MultiSql extends Command {
      * @return string The final SQL command to execute.
      */
     private function _get_generated_command() {
-        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replaceParametersValues'), $this->get_sql());
+        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replace_parameters_values'), $this->get_sql());
     }
 
     /**
      * Bind the replace_parameters_values function to create a callback.
-      * @param array $matches The placeholders found.
-      * @return string|array The parameters' values.
+     * Indirect use of this function.
+     * @param array $matches The placeholders found.
+     * @return string|array The parameters' values.
      */
     private function _replace_parameters_values($matches) {
 
