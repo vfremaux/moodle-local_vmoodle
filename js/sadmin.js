@@ -5,7 +5,7 @@
  *
  *    If persistent == true, also sets a cookie for this.
  */
-// jshint undef:false unused:false
+// jshint undef:false, unused:false
 function elementToggleHide(el, persistent, elementFinder, strShow, strHide) {
 
     if (!elementFinder) {

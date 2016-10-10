@@ -48,7 +48,7 @@ function fix_mnet_tables_fixture() {
             } else {
                 // Record xmlRPC and indexes.
                 $rpcs[$rpc->xmlrpcpath] = $rpc;
-                $RPCIDS[$rpc->id] = $rpc->xmlrpcpath;
+                $rpcids[$rpc->id] = $rpc->xmlrpcpath;
                 $g++;
             }
         }
@@ -114,7 +114,8 @@ function fix_mnet_tables_fixture() {
                 }
                 if (array_key_exists($hb->serviceid, $badservices)) {
                     $goodservice = $servicesids[$badservices[$hb->serviceid]];
-                    if (!$goodbind = $DB->get_record('mnet_host2service', array('hostid' => $hb->hostid, 'serviceid' => $goodservice))) {
+                    $params = array('hostid' => $hb->hostid, 'serviceid' => $goodservice);
+                    if (!$goodbind = $DB->get_record('mnet_host2service', $params)) {
                         $binding = new StdClass();
                         $binding->hostid = $hb->hostid;
                         $binding->serviceid = $goodservice;

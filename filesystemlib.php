@@ -61,7 +61,7 @@ if (!function_exists('filesystem_create_dir')) {
 
         $result = true;
         if (!$recursive) {
-           if (@$CFG->filedebug) {
+            if (@$CFG->filedebug) {
                 mtrace("creating dir <i>{$path}</i><br/>");
             }
             $oldmask = umask(0);
@@ -71,18 +71,18 @@ if (!function_exists('filesystem_create_dir')) {
             umask($oldmask);
             return $result;
         } else {
-           $parts = explode('/', $path);
-           $pathTo = '';
-           for ($i = 0; $i < count($parts) && $result; $i++) {
-              $pathto .= '/' . $parts[$i];
-              $result = filesystem_create_dir($pathto, 0, $pathbase);
-           }
-           return $result;
+            $parts = explode('/', $path);
+            $pathto = '';
+            for ($i = 0; $i < count($parts) && $result; $i++) {
+                $pathto .= '/' . $parts[$i];
+                $result = filesystem_create_dir($pathto, 0, $pathbase);
+            }
+            return $result;
         }
     }
 
     /**
-     * tests if path is a dir. A simple wrapper to is_dir 
+     * tests if path is a dir. A simple wrapper to is_dir
      * @param string $relativepath the path from dataroot
      * @param string $pathbase the base path
      */
@@ -165,9 +165,13 @@ if (!function_exists('filesystem_create_dir')) {
                 }
             }
             if ($hiddens) {
-                if (($anentry != '.') && ($anentry != '..')) $entries[] = $anentry;
+                if (($anentry != '.') && ($anentry != '..')) {
+                    $entries[] = $anentry;
+                }
             } else {
-                if (!preg_match("/^\./", $anentry)) $entries[] = $anentry;
+                if (!preg_match("/^\./", $anentry)) {
+                    $entries[] = $anentry;
+                }
             }
         }
         closedir($dir);
@@ -181,7 +185,7 @@ if (!function_exists('filesystem_create_dir')) {
      * @param string $pathbase the base path
      * @return an array of entries wich are local names in path
      */
-    function filesystem_clear_dir($relativepath, $fullDelete = false, $pathbase = null) {
+    function filesystem_clear_dir($relativepath, $fulldelete = false, $pathbase = null) {
         global $CFG;
 
         if (is_null($pathbase)) {
@@ -196,24 +200,24 @@ if (!function_exists('filesystem_create_dir')) {
             mtrace("clearing dir <i>$pathbase$relativepath</i><br/>");
         }
         $exists = filesystem_is_dir($relativepath, $pathbase);
-        if (!$exists && !$fullDelete) {
-            return filesystem_create_dir($relativepath, $pathbase);   
+        if (!$exists && !$fulldelete) {
+            return filesystem_create_dir($relativepath, $pathbase);
         }
-        if (!$exists && $fullDelete) {
+        if (!$exists && $fulldelete) {
             return true;
         }
         $files = filesystem_scan_dir($relativepath, FS_SHOW_HIDDEN, FS_ALL_ENTRIES, $pathbase);
-        foreach ($files as $aFile) {
-            if ($aFile == "." || $aFile == "..") {
+        foreach ($files as $afile) {
+            if ($afile == "." || $afile == "..") {
                 continue;
             }
-            if (filesystem_is_dir("{$relativepath}/{$aFile}", $pathbase)) {
-                filesystem_clear_dir("{$relativepath}/{$aFile}", FS_FULL_DELETE, $pathbase);
+            if (filesystem_is_dir("{$relativepath}/{$afile}", $pathbase)) {
+                filesystem_clear_dir("{$relativepath}/{$afile}", FS_FULL_DELETE, $pathbase);
             } else {
-                filesystem_delete_file("{$relativepath}/{$aFile}", $pathbase);
+                filesystem_delete_file("{$relativepath}/{$afile}", $pathbase);
             }
         }
-        if (file_exists($pathbase . $relativepath) && $fullDelete) {
+        if (file_exists($pathbase . $relativepath) && $fulldelete) {
             return filesystem_remove_dir($relativepath, $pathbase);
         }
         return false;
@@ -249,32 +253,32 @@ if (!function_exists('filesystem_create_dir')) {
         }
         $files = array();
         $files = filesystem_scan_dir($source, FS_SHOW_HIDDEN, FS_ALL_ENTRIES, $pathbase);
-        foreach ($files as $aFile) {
-            if ($aFile == '.' || $aFile == '..') {
+        foreach ($files as $afile) {
+            if ($afile == '.' || $afile == '..') {
                 continue;
             }
             if (!empty($excludepatterns)) {
                 if (is_array($excludepatterns)) {
                     foreach ($excludepatterns as $apattern) {
-                        if (preg_match("/$apattern/", $aFile)) {
+                        if (preg_match("/$apattern/", $afile)) {
                             continue 2;
                         }
                     }
                 } else {
-                    if (preg_match("/$excludepatterns/", $aFile)) {
+                    if (preg_match("/$excludepatterns/", $afile)) {
                         continue;
                     }
                 }
             }
-            if (filesystem_is_dir("{$source}/{$aFile}", $pathbase)) {
-                filesystem_create_dir("{$dest}/{$aFile}", FS_NON_RECURSIVE, $pathbase);
-                if (count(filesystem_is_dir("{$source}/{$aFile}", $pathbase)) != 0) {
-                    filesystem_copy_tree("{$source}/{$aFile}", "{$dest}/{$aFile}", $pathbase, $excludepatterns);
+            if (filesystem_is_dir("{$source}/{$afile}", $pathbase)) {
+                filesystem_create_dir("{$dest}/{$afile}", FS_NON_RECURSIVE, $pathbase);
+                if (count(filesystem_is_dir("{$source}/{$afile}", $pathbase)) != 0) {
+                    filesystem_copy_tree("{$source}/{$afile}", "{$dest}/{$afile}", $pathbase, $excludepatterns);
                 }
-          } else {
-               filesystem_copy_file("{$source}/{$aFile}", "{$dest}/{$aFile}", $pathbase);
-          }
-       }
+            } else {
+                filesystem_copy_file("{$source}/{$afile}", "{$dest}/{$afile}", $pathbase);
+            }
+        }
     }
 
     /**
@@ -301,12 +305,12 @@ if (!function_exists('filesystem_create_dir')) {
         if (!filesystem_is_dir($parts['dirname'], $pathbase)) {
             filesystem_create_dir($parts['dirname'], $pathbase);
         }
-        $FILE = fopen($pathbase . $relativepath, "w");
-        if (!$FILE) {
+        $file = fopen($pathbase . $relativepath, "w");
+        if (!$file) {
             return false;
         }
-        fwrite ($FILE, $data);
-        fclose($FILE);
+        fwrite ($file, $data);
+        fclose($file);
         return true;
     }
 
@@ -330,10 +334,10 @@ if (!function_exists('filesystem_create_dir')) {
         if (@$CFG->filedebug) {
             mtrace("reading <i>$pathbase$relativepath</i><br/>");
         }
-        $fullPath = $pathbase.$relativepath;
+        $fullpath = $pathbase.$relativepath;
         if (file_exists($fullPath)) {
-            $FILE = file($fullPath);
-            return implode('', $FILE);
+            $file = file($fullpath);
+            return implode('', $file);
         }
         return false;
     }
@@ -384,7 +388,7 @@ if (!function_exists('filesystem_create_dir')) {
             mtrace("deleting dir <i>$relativepath</i><br/>");
         }
         if (filesystem_file_exists($relativepath, $pathbase)) {
-          return rmdir($pathbase . $relativepath);
+            return rmdir($pathbase . $relativepath);
         }
     }
 

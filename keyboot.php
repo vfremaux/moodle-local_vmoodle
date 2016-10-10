@@ -19,7 +19,7 @@
  * @category local
  *
  * this script is indented to provide a secured mechanisms to reboot the initial local MNET key
- * when newly instanciated. This results in executing a primary $MNET->replace_keys(), so the new
+ * when newly instanciated. This results in executing a primary $mnet->replace_keys(), so the new
  * instance has a valid own MNET setup. This script must be checked against security concerns as
  * not being accessible from any unkown host. The way we know our trusted master is to checkback
  * the incoming public key and search for a matching key in known hosts.
@@ -33,15 +33,13 @@
 require('../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/debuglib.php'); // Fakes existance of a debug lib.
 
-global $MNET;
-
 require_once($CFG->dirroot.'/mnet/lib.php');
 
 /*
  * This is a workaround to $_POST loosing long values.
  * @see http://stackoverflow.com/questions/5077969/php-some-post-values-missing-but-are-present-in-php-input
  */
-$_POST = getRealPOST();
+$_POST = get_real_post();
 
 $test = 0;
 $masterpk = required_param('pk', PARAM_RAW);
@@ -68,21 +66,21 @@ if ($remotehost || $test) {
      * We check that the public key given matches the identity of the master who initiated the platform restoring.
      */
 
-    // get it hard !!
+    // Get it hard.
     $initroot = $DB->get_field('config', array('name' => 'bootstrap_init'));
 
     if ($test || ($initroot == $remotehost->wwwroot)) {
 
         /*
-         * at this time, the local platform may not have self key, or may inherit 
+         * at this time, the local platform may not have self key, or may inherit
          * an obsolete key from the template SQL backup.
          * we must fix that forcing a local key replacemen
          */
-        $MNET = new mnet_environment();
-        $MNET->init();
-        $MNET->name = '';
-        $oldkey = $MNET->public_key;
-        $MNET->replace_keys();
+        $mnet = new mnet_environment();
+        $mnet->init();
+        $mnet->name = '';
+        $oldkey = $mnet->public_key;
+        $mnet->replace_keys();
 
         // Finally we disable the keyboot script locking definitively the door.
         set_config('bootstrap_init', null);
@@ -95,12 +93,14 @@ if ($remotehost || $test) {
     echo "ERROR : Master host not found or master host key is empty";
 }
 
-function getRealPOST() {
+function get_real_post() {
     $pairs = explode("&", file_get_contents("php://input"));
     $vars = array();
-    if (!empty($pairs)){
+    if (!empty($pairs)) {
         foreach ($pairs as $pair) {
-            if(empty($pair)) continue;
+            if (empty($pair)) {
+                continue;
+            }
             $nv = explode("=", $pair);
             $name = urldecode($nv[0]);
             $value = urldecode($nv[1]);
