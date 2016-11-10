@@ -16,7 +16,7 @@
 
 /**
  * admin.php
- * 
+ *
  * This file is the administration page of super-administration.
  *
  * @package local_vmoodle
@@ -25,7 +25,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 
-// Adding requirements
+// Adding requirements.
 require_once('../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * lib.php
  * 
@@ -26,6 +24,8 @@ defined('MOODLE_INTERNAL') || die();
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 require_once($CFG->dirroot.'/local/vmoodle/filesystemlib.php');
 
@@ -46,13 +46,13 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
-/** Define commands' constants */
+/* Define commands' constants */
 $vmcommands_constants = array(
     'prefix' => $CFG->prefix,
     'wwwroot' => $CFG->wwwroot,
 );
 
-// Loading plugin librairies
+// Loading plugin librairies.
 $plugin_libs = glob($CFG->dirroot.'/local/vmoodle/plugins/*/lib.php');
 foreach ($plugin_libs as $lib) {
     require_once $lib;
