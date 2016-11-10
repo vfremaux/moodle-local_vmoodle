@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of Update plugin library.
- * 
+ * Version details.
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)

@@ -23,24 +23,26 @@
  */
 
 define('CLI_SCRIPT', true);
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php');
 
-list($options, $unrecognized) = cli_get_params(
-    array('help' => false, 'list' => false, 'execute' => false, 'host' => false),
-    array('h' => 'help', 'H' => 'host')
-);
+list($options, $unrecognized) = cli_get_params(array('help' => false,
+                                                     'list' => false,
+                                                     'execute' => false,
+                                                     'host' => false),
+                                               array('h' => 'help',
+                                                     'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error($unrecognized.' are not recognized options');
+    cli_error($unrecognized . ' are not recognized options ');
 }
 
-if ($options['help'] or (!$options['list'] and !$options['execute'])) {
-    $help =
-"Scheduled cron tasks.
+if ($options['help'] || (!$options['list'] && !$options['execute'])) {
+    $help = "
+Scheduled cron tasks.
 
 Options:
 --execute=\\\\some\\\\task  Execute scheduled task manually
@@ -49,9 +51,8 @@ Options:
 -h, --help            Print out this help
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php --execute=\\\\core\\\\task\\\\session_cleanup_task --host=http://vmoodle1.mydomain.fr
-
-";
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php ";
+    $help .= "--execute=\\\\core\\\\task\\\\session_cleanup_task --host=http://vmoodle1.mydomain.fr";
 
     echo $help;
     die;
@@ -59,7 +60,7 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
@@ -79,11 +80,11 @@ if ($options['list']) {
     $tasks = \core\task\manager::get_all_scheduled_tasks();
     foreach ($tasks as $task) {
         $class = '\\' . get_class($task);
-        $schedule = $task->get_minute() . ' '
-            . $task->get_hour() . ' '
-            . $task->get_day() . ' '
-            . $task->get_day_of_week() . ' '
-            . $task->get_month() . ' '
+        $schedule = $task->get_minute().' '
+            . $task->get_hour().' '
+            . $task->get_day().' '
+            . $task->get_day_of_week().' '
+            . $task->get_month().' '
             . $task->get_day_of_week();
         $nextrun = $task->get_next_run_time();
 
@@ -95,7 +96,7 @@ if ($options['list']) {
             $nextrun = get_string('asap', 'tool_task');
         }
 
-        echo str_pad($class, 50, ' ') . ' ' . str_pad($schedule, 17, ' ') . ' ' . $nextrun . "\n";
+        echo str_pad($class, 50, ' ').' '.str_pad($schedule, 17, ' ').' '.$nextrun."\n";
     }
     exit(0);
 }
@@ -121,8 +122,10 @@ if ($execute = $options['execute']) {
     $pretime = microtime(true);
     try {
         mtrace("Scheduled task: " . $task->get_name());
-        // NOTE: it would be tricky to move this code to \core\task\manager class,
-        //       because we want to do detailed error reporting.
+        /*
+         * NOTE: it would be tricky to move this code to \core\task\manager class,
+         *       because we want to do detailed error reporting.
+         */
         $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
         if (!$cronlock = $cronlockfactory->get_lock('core_cron', 10)) {
             mtrace('Cannot obtain cron lock');

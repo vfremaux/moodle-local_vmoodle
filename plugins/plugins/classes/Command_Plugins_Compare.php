@@ -14,10 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Describes a role comparison command.
+ *
+ * @package local_vmoodle
+ * @category local
+ * @author Valery Fremaux (valery.fremaux@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
 namespace vmoodleadminset_plugins;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command_Parameter;
+
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command_Parameter;
 
 require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');
@@ -26,18 +37,16 @@ global $PAGE;
 $PAGE->requires->js('/local/vmoodle/plugins/plugins/js/plugins_compare.js');
 $PAGE->requires->js('/local/vmoodle/plugins/plugins/js/strings.php');
 
-/**
- * Describes a role comparison command.
- * 
- * @package local_vmoodle
- * @category local
- * @author Valery Fremaux (valery.fremaux@gmail.com)
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
- */
 class Command_Plugins_Compare extends Command {
-    /** The plugintype plugins */
+
+    /**
+     * The plugintype plugins
+     */
     private $plugins = array();
-    /** The html report */
+
+    /**
+     * The html report
+     */
     private $report;
 
     /**
@@ -45,20 +54,17 @@ class Command_Plugins_Compare extends Command {
      * @throws Command_Exception.
      */
     public function __construct() {
-        global $DB, $STANDARD_PLUGIN_TYPES;
-
-        /*
-        @TODO : consider using get_plugin_types()
-        */
+        global $DB, $stdplugintypes;
 
         // Getting command description.
-        $cmd_name = vmoodle_get_string('cmdcomparename', 'vmoodleadminset_plugins');
-        $cmd_desc = vmoodle_get_string('cmdcomparedesc', 'vmoodleadminset_plugins');
+        $cmdname = vmoodle_get_string('cmdcomparename', 'vmoodleadminset_plugins');
+        $cmddesc = vmoodle_get_string('cmdcomparedesc', 'vmoodleadminset_plugins');
 
-        $plugin_param = new Command_Parameter('plugintype', 'enum', vmoodle_get_string('plugintypeparamcomparedesc', 'vmoodleadminset_plugins'), null, $STANDARD_PLUGIN_TYPES);
+        $label = get_string('plugintypeparamcomparedesc', 'vmoodleadminset_plugins');
+        $pluginparam = new Command_Parameter('plugintype', 'enum', $label, null, $stdplugintypes);
 
         // Creating command.
-        parent :: __construct($cmd_name, $cmd_desc, $plugin_param);
+        parent :: __construct($cmdname, $cmddesc, $pluginparam);
     }
 
     /**
@@ -78,22 +84,22 @@ class Command_Plugins_Compare extends Command {
         }
 
         // Getting plugin type.
-        $plugintype = $this->getParameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->get_value();
 
         // Creating XMLRPC client to read plugins configurations.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_get_plugins_info');
-        $rpc_client->add_param($plugintype, 'string');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_get_plugins_info');
+        $rpcclient->add_param($plugintype, 'string');
 
         // Initializing responses.
         $responses = array();
 
         // Creating peers.
-        $mnet_hosts = array();
+        $mnethosts = array();
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
                 $responses[$host] = (object) array(
                     'status' => MNET_FAILURE,
@@ -103,27 +109,27 @@ class Command_Plugins_Compare extends Command {
         }
 
         // Sending requests.
-        foreach ($mnet_hosts as $mnet_host) {
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new stdclass;
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpc_client);
+                    var_dump($rpcclient);
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
 
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
 
             // Recording plugin descriptors.
             if ($response->status == RPC_SUCCESS)
-                $this->plugins[$mnet_host->wwwroot] = $response->value;
+                $this->plugins[$mnethost->wwwroot] = $response->value;
         }
 
         // Saving results.
@@ -140,10 +146,10 @@ class Command_Plugins_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->isRunned())
+        if (!$this->has_run())
             throw new Command_Exception('commandnotrun');
 
         // Checking host (general result isn't provide in this kind of command).
@@ -173,17 +179,17 @@ class Command_Plugins_Compare extends Command {
      * @throws Commmand_Exception.
      */
     private function _process() {
-        global $CFG, $DB, $OUTPUT, $STANDARD_PLUGIN_TYPES, $PAGE;
+        global $CFG, $DB, $OUTPUT, $stdplugintypes, $PAGE;
 
         $renderer = $PAGE->get_renderer('local_vmoodle');
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
         // Getting examined plugintype.
-        $plugintype = $this->getParameter('plugintype')->getValue();
+        $plugintype = $this->get_parameter('plugintype')->get_value();
 
         // Getting hosts.
         $hosts = array_keys($this->plugins);
@@ -201,18 +207,17 @@ class Command_Plugins_Compare extends Command {
 
         // Creating header.
         $this->report = '<link href="'.$CFG->wwwroot.'/local/vmoodle/plugins/plugins/theme/styles.css" rel="stylesheet" type="text/css">';
-        $this->report .= '<h3>'.vmoodle_get_string('compareplugins', 'vmoodleadminset_plugins', $STANDARD_PLUGIN_TYPES[$plugintype]).'</h3>';
-
-        // Adding link to plugin management
-        /* $this->report.= '<center><p>'.$OUTPUT->single_button(new moodle_url($CFG->wwwroot.'/admin/roles/define.php', array('roleid' => $role->id, 'action' => 'edit')), get_string('editrole', 'vmoodleadminset_roles'), 'get').'</p></center>'; */
+        $this->report .= '<h3>'.get_string('compareplugins', 'vmoodleadminset_plugins', $stdplugintypes[$plugintype]).'</h3>';
 
         // Creation form
-        $this->report.= '<form action="'.$CFG->wwwroot.'/local/vmoodle/plugins/plugins/controller.pluginlib.sadmin.php?what=syncplugins" method="post" onsubmit="return validate_syncplugins()">';
+        $params = array('what' => 'syncplugins');
+        $actionurl = new moodle_url('/local/vmoodle/plugins/plugins/controller.pluginlib.sadmin.php', $params);
+        $this->report.= '<form action="'.$actionurl.'" method="post" onsubmit="return validate_syncplugins()">';
         $this->report.= '<input id="id_plugin" type="hidden" name="plugin" value=""/>';
         $this->report.= '<input id="source_platform" type="hidden" name="source_platform" value=""/>';
 
         // Creating table.
-        $this->report.= '<table id="plugincompare" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter" style="min-width: 75%;">';
+        $this->report.= '<table id="plugincompare" class="generaltable boxaligncenter" style="min-width: 75%;">';
         $this->report.= '<tbody>';
 
         // Creating header.
@@ -268,7 +273,7 @@ class Command_Plugins_Compare extends Command {
             $row++;
         }
 
-        // Closing table
+        // Closing table.
         $this->report.= '</tboby></table><br/><center><input type="submit" value="'.get_string('synchronize', 'vmoodleadminset_plugins').'"/><div id="plugincompare_validation_message"></div></center></form><br/><br/>';
     }
 
@@ -277,7 +282,7 @@ class Command_Plugins_Compare extends Command {
      * @param array $counter The counter.
      * @return int The counter value.
      */
-    private function _getCounterValue($counter) {
+    private function _get_counter_value($counter) {
         return $counter['count'];
     }
 }

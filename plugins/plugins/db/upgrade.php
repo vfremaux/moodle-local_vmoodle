@@ -16,7 +16,7 @@
 
 /**
  * Install and upgrade Sync Plugins library for the local Vmoodle.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)

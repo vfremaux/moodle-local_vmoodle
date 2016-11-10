@@ -18,7 +18,7 @@
  * Version details
  *
  * @package    local_vmoodle
- * @category local
+ * @category   local
  * @copyright  2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,5 +29,8 @@ $plugin->version = 2016052402; // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2015111100; // Requires this Moodle version
 $plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_RC;
-$plugin->release = "3.0.0 (Build 2016040301)";
+$plugin->release = "3.0.0 (Build 2016052402)";
 $plugin->cron = 5;
+
+// Non moodle attributes.
+$plugin->codeincrement = '3.0.0001';

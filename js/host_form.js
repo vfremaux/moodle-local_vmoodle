@@ -1,10 +1,11 @@
-/**
+/*
  * Pop-up testing connection with database.
  * TODO : Make this test request more network secure.
  * Solution 1 : Remove GET params, fetch parent window form elements
  * values and fire POST form
  * solution 2 : Obfuscate query string into simply crypted bundle
  */
+// jshint undef:false, unused:false
 function opencnxpopup(wwwroot) {
 
     // Inputted data.
@@ -15,7 +16,7 @@ function opencnxpopup(wwwroot) {
     var dbname = document.getElementById('id_vdbname').value;
 
     // PHP file linked the pop-up, and name.
-    var url = wwwroot+"/local/vmoodle/views/management.testcnx.php" + "?" + "vdbtype="
+    var url = wwwroot + "/local/vmoodle/views/management.testcnx.php" + "?" + "vdbtype="
             + dbtype + "&" + "vdbhost=" + dbhost + "&" + "vdblogin=" + dblogin
             + "&" + "vdbpass=" + dbpass + "&" + "vdbname=" + dbname;
 
@@ -87,7 +88,7 @@ function syncSchema(){
     syncedelement4.value = syncedelement4.value.replace(/<%%INSTANCE%%>/g, originelement.value);
 }
 
-/**
+/*
  * Let the function be executed immediately after loading the page.
  */
 $(function(){

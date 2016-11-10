@@ -15,12 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace vmoodleadminset_generic;
-Use \local_vmoodle\commands\Command;
-Use \StdClass;
+
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \StdClass;
 
 /**
  * Describes meta-administration plugin's command for Maintenance setup.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)
@@ -43,12 +46,13 @@ class Command_Maintenance extends Command {
      * @param string $name Command's name.
      * @param string $description Command's description.
      * @param string $sql SQL command.
-     * @param string $parameters Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
+     * @param string $parameters Command's parameters (optional / could be null, Command_Parameter object
+     * or Command_Parameter array).
      * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -57,7 +61,7 @@ class Command_Maintenance extends Command {
             throw new Command_Maintenance_Exception('messageparamonly');
         }
 
-        if ($parameters->getName() != 'message') {
+        if ($parameters->get_name() != 'message') {
             throw new Command_Maintenance_Exception('messageparamonly');
         }
     }
@@ -71,61 +75,57 @@ class Command_Maintenance extends Command {
         global $CFG, $USER;
 
         // Adding constants.
-        require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
+        require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 
         // Checking host.
         if (!is_array($hosts)) {
             $hosts = array($hosts => 'Unnamed host');
         }
 
-        // Checking capabilities.
+        // Maintenance. Checking capabilities.
         if (!has_capability('local/vmoodle:execute', \context_system::instance())) {
             throw new Command_Maintenance_Exception('insuffisantcapabilities');
         }
 
-        // Initializing responses.
+        // Maintenance. Initializing responses.
         $responses = array();
 
-        // Creating peers.
-        $mnet_hosts = array();
+        // Maintenance. Creating peers.
+        $mnethosts = array();
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
-                $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
+                $errorstr = get_string('couldnotcreateclient', 'local_vmoodle', $host);
+                $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => $errorstr);
             }
         }
 
-        // Getting command.
-        $command = $this->isReturned();
+        // Maintenance. Getting command.
+        $command = $this->is_returned();
 
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance');
-        $rpc_client->add_param($this->getParameter('message')->getValue(), 'string');
-        $rpc_client->add_param($command, 'boolean');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance');
+        $rpcclient->add_param($this->get_parameter('message')->get_value(), 'string');
+        $rpcclient->add_param($command, 'boolean');
 
-        // Sending requests.
-        foreach($mnet_hosts as $mnet_host) {
+        // Maintenance. Sending requests.
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpc_client);
-                    echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
         }
 
-        // Saving results.
+        // Maintenance. Saving results.
         $this->results = $responses + $this->results;
     }
 
@@ -135,22 +135,23 @@ class Command_Maintenance extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function getResult($host = null, $key = null) {
-        // Checking if command has been runned.
+    public function get_result($host = null, $key = null) {
+
+        // Maintenance. Checking if command has been runned.
         if (is_null($this->results)) {
             throw new Command_Exception('commandnotrun');
         }
 
-        // Checking host (general result isn't provide in this kind of command).
+        // Maintenance. Checking host (general result isn't provide in this kind of command).
         if (is_null($host) || !array_key_exists($host, $this->results)) {
             return null;
         }
         $result = $this->results[$host];
 
-        // Checking key.
+        // Maintenance. Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;
@@ -161,7 +162,7 @@ class Command_Maintenance extends Command {
      * Get if the command's result is returned.
      * @return bool True if the command's result should be returned, false otherwise.
      */
-    public function isReturned() {
+    public function is_returned() {
         return $this->returned;
     }
 
@@ -169,7 +170,7 @@ class Command_Maintenance extends Command {
      * Set if the command's result is returned.
      * @param bool $returned True if the command's result should be returned, false otherwise.
      */
-    public function setReturned($returned) {
+    public function set_returned($returned) {
         $this->returned = $returned;
     }
 }

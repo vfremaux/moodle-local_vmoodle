@@ -24,11 +24,11 @@
 define('CLI_SCRIPT', true);
 
 require('../../../config.php');
-require_once($CFG->libdir.'/adminlib.php'); // various admin-only functions
-require_once($CFG->libdir.'/upgradelib.php'); // general upgrade/install related functions
-require_once($CFG->libdir.'/clilib.php'); // cli only functions
+require_once($CFG->libdir.'/adminlib.php'); // Various admin-only functions.
+require_once($CFG->libdir.'/upgradelib.php'); // General upgrade/install related functions.
+require_once($CFG->libdir.'/clilib.php'); // Cli only functions.
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
-require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // vmoodle cli only functions
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // Vmoodle cli only functions.
 
 // Fakes an admin identity for all the process.
 $USER = get_admin();
@@ -59,20 +59,20 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line VMoodle Generator.
+    $help = "
+Command line VMoodle Destructor.
 Please note you must execute this script with the same uid as apache!
 
 Options:
---interactive     No interactive questions or confirmations
+--interactive         No interactive questions or confirmations if not present
 -h, --help            Print out this help
 -c, --config          Define an external config file
--n, --nodes           A node descriptor CSV file
--l, --lint            Decodes node file and give a report on nodes to be created.
+-n, --nodes           A node to destroy descriptor CSV file
+-l, --lint            Decodes node file and give a report on nodes to be destroyed.
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkcreatenodes.php
-"; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -112,7 +112,7 @@ if (empty($options['nodes'])) {
 $nodes = vmoodle_parse_csv_nodelist($options['nodes']);
 
 if ($options['lint']) {
-    print_object($nodes);
+    var_dump($nodes);
     die;
 }
 
@@ -147,7 +147,7 @@ foreach ($nodes as $n) {
         $input = readline("Continue (y/n|r) ?\n");
         if ($input == 'r' || $input == 'R') {
             $vmoodlestep--;
-        } elseif ($input == 'n' || $input == 'N') {
+        } else if ($input == 'n' || $input == 'N') {
             echo "finishing\n";
             exit;
         }

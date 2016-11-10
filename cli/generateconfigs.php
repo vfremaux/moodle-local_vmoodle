@@ -18,17 +18,22 @@
  * this script is to use in command line mode to generate physical config.php files
  * of virtualized Moodles. This may be usefull to devirtualize a moodle instance and
  * give it back to a standard installation.
+ *
+ * @package     local_vmoodle
+ * @category    local
+ * @copyright   2008 Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('CLI_SCRIPT', true);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/adminlib.php');       // various admin-only functions
-require_once($CFG->libdir.'/upgradelib.php');     // general upgrade/install related functions
-require_once($CFG->libdir.'/clilib.php');         // cli only functions
+require_once($CFG->libdir.'/adminlib.php');       // Various admin-only functions.
+require_once($CFG->libdir.'/upgradelib.php');     // General upgrade/install related functions.
+require_once($CFG->libdir.'/clilib.php');         // Cli only functions.
 require_once($CFG->libdir.'/environmentlib.php');
 require_once($CFG->libdir.'/pluginlib.php');
 
-// now get cli options
+// Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array(
         'non-interactive'   => false,
@@ -47,11 +52,11 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line VMoodle Configuration Files Extractor.
+    $help = "
+Command line VMoodle Configuration Files Extractor.
 
-This script extracts physical config files for playing vmoodle as 
-main independant hosts. This is usefull for using CLI upgrades on 
+This script extracts physical config files for playing vmoodle as
+main independant hosts. This is usefull for using CLI upgrades on
 each VMoodle.
 
 Please note you must execute this script with the same uid as apache!
@@ -64,7 +69,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/generateconfigs.php
-"; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -110,10 +115,10 @@ foreach ($allvmoodles as $vm) {
         $configvm = preg_replace("#'dbpersist'\s+=\s+.*?,#", "'dbpersist' = true,", $configvm);
     }
 
-    if ($CONFIG = fopen($configpath.'/config-'.$vm->shortname.'.php', 'w')) {
+    if ($conffile = fopen($configpath.'/config-'.$vm->shortname.'.php', 'w')) {
         $generated[] = 'config-'.$vm->shortname.'.php';
-        fputs($CONFIG, $configvm);
-        fclose($CONFIG);
+        fputs($conffile, $configvm);
+        fclose($conffile);
     }
 }
 

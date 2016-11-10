@@ -50,7 +50,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -58,9 +58,9 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php');         // cli only functions
+require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
 
-// now get cli options
+// Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array(
         'host'              => false,
@@ -79,8 +79,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line LDAP Synchronisation VMoodle enabled.
+    $help = "
+Command line LDAP Synchronisation VMoodle enabled.
 Please note you should execute this script with the same uid as apache!
 
 Site defaults may be changed via local/defaults.php.
@@ -91,7 +91,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/ldap_sync_users.php --host=http://my.virtual.moodle.org
-"; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -99,7 +99,7 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
@@ -108,11 +108,11 @@ if (!empty($options['host'])) {
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
-// Ensure errors are well explained
+// Ensure errors are well explained.
 set_debugging(DEBUG_DEVELOPER, true);
 
 if (!is_enabled_auth('ldap')) {
-    error_log('[AUTH LDAP] '.get_string('pluginnotenabled', 'auth_ldap'));
+    mtrace('[AUTH LDAP] '.get_string('pluginnotenabled', 'auth_ldap'));
     die;
 }
 
