@@ -23,7 +23,9 @@
  * @copyright valeisti (http://www.valeisti.fr)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-require('../../../config.php');
+
+// Loading $CFG configuration.
+include('../../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/filesystemlib.php');
 
 $context = context_system::instance();
@@ -41,15 +43,15 @@ echo "<p>";
 $dataroot = required_param('dataroot', PARAM_TEXT);
 
 if (is_dir($dataroot)) {
-    $dir = opendir($dataroot); 
+    $DIR = opendir($dataroot); 
     $cpt = 0;
     $hasfiles = false;
-    while (($file = readdir($dir)) && !$hasfiles) {
+    while (($file = readdir($DIR)) && !$hasfiles) {
         if (!preg_match("/^\\./", $file)) {
             $hasfiles = true;
         }
     }
-    closedir($dir);
+    closedir($DIR);
 
     if ($hasfiles) {
         echo $OUTPUT->box(get_string('datapathnotavailable', 'local_vmoodle'), 'error');
@@ -65,7 +67,7 @@ if (is_dir($dataroot)) {
     echo stripslashes($dataroot);
 }
 
-echo '</p>';
+echo "</p>";
 
 $closestr = get_string('closewindow', 'local_vmoodle');
 echo '<center>';

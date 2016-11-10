@@ -16,7 +16,7 @@
 
 /**
  * Declare RPC functions for syncrolelib.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
@@ -55,7 +55,7 @@ define('VMOODLE_PLUGIN_DISABLE', 0);
 function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = true) {
     global $CFG, $USER, $DB;
 
-    // Invoke local user and check his rights.
+    // Invoke local user and check his rights
     if ($auth_response = invoke_local_user((array)$user, 'local/vmoodle:execute')) {
         if ($json_response) {
             return $auth_response;
@@ -121,6 +121,8 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
 function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = true) {
     global $CFG, $USER, $DB;
 
+    // debug_trace("Plugin Set States: Entry point");
+
     // Creating response.
     $response = new Stdclass();
     $response->status = RPC_SUCCESS;
@@ -139,7 +141,7 @@ function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = 
 
     // Getting plugin enable/disable method.
     if (!empty($plugininfos)) {
-        foreach ($plugininfos as $plugin => $infos) {
+        foreach($plugininfos as $plugin => $infos) {
             $actionclass = $infos['type'].'_remote_control';
 
             // Ignore non implemented.

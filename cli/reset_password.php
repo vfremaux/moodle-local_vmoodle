@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,7 +28,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
+$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -35,13 +36,11 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php');         // Cli only functions.
+require_once($CFG->dirroot.'/lib/clilib.php');         // cli only functions
 
-// Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('help' => false,
-                                                     'host' => true),
-                                               array('h' => 'help',
-                                                     'H' => 'host'));
+// now get cli options
+list($options, $unrecognized) = cli_get_params(array('help' => false, 'host' => true),
+                                               array('h' => 'help', 'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -49,7 +48,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help = " Reset local user passwords, useful especially for admin acounts.
+    $help =
+"Reset local user passwords, useful especially for admin acounts.
 
 There are no security checks here because anybody who is able to
 execute this file may execute any PHP too.
@@ -60,7 +60,7 @@ Options:
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/reset_password.php -H http://myvmoodle.moodlearray.com
-"; // TODO: localize - to be translated later when everything is finished.
+"; //TODO: localize - to be translated later when everything is finished
 
     echo $help;
     die;
@@ -68,7 +68,7 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
@@ -79,27 +79,25 @@ echo('Config check : playing for '.$CFG->wwwroot."\n");
 
 
 cli_heading('Password reset'); // TODO: localize
-$prompt = "enter username (manual authentication only)"; // TODO: localize.
+$prompt = "enter username (manual authentication only)"; // TODO: localize
 $username = cli_input($prompt);
 
-if (!$user = $DB->get_record('user', array('auth' => 'manual',
-                                           'username' => $username,
-                                           'mnethostid' => $CFG->mnet_localhost_id))) {
+if (!$user = $DB->get_record('user', array('auth'=>'manual', 'username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id))) {
     cli_error("Can not find user '$username'");
 }
 
-$prompt = "Enter new password"; // TODO: localize.
+$prompt = "Enter new password"; // TODO: localize
 $password = cli_input($prompt);
 
-$errmsg = ''; // Prevent eclipse warning.
+$errmsg = '';//prevent eclipse warning
 if (!check_password_policy($password, $errmsg)) {
     cli_error($errmsg);
 }
 
 $hashedpassword = hash_internal_user_password($password);
 
-$DB->set_field('user', 'password', $hashedpassword, array('id' => $user->id));
+$DB->set_field('user', 'password', $hashedpassword, array('id'=>$user->id));
 
 echo "Password changed\n";
 
-exit(0); // 0 means success.
+exit(0); // 0 means success

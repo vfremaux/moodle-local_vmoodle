@@ -1,39 +1,22 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace vmoodleadminset_roles;
+Use \local_vmoodle\commands\Command;
+Use \local_vmoodle\commands\Command_Parameter;
+Use \local_vmoodle\commands\Command_Exception;
+Use \StdClass;
+Use \moodle_url;
+
+require_once($CFG->libdir.'/accesslib.php');
 
 /**
- * Describes a role allowance comparison command.
- *
+ * Describes a role comparison command.
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_roles;
-
-defined('MOODLE_INTERNAL') || die;
-
-use \local_vmoodle\commands\Command;
-use \local_vmoodle\commands\Command_Parameter;
-use \local_vmoodle\commands\Command_Exception;
-use \StdClass;
-use \moodle_url;
-
-require_once($CFG->libdir.'/accesslib.php');
-
 class Command_Role_Allow_Compare extends Command {
 
     /**
@@ -53,19 +36,18 @@ class Command_Role_Allow_Compare extends Command {
     public function __construct() {
         global $DB;
 
-        // Getting command description.
-        $cmdname = vmoodle_get_string('cmdallowcomparename', 'vmoodleadminset_roles');
-        $cmddesc = vmoodle_get_string('cmdallowcomparedesc', 'vmoodleadminset_roles');
+        // Getting command description
+        $cmd_name = vmoodle_get_string('cmdallowcomparename', 'vmoodleadminset_roles');
+        $cmd_desc = vmoodle_get_string('cmdallowcomparedesc', 'vmoodleadminset_roles');
 
-        // Creating table parameter.
+        // Creating table parameter
         $tables['assign'] = vmoodle_get_string('assigntable', 'vmoodleadminset_roles');
         $tables['override'] = vmoodle_get_string('overridetable', 'vmoodleadminset_roles');
         $tables['switch'] = vmoodle_get_string('switchtable', 'vmoodleadminset_roles');
-        $label = get_string('tableparamdesc', 'vmoodleadminset_roles');
-        $tableparam = new Command_Parameter('table', 'enum', $label, null, $tables);
+        $table_param = new Command_Parameter('table', 'enum', vmoodle_get_string('tableparamdesc', 'vmoodleadminset_roles'), null, $tables);
 
         // Creating command.
-        parent :: __construct($cmdname, $cmddesc, $tableparam);
+        parent :: __construct($cmd_name, $cmd_desc, $table_param);
     }
 
     /**
@@ -83,24 +65,24 @@ class Command_Role_Allow_Compare extends Command {
         if (!has_capability('local/vmoodle:execute', \context_system::instance()))
             throw new Command_Exception('insuffisantcapabilities');
 
-        // Getting role.
-        $table = $this->get_parameter('table')->get_value();
+        // Getting role
+        $table = $this->getParameter('table')->getValue();
 
-        // Creating XMLRPC client to read role configuration.
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
-        $rpcclient->add_param($table, 'string');
-        $rpcclient->add_param('', 'string'); // Get for all roles.
+        // Creating XMLRPC client to read role configuration
+        $rpc_client = new \local_vmoodle\XmlRpc_Client();
+        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
+        $rpc_client->add_param($table, 'string');
+        $rpc_client->add_param('', 'string'); // get for all roles
 
-        // Initializing responses.
+        // Initializing responses
         $responses = array();
 
         // Creating peers.
-        $mnethosts = array();
+        $mnet_hosts = array();
         foreach ($hosts as $host => $name) {
-            $mnethost = new \mnet_peer();
-            if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnethost;
+            $mnet_host = new \mnet_peer();
+            if ($mnet_host->bootstrap($host, null, 'moodle')) {
+                $mnet_hosts[] = $mnet_host;
             } else {
                 $responses[$host] = (object) array(
                     'status' => MNET_FAILURE,
@@ -110,26 +92,25 @@ class Command_Role_Allow_Compare extends Command {
         }
 
         // Sending requests.
-        foreach ($mnethosts as $mnethost) {
+        foreach ($mnet_hosts as $mnet_host) {
             // Sending request.
-            if (!$rpcclient->send($mnethost)) {
+            if (!$rpc_client->send($mnet_host)) {
                 $response = new \StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpcclient);
+                    var_dump($rpc_client);
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpcclient->response);
+                $response = json_decode($rpc_client->response);
             }
             // Recording response.
-            $responses[$mnethost->wwwroot] = $response;
+            $responses[$mnet_host->wwwroot] = $response;
             // Recording capabilities.
-            if ($response->status == RPC_SUCCESS) {
-                $this->capabilities[$mnethost->wwwroot] = $response->value;
-            }
+            if ($response->status == RPC_SUCCESS)
+                $this->capabilities[$mnet_host->wwwroot] = $response->value;
         }
         // Saving results.
         $this->results = $responses + $this->results;
@@ -145,9 +126,9 @@ class Command_Role_Allow_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function get_result($host = null, $key = null) {
+    public function getResult($host = null, $key = null) {
         // Checking if command has been runned.
-        if (!$this->has_run())
+        if (!$this->isRunned())
             throw new Command_Exception('commandnotrun');
 
         // Checking host (general result isn't provide in this kind of command).
@@ -180,13 +161,13 @@ class Command_Role_Allow_Compare extends Command {
         global $CFG,$DB,$OUTPUT;
 
         // Checking if command has been runned.
-        if (!$this->has_run()) {
+        if (!$this->isRunned()) {
             throw new Command_Exception('commandnotrun');
         }
 
         // Getting table name.
-        $table = $this->get_parameter('table')->get_value();
-
+        $table = $this->getParameter('table')->getValue();
+          
         // Getting hosts.
         $hosts = array_keys($this->capabilities);
         $host_labels = get_available_platforms();
@@ -199,23 +180,17 @@ class Command_Role_Allow_Compare extends Command {
          */
 
         // Creating header.
-        $label = get_string($table.'table', 'vmoodleadminset_roles');
-        $help = help_button_vml('rolelib', 'allowcompare', 'vmoodleadminset_roles');
-        $this->report = '<h3>'.get_string('allowcompare', 'vmoodleadminset_roles', $label.$help).'</h3>';
-        // Adding edit role link.
-        $params = array('roleid' => $role->id, 'action' => 'edit');
-        $buttonurl = new moodle_url('/admin/roles/allow.php?mode='.$table, $params);
-        $label = get_string('editallowtable', 'vmoodleadminset_roles');
-        $this->report.= '<center><p>'.$OUTPUT->single_button($buttonurl, $label, 'get').'</p></center>';
+        $this->report = '<h3>'.get_string('allowcompare', 'vmoodleadminset_roles', vmoodle_get_string($table.'table', 'vmoodleadminset_roles')).help_button_vml('rolelib', 'allowcompare', 'vmoodleadminset_roles').'</h3>';
+        // Adding edit role link
+        $this->report.= '<center><p>'.$OUTPUT->single_button(new moodle_url($CFG->wwwroot.'/admin/roles/allow.php?mode='.$table, array('roleid' => $role->id, 'action' => 'edit')), vmoodle_get_string('editallowtable', 'vmoodleadminset_roles'), 'get').'</p></center>';
         // Creation form.
-        $actionurl = new moodle_url('/local/vmoodle/plugins/roles/controller.rolelib.sadmin.php', array('what' => 'syncallow'));
-        $this->report .= '<form action="'.$actionurl.'" method="post" onsubmit="return validate_syncrole()">';
+        $this->report .= '<form action="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/controller.rolelib.sadmin.php?what=syncallow" method="post" onsubmit="return validate_syncrole()">';
         $this->report .= '<input id="target" type="hidden" name="target" value=""/>';
         $this->report .= '<input id="role" type="hidden" name="role" value=""/>';
         $this->report .= '<input id="source_platform" type="hidden" name="source_platform" value=""/>';
 
         // Creating table.
-        $this->report.= '<table id="allowcompare" class="generaltable boxaligncenter" style="min-width: 75%;"><tbody>';
+        $this->report.= '<table id="allowcompare" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter" style="min-width: 75%;"><tbody>';
 
         // Creating header.
         $this->report.= '<tr><th scope="col" class="header c0" style="vertical-align: bottom; text-align: left;">&nbsp</th>';
@@ -238,7 +213,6 @@ class Command_Role_Allow_Compare extends Command {
 
         // Closing table.
         $this->report.= '</tboby></table><br/>';
-        $this->report .= '<center><input type="submit" value="'.vmoodle_get_string('synchronize', 'vmoodleadminset_roles').'"/>';
-        $this->report .= '<div id="allowcompare_validation_message"></div></center></form><br/><br/>';
+        $this->report .= '<center><input type="submit" value="'.vmoodle_get_string('synchronize', 'vmoodleadminset_roles').'"/><div id="allowcompare_validation_message"></div></center></form><br/><br/>';
     }
 }

@@ -15,19 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A fixture worker will play a script
- *
- * @package     local_vmoodle
- * @category    local
- * @copyright   2016 Valery Fremaux
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * A fixture worker will play a script after 
  */
 
 define('CLI_SCRIPT', true);
 define('ENT_INSTALLER_SYNC_INTERHOST', 1);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
-require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
+require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions
 
 // Now get cli options.
 
@@ -51,23 +46,23 @@ list($options, $unrecognized) = cli_get_params(
 );
 
 if ($unrecognized) {
-    $unrecognized = implode("\n", $unrecognized);
+    $unrecognized = implode("\n  ", $unrecognized);
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
 if ($options['help'] || empty($options['nodes'])) {
-    $help = "
-Command Line Fixture Worker.
+    $help =
+        "Command Line Fixture Worker.
 
-    Options:
-    -h, --help          Print out this help
-    -f, --fixture       The fixture to run.
-    -n, --nodes         Node ids to work with.
-    -l, --logfile       the log file to use. No log if not defined
-    -m, --logmode       'append' or 'overwrite'
-    -v, --verbose       Verbose output
+        Options:
+        -h, --help          Print out this help
+        -f, --fixture       The fixture to run.
+        -n, --nodes         Node ids to work with.
+        -l, --logfile       the log file to use. No log if not defined
+        -m, --logmode       'append' or 'overwrite'
+        -v, --verbose       Verbose output
 
-"; // TODO: localize - to be translated later when everything is finished.
+        "; //TODO: localize - to be translated later when everything is finished
 
     echo $help;
     die;
@@ -78,13 +73,13 @@ if (empty($options['logmode'])) {
 }
 
 if (!empty($options['logfile'])) {
-    $log = fopen($options['logfile'], $options['logmode']);
+    $LOG = fopen($options['logfile'], $options['logmode']);
 }
 
 // Fire sequential synchronisation.
 mtrace("Starting worker");
-if (isset($log)) {
-    fputs($log, "Starting worker\n");
+if (isset($LOG)) {
+    fputs($LOG, "Starting worker\n");
 };
 
 $nodes = explode(',', $options['nodes']);
@@ -101,15 +96,13 @@ foreach ($nodes as $nodeid) {
     if (!empty($options['verbose'])) {
         echo implode("\n", $output);
     }
-    if (isset($log)) {
-        fputs($log, "$cmd\n#-------------------\n");
-        fputs($log, implode("\n", $output));
+    if (isset($LOG)) {
+        fputs($LOG, "$cmd\n#-------------------\n");
+        fputs($LOG, implode("\n", $output));
     };
     sleep(ENT_INSTALLER_SYNC_INTERHOST);
 }
 
-if (isset($log)) {
-    fclose($log);
-}
+if (isset($LOG)) fclose($LOG);
 
 return 0;

@@ -1,40 +1,23 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace vmoodleadminset_roles;
+Use \local_vmoodle\commands\Command;
+Use \local_vmoodle\commands\Command_Exception;
+Use \local_vmoodle\commands\Command_Parameter;
+Use \context_system;
+Use \StdClass;
+Use \moodle_url;
+
+require_once($CFG->libdir.'/accesslib.php');
 
 /**
  * Describes a role comparison command.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_roles;
-
-defined('MOODLE_INTERNAL') || die;
-
-use \local_vmoodle\commands\Command;
-use \local_vmoodle\commands\Command_Exception;
-use \local_vmoodle\commands\Command_Parameter;
-use \context_system;
-use \StdClass;
-use \moodle_url;
-
-require_once($CFG->libdir.'/accesslib.php');
-
 class Command_Role_Compare extends Command {
 
     /**
@@ -53,22 +36,21 @@ class Command_Role_Compare extends Command {
      */
     public function __construct() {
         global $DB;
+        
+        // Getting command description
+        $cmd_name = vmoodle_get_string('cmdcomparename', 'vmoodleadminset_roles');
+        $cmd_desc = vmoodle_get_string('cmdcomparedesc', 'vmoodleadminset_roles');
 
-        // Getting command description.
-        $cmdname = get_string('cmdcomparename', 'vmoodleadminset_roles');
-        $cmddesc = get_string('cmdcomparedesc', 'vmoodleadminset_roles');
-
-        // Getting role parameter.
+        // Getting role parameter
         $roles = role_fix_names(get_all_roles(), \context_system::instance(), ROLENAME_ORIGINAL);
         $rolemenu = array();
-        foreach ($roles as $r) {
+        foreach($roles as $r){
             $rolemenu[$r->shortname] = $r->localname;
         }
-        $label = get_string('roleparamcomparedesc', 'vmoodleadminset_roles');
-        $roleparam = new Command_Parameter('role', 'enum', $label, null, $rolemenu);
+        $role_param = new Command_Parameter('role', 'enum', vmoodle_get_string('roleparamcomparedesc', 'vmoodleadminset_roles'), null, $rolemenu);
 
         // Creating command.
-        parent :: __construct($cmdname, $cmddesc, $roleparam);
+        parent :: __construct($cmd_name, $cmd_desc, $role_param);
     }
 
     /**
@@ -80,7 +62,7 @@ class Command_Role_Compare extends Command {
         global $CFG, $USER;
 
         // Adding constants.
-        require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
+        require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
 
         // Checking capabilities.
         if (!has_capability('local/vmoodle:execute', \context_system::instance())) {
@@ -88,22 +70,22 @@ class Command_Role_Compare extends Command {
         }
 
         // Getting role.
-        $role = $this->get_parameter('role')->get_value();
+        $role = $this->getParameter('role')->getValue();
 
         // Creating XMLRPC client to read role configuration.
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_capabilities');
-        $rpcclient->add_param($role, 'string');
+        $rpc_client = new \local_vmoodle\XmlRpc_Client();
+        $rpc_client->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_capabilities');
+        $rpc_client->add_param($role, 'string');
 
         // Initializing responses.
         $responses = array();
 
         // Creating peers.
-        $mnethosts = array();
+        $mnet_hosts = array();
         foreach ($hosts as $host => $name) {
-            $mnethost = new \mnet_peer();
-            if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnethost;
+            $mnet_host = new \mnet_peer();
+            if ($mnet_host->bootstrap($host, null, 'moodle')) {
+                $mnet_hosts[] = $mnet_host;
             } else {
                 $responses[$host] = (object) array(
                     'status' => RPC_FAILURE,
@@ -113,25 +95,25 @@ class Command_Role_Compare extends Command {
         }
 
         // Sending requests.
-        foreach ($mnethosts as $mnethost) {
-            // Sending request.
-            if (!$rpcclient->send($mnethost)) {
+        foreach ($mnet_hosts as $mnet_host) {
+            // Sending request
+            if (!$rpc_client->send($mnet_host)) {
                 $response = new \StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpcclient);
+                    var_dump($rpc_client);
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpcclient->response);
+                $response = json_decode($rpc_client->response);
             }
-            // Recording response.
-            $responses[$mnethost->wwwroot] = $response;
-            // Recording capabilities.
+            // Recording response
+            $responses[$mnet_host->wwwroot] = $response;
+            // Recording capabilities
             if ($response->status == RPC_SUCCESS)
-                $this->capabilities[$mnethost->wwwroot] = $response->value;
+                $this->capabilities[$mnet_host->wwwroot] = $response->value;
         }
         // Saving results.
         $this->results = $responses + $this->results;
@@ -147,9 +129,9 @@ class Command_Role_Compare extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function get_result($host = null, $key = null) {
+    public function getResult($host = null, $key = null) {
         // Checking if command has been runned.
-        if (!$this->has_run()) {
+        if (!$this->isRunned()) {
             throw new Command_Exception('commandnotrun');
         }
 
@@ -180,112 +162,113 @@ class Command_Role_Compare extends Command {
      * @throws Commmand_Exception.
      */
     private function _process() {
-        global $CFG, $DB, $OUTPUT;
+        global $CFG,$DB,$OUTPUT;
 
         // Checking if command has been runned.
-        if (!$this->has_run()) {
+        if (!$this->isRunned()) {
             throw new Command_Exception('commandnotrun');
         }
 
         // Defining capabilities values.
-        $cappermissions = array(
+        $cap_permissions = array(
             CAP_ALLOW => array('count' => 0, 'label' => 1, 'name' => 'allow'),
             CAP_PREVENT => array('count' => 0, 'label' => 2, 'name' => 'prevent'),
             CAP_PROHIBIT => array('count' => 0, 'label' => 3, 'name' => 'prohibit')
         );
 
         // Defining capabilities context.
-        $capcontexts = array(
+        $cap_contexts = array(
             CONTEXT_BLOCK => array('count' => 0, 'label' => 'B', 'name' => 'block'),
             CONTEXT_COURSE => array('count' => 0, 'label' => 'C', 'name' => 'course'),
             CONTEXT_COURSECAT => array('count' => 0, 'label' => 'CC', 'name' => 'coursecat'),
+        /*    CONTEXT_GROUP => array('count' => 0, 'label' => 'G', 'name' => 'group'),*/
             CONTEXT_MODULE => array('count' => 0, 'label' => 'M', 'name' => 'module'),
             CONTEXT_SYSTEM => array('count' => 0, 'label' => 'S', 'name' => 'system'),
             CONTEXT_USER => array('count' => 0, 'label' => 'U', 'name' => 'user')
         );
 
         // Getting role name.
-        $role = $this->get_parameter('role')->get_value();
+        $role = $this->getParameter('role')->getValue();
         $role = $DB->get_record('role', array('shortname' => $role));
-
+          
         // Getting hosts.
         $hosts = array_keys($this->capabilities);
-        $hostlabels = get_available_platforms();
+        $host_labels = get_available_platforms();
 
         // Getting capabilities.
-        $recordscapabilities = $DB->get_records('capabilities', null, '', 'name,contextlevel,component');
+        $records_capabilities = $DB->get_records('capabilities', null, '', 'name,contextlevel,component');
 
         // Getting lang.
         $lang = str_replace('_utf8', '', current_language());
         $strcapabilities = s(get_string('capabilities', 'role')); // 'Capabilities' MDL-11687
 
         // Getting all capabilities names.
-        $capabilitynames = array();
-        foreach ($this->capabilities as $platformcapabilities) {
-            $platformcapabilities = array_keys((array) $platformcapabilities);
-            $capabilitynames = array_merge($capabilitynames, $platformcapabilities);
+        $capability_names = array();
+        foreach ($this->capabilities as $platform_capabilities) {
+            $platform_capabilities = array_keys((array) $platform_capabilities);
+            $capability_names = array_merge($capability_names, $platform_capabilities);
         }
-        $capabilitynames = array_unique($capabilitynames);
-        // Getting problematic component name.
-        $problematiccomponentname = get_string('problematiccomponent', 'vmoodleadminset_roles');
+        $capability_names = array_unique($capability_names);
+        // Getting problematic component name
+        $problematic_component_name = get_string('problematiccomponent', 'vmoodleadminset_roles');
 
         // Creating normalized capabilities.
         $capabilities = array();
-        foreach ($capabilitynames as $capabilityname) {
+        foreach ($capability_names as $capability_name) {
             // Creating capability.
             $capability = new \StdClass();
-            $capability->name = $capabilityname;
+            $capability->name = $capability_name;
 
             // Initializing counters.
-            $cappermissions[CAP_ALLOW]['count'] = $cappermissions[CAP_PREVENT]['count'] =
-            $cappermissions[CAP_PROHIBIT]['count'] = 0;
-            $capcontexts[CONTEXT_BLOCK]['count'] = $capcontexts[CONTEXT_COURSE]['count'] =
-            $capcontexts[CONTEXT_COURSECAT]['count'] = /*$capcontexts[CONTEXT_GROUP]['count'] =*/
-            $capcontexts[CONTEXT_MODULE]['count'] = $capcontexts[CONTEXT_SYSTEM]['count'] =
-            $capcontexts[CONTEXT_USER]['count'] = 0;
+            $cap_permissions[CAP_ALLOW]['count'] = $cap_permissions[CAP_PREVENT]['count'] =
+            $cap_permissions[CAP_PROHIBIT]['count'] = 0;
+            $cap_contexts[CONTEXT_BLOCK]['count'] = $cap_contexts[CONTEXT_COURSE]['count'] =
+            $cap_contexts[CONTEXT_COURSECAT]['count'] = /*$cap_contexts[CONTEXT_GROUP]['count'] =*/
+            $cap_contexts[CONTEXT_MODULE]['count'] = $cap_contexts[CONTEXT_SYSTEM]['count'] =
+            $cap_contexts[CONTEXT_USER]['count'] = 0;
 
             // Counting.
-            foreach ($this->capabilities as $platformcapabilities) {
-                if (!property_exists($platformcapabilities, $capabilityname) || is_null($platformcapabilities->$capabilityname)) {
+            foreach ($this->capabilities as $platform_capabilities) {
+                if (!property_exists($platform_capabilities, $capability_name) || is_null($platform_capabilities->$capability_name)) {
                     continue;
                 }
-                $platformcapability = $platformcapabilities->$capabilityname;
-                $cappermissions[$platformcapability->permission]['count']++;
-                $capcontexts[$platformcapability->contextlevel]['count']++;
+                $platform_capability = $platform_capabilities->$capability_name;
+                $cap_permissions[$platform_capability->permission]['count']++;
+                $cap_contexts[$platform_capability->contextlevel]['count']++;
             }
 
             // Getting major values.
-            $nbrvaluemax = max(array_map(array($this, '_get_counter_value'), $cappermissions));
-            $nbrcontextmax = max(array_map(array($this, '_get_counter_value'), $capcontexts));
+            $nbr_value_max = max(array_map(array($this, '_getCounterValue'), $cap_permissions));
+            $nbr_context_max = max(array_map(array($this, '_getCounterValue'), $cap_contexts));
 
             // Setting major permission.
-            foreach ($cappermissions as $permission => $cappermission) {
-                if ($cappermission['count'] == $nbrvaluemax) {
+            foreach ($cap_permissions as $permission => $cap_permission) {
+                if ($cap_permission['count'] == $nbr_value_max) {
                     $capability->major_permission = $permission;
                     break;
                 }
             }
 
             // Setting major contexlevel.
-            foreach ($capcontexts as $contextlevel => $cap_context) {
-                if ($cap_context['count'] == $nbrcontextmax) {
+            foreach ($cap_contexts as $contextlevel => $cap_context) {
+                if ($cap_context['count'] == $nbr_context_max) {
                     $capability->major_contextlevel = $contextlevel;
                     break;
                 }
             }
 
             // Setting component.
-            $capability->component = isset($recordscapabilities[$capabilityname]) ? $recordscapabilities[$capabilityname]->component : $problematiccomponentname;
+            $capability->component = isset($records_capabilities[$capability_name]) ? $records_capabilities[$capability_name]->component : $problematic_component_name;
 
             // Setting capability contextlevel.
-            $capability->contextlevel = isset($recordscapabilities[$capabilityname]) ? $recordscapabilities[$capabilityname]->contextlevel : CONTEXT_SYSTEM;
+            $capability->contextlevel = isset($records_capabilities[$capability_name]) ? $records_capabilities[$capability_name]->contextlevel : CONTEXT_SYSTEM;
 
             // Adding capability.
-            $capabilities[$capabilityname] = $capability;
+            $capabilities[$capability_name] = $capability;
         }
 
         // Sort capabilities on contextlevel, component and name.
-        uasort($capabilities, array($this, '_order_capability'));
+        uasort($capabilities, array($this, '_orderCapability'));
 
         /*
          * Creating html report.
@@ -313,7 +296,7 @@ class Command_Role_Compare extends Command {
         $this->report.= '<tr><th scope="col" class="header c0" style="vertical-align: bottom; text-align: left;">&nbsp</th>';
         $col = 1;
         foreach ($hosts as $host) {
-            $this->report.= '<th id="cap_'.$col.'" scope="col" class="header c'.$col.'" style="vertical-align: bottom; text-align: center;"><label for="platform_'.$col.'"><img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/draw_platformname.php?caption='.urlencode($hostlabels[$host]).'" alt="'.$hostlabels[$host].'"/></label><br/><input id="platform_'.$col.'" type="checkbox" name="platforms[]" value="'.$host.'" disabled="disabled"/></th>';
+            $this->report.= '<th id="cap_'.$col.'" scope="col" class="header c'.$col.'" style="vertical-align: bottom; text-align: center;"><label for="platform_'.$col.'"><img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/draw_platformname.php?caption='.urlencode($host_labels[$host]).'" alt="'.$host_labels[$host].'"/></label><br/><input id="platform_'.$col.'" type="checkbox" name="platforms[]" value="'.$host.'" disabled="disabled"/></th>';
             $col++;
         }
         $this->report.= '</tr>';
@@ -338,32 +321,30 @@ class Command_Role_Compare extends Command {
             $rowcontent .= '<td id="cap_0_'.$row.'" class="cell c0" style="vertical-align: middle; text-align: left;"><a onclick="this.target=\'docspopup\'" href="'.$CFG->docroot.'/'.$lang.'/'.$strcapabilities.'/'.$capability->name.'">'.get_capability_string($capability->name).'</a><br/>'.$capability->name.'</td>';
 
             foreach ($hosts as $host) {
-                $extraclass = false;
-                $title = get_capability_string($capability->name).' | '.$hostlabels[$host];
+                $extra_class = false;
+                $title = get_capability_string($capability->name).' | '.$host_labels[$host];
                 if (array_key_exists($host, $this->capabilities) && property_exists($this->capabilities[$host], $capability->name)) {
-                    $platformcapability = $this->capabilities[$host]->{$capability->name};
-                    if (is_null($platformcapability)) {
+                    $platform_capability = $this->capabilities[$host]->{$capability->name};
+                    if (is_null($platform_capability)) {
                         $cell = '<img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/pix/norolecapability.png" alt="No role capability" title="'.$title.'" onclick="setCapability('.$col.','.$row.',\''.$capability->name.'\',\''.$host.'\');"/>';
                     } else {
-                        $cell = '<img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/pix/compare'.$cappermissions[$platformcapability->permission]['label'].$capcontexts[$platformcapability->contextlevel]['label'].'.png" alt="Permission: '.$cappermissions[$platformcapability->permission]['name'].' | Context: '.$capcontexts[$platformcapability->contextlevel]['name'].'" title="'.$title.'" onclick="setCapability('.$col.','.$row.',\''.$capability->name.'\',\''.$host.'\');"/>';
-                        if ($platformcapability->permission != $capabilities[$platformcapability->capability]->major_permission) {
-                            $extraclass = 'wrongvalue';
-                        } else if ($platformcapability->contextlevel != $capabilities[$platformcapability->capability]->major_contextlevel) {
-                            $extraclass = 'wrongcontext';
+                        $cell = '<img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/pix/compare'.$cap_permissions[$platform_capability->permission]['label'].$cap_contexts[$platform_capability->contextlevel]['label'].'.png" alt="Permission: '.$cap_permissions[$platform_capability->permission]['name'].' | Context: '.$cap_contexts[$platform_capability->contextlevel]['name'].'" title="'.$title.'" onclick="setCapability('.$col.','.$row.',\''.$capability->name.'\',\''.$host.'\');"/>';
+                        if ($platform_capability->permission != $capabilities[$platform_capability->capability]->major_permission) {
+                            $extra_class = 'wrongvalue';
+                        } elseif ($platform_capability->contextlevel != $capabilities[$platform_capability->capability]->major_contextlevel) {
+                            $extra_class = 'wrongcontext';
                         }
                     }
                 } else {
                     $cell = '<img src="'.$CFG->wwwroot.'/local/vmoodle/plugins/roles/pix/nocapability.png" alt="No capability" title="'.$title.'"/>';
                 }
-                $rowcontent .= '<td id="cap_'.$col.'_'.$row.'" class="cell c'.$col.($extraclass ? ' '.$extraclass : '').'" style="vertical-align: middle; text-align: center;" onmouseout="cellOut('.$col.','.$row.');" onmouseover="cellOver('.$col.','.$row.');">'.$cell.'</td>';
+                $rowcontent .= '<td id="cap_'.$col.'_'.$row.'" class="cell c'.$col.($extra_class ? ' '.$extra_class : '').'" style="vertical-align: middle; text-align: center;" onmouseout="cellOut('.$col.','.$row.');" onmouseover="cellOver('.$col.','.$row.');">'.$cell.'</td>';
                 $col++;
             }
 
             // Adding contextual heading.
             if ($componentlevelchanged) {
-                $rowhead = '<tr class="capabilityrow" id="'.implode(',', $rowtitleids).'">';
-                $rowhead .= '<td colspan="'.(count($hosts)+1).'" class="header">';
-                $rowhead .= '<strong>'.($capability->component == $problematiccomponentname ? $problematiccomponentname : get_component_string($capability->component, $capability->contextlevel)).'</strong></td></tr>';
+                $rowhead = '<tr class="capabilityrow" id="'.implode(',', $rowtitleids).'"><td colspan="'.(count($hosts)+1).'" class="header"><strong>'.($capability->component == $problematic_component_name ? $problematic_component_name : get_component_string($capability->component, $capability->contextlevel)).'</strong></td></tr>';
                 $rowtitleids = array();
             }
 
@@ -394,9 +375,9 @@ class Command_Role_Compare extends Command {
     private function _orderCapability($cap1, $cap2) {
         if (!($cmp = strcmp($cap1->component, $cap2->component))) {
             return $cmp;
-        } else if ($cap1->contextlevel < $cap2->contextlevel) {
+        } elseif ($cap1->contextlevel < $cap2->contextlevel) {
             return -1;
-        } else if ($cap1->contextlevel > $cap2->contextlevel) {
+        } elseif ($cap1->contextlevel > $cap2->contextlevel) {
             return 1;
         } else {
             return strcmp($cap1->name, $cap2->name);

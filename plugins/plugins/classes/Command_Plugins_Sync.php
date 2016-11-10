@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace vmoodleadminset_plugins;
+Use \local_vmoodle\commands\Command;
+Use \local_vmoodle\commands\Command_Parameter;
+Use \local_vmoodle\commands\Command_Exception;
+Use \StdClass;
+
 /**
  * Describes a command that allows synchronising plugin state.
  * 
@@ -22,42 +28,29 @@
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_plugins;
-
-defined('MOODLE_INTERNAL') || die;
-
-use \local_vmoodle\commands\Command;
-use \local_vmoodle\commands\Command_Parameter;
-use \local_vmoodle\commands\Command_Exception;
-use \StdClass;
-
 class Command_Plugins_Sync extends Command {
 
     /**
      * Constructor.
      * @throws Command_Exception.
      */
-    public function __construct() {
+    function __construct() {
         global $DB;
 
         // Getting command description.
-        $cmdname = vmoodle_get_string('cmdsyncname', 'vmoodleadminset_plugins');
-        $cmddesc = vmoodle_get_string('cmdsyncdesc', 'vmoodleadminset_plugins');
+        $cmd_name = vmoodle_get_string('cmdsyncname', 'vmoodleadminset_plugins');
+        $cmd_desc = vmoodle_get_string('cmdsyncdesc', 'vmoodleadminset_plugins');
 
         // Creating platform parameter. This is the source platform.
-        $label = get_string('platformparamsyncdesc', 'vmoodleadminset_plugins');
-        $platformparam = new Command_Parameter('platform', 'enum', $label, null, get_available_platforms());
+        $platform_param = new Command_Parameter('platform',    'enum', vmoodle_get_string('platformparamsyncdesc', 'vmoodleadminset_plugins'), null, get_available_platforms());
 
-        /*
-         * Creating plugins type parameter. If this parameter has a value, 
-         * then all plugins in this type will be synchronized
-         */
+        // Creating plugins type parameter. If this parameter has a value, 
+        // then all plugins in this type will be synchronized
         $plugintypes = get_plugin_types();
-        $label = get_string('plugintypeparamsyncdesc', 'vmoodleadminset_plugins');
-        $plugintypeparam = new Command_Parameter('plugintype', 'enum', $label, null, $plugintypes);
+        $plugintype_param = new Command_Parameter('plugintype', 'enum', vmoodle_get_string('plugintypeparamsyncdesc', 'vmoodleadminset_plugins'), null, $plugintypes);
 
         // Creating command.
-        parent::__construct($cmdname, $cmddesc, array($platformparam, $plugintypeparam));
+        parent::__construct($cmd_name, $cmd_desc, array($platform_param, $plugintype_param));
     }
 
     /**
@@ -65,7 +58,7 @@ class Command_Plugins_Sync extends Command {
      * @param mixed $hosts The host where run the command (may be wwwroot or an array).
      * @throws Command_Exception
      */
-    public function run($hosts) {
+    function run($hosts) {
         global $CFG, $USER;
 
         // Adding constants.
@@ -77,18 +70,18 @@ class Command_Plugins_Sync extends Command {
         }
 
         // Getting plugintype.
-        $plugintype = $this->get_parameter('plugintype')->get_value();
+        $plugintype = $this->getParameter('plugintype')->getValue();
 
         // Checking hosts.
-        $platform = $this->get_parameter('platform')->get_value();
+        $platform = $this->getParameter('platform')->getValue();
         if (array_key_exists($platform, $hosts)) {
             $platforms = get_available_platforms();
             throw new Command_Plugins_Exception('syncwithitself');
         }
 
         // Creating peer to read plugins configuration from the designated peer.
-        $mnethost = new mnet_peer();
-        if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
+        $mnet_host = new mnet_peer();
+        if (!$mnet_host->bootstrap($this->getParameter('platform')->getValue(), null, 'moodle')) {
             $response = (object) array(
                             'status' => MNET_FAILURE,
                             'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
@@ -102,23 +95,23 @@ class Command_Plugins_Sync extends Command {
         }
 
         // Creating XMLRPC client to read plugins configuration.
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_get_plugins_info');
-        $rpcclient->add_param($plugintype, 'string');
+        $rpc_client = new \local_vmoodle\XmlRpc_Client();
+        $rpc_client->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_get_plugins_info');
+        $rpc_client->add_param($plugintype, 'string');
 
         // Checking result.
-        if (!($rpcclient->send($mnet_host) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
+        if (!($rpc_client->send($mnet_host) && ($response = json_decode($rpc_client->response)) && $response->status == RPC_SUCCESS)) {
             // Creating response.
             if (!isset($response)) {
                 $response = new Stdclass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
-                $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                $response->error = implode('<br/>', $rpc_client->getErrors($mnet_host));
             }
 
             if (debugging()) {
                 echo '<pre>';
-                var_dump($rpcclient);
+                var_dump($rpc_client);
                 ob_flush();
                 echo '</pre>';
             }
@@ -132,12 +125,12 @@ class Command_Plugins_Sync extends Command {
         // Initializing responses.
         $responses = array();
 
-        // Creating peers.
-        $mnethosts = array();
+        // Creating peers
+        $mnet_hosts = array();
         foreach ($hosts as $host => $name) {
-            $mnethost = new mnet_peer();
-            if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnethost;
+            $mnet_host = new mnet_peer();
+            if ($mnet_host->bootstrap($host, null, 'moodle')) {
+                $mnet_hosts[] = $mnet_host;
             } else {
                 $responses[$host] = (object) array(
                                         'status' => MNET_FAILURE,
@@ -147,31 +140,31 @@ class Command_Plugins_Sync extends Command {
         }
 
         // Creating XMLRPC client
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
-        $rpcclient->add_param($plugininfos, 'object'); // plugininfos structure
+        $rpc_client = new \local_vmoodle\XmlRpc_Client();
+        $rpc_client->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
+        $rpc_client->add_param($plugininfos, 'object'); // plugininfos structure
 
         // Sending requests.
-        foreach ($mnethosts as $mnethost) {
+        foreach ($mnet_hosts as $mnet_host) {
 
             // Sending request
-            if (!$rpcclient->send($mnethost)) {
+            if (!$rpc_client->send($mnet_host)) {
                 $response = new Stdclass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
                 $response->error = 'Set plugin state failed : Remote call error';
                 if (debugging()) {
                     echo '<pre>';
-                    var_dump($rpcclient);
+                    var_dump($rpc_client);
                     ob_flush();
                     echo '</pre>';
                 }
             } else {
-                $response = json_decode($rpcclient->response);
+                $response = json_decode($rpc_client->response);
             }
 
             // Recording response.
-            $responses[$mnethost->wwwroot] = $response;
+            $responses[$mnet_host->wwwroot] = $response;
         }
 
         // Saving results.
@@ -185,10 +178,10 @@ class Command_Plugins_Sync extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function get_result($host = null, $key = null) {
+    function getResult($host = null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->has_run()) {
+        if (!$this->isRunned()) {
             throw new Command_Exception('commandnotrun');
         }
 
@@ -201,7 +194,7 @@ class Command_Plugins_Sync extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } else if (property_exists($result, $key)) {
+        } elseif (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;

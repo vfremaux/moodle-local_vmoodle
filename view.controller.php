@@ -1,19 +1,4 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * This file catches an action and do the corresponding usecase.
  * Called by 'view.php'.
@@ -34,7 +19,7 @@ require_once($CFG->dirroot.'/mnet/lib.php');
 
 $config = get_config('local_vmoodle');
 
-/* *************************** add the new vmoodle host and installs it *********** */
+/**************************** add the new vmoodle host and installs it ************/
 if ($action == 'doaddupdate') {
     $form->id = optional_param('id', '', PARAM_INT);
     $form->name = required_param('name', PARAM_TEXT);
@@ -75,30 +60,28 @@ if ($action == 'doaddupdate') {
         $erroritem->message = get_string('musthaveshortname', 'local_vmoodle');
         $erroritem->on = 'shortname,vhostname';
         $errors[] = $erroritem;
-    } else if ($DB->get_record('local_vmoodle', array('name' => $form->name))) {
+    } elseif ($DB->get_record('local_vmoodle', array('name' => $form->name))) {
         $erroritem->message = get_string('hostexists', 'local_vmoodle');
         $erroritem->on = 'name';
         $errors[] = $erroritem;
-    } else if ($DB->get_record('local_vmoodle', array('shortname' => $form->shortname))) {
+    } elseif ($DB->get_record('local_vmoodle', array('shortname' => $form->shortname))) {
         $erroritem->message = get_string('shortnameexists', 'local_vmoodle');
         $erroritem->on = 'shortname';
         $errors[] = $erroritem;
-    } else if ($DB->get_record('local_vmoodle', array('vhostname' => $form->vhostname))) {
+    } elseif ($DB->get_record('local_vmoodle', array('vhostname' => $form->vhostname))) {
         $erroritem->message = get_string('hostnameexists', 'local_vmoodle');
         $erroritem->on = 'shortname';
         $errors[] = $erroritem;
     } else {
-        /*
-         * cannot install anything when editing data.
-         * installing a vmoodle needs delete/add procedure
-         * the update function is only provided for fixing
-         * wring parameter values that have not influence upon
-         * physical bindings.
-         */
-        if ($form->id == '') {
+        // cannot install anything when editing data. 
+        // installing a vmoodle needs delete/add procedure 
+        // the update function is only provided for fixing
+        // wring parameter values that have not influence upon
+        // physical bindings.
+        if ($form->id == ''){
 
             if (!file_exists($form->vdatapath)) {
-                if (!filesystem_create_dir($form->vdatapath, FS_RECURSIVE, $config->vdatapathbase)) {
+                if (!filesystem_create_dir($form->vdatapath, FS_RECURSIVE, $config->vdatapathbase)){
                     $erroritem->message = get_string('couldnotcreatedataroot', 'local_vmoodle'). " ".$form->vdatapath;
                     $erroritem->on = 'vdatapath';
                     $errors[] = $erroritem;
@@ -112,24 +95,24 @@ if ($action == 'doaddupdate') {
             }
 
             // Try to create database.
-            $sidecnx = vmoodle_make_connection($form, false);
-            if (!$sidecnx){
+            $side_cnx = vmoodle_make_connection($form, false);
+            if (!$side_cnx){
                 $erroritem->message = get_string('couldnotconnecttodb', 'local_vmoodle');
                 $erroritem->on = 'db';
                 $errors[] = $erroritem;
             } else {
-                // Drop any previous database that could be in the way.
-                @vmoodle_drop_database($form, $sidecnx);
+                /// drop any previous database that could be in the way
+                @vmoodle_drop_database($form, $side_cnx);
                 if ($form->vdbtype == 'mysql') {
                     $sql = "
                        CREATE DATABASE `{$form->vdbname}` CHARACTER SET 'utf8'
                     ";
-                } else if ($form->vdbtype == 'posstgres') {
+                } elseif($form->vdbtype == 'posstgres') {
                     $sql = "
                        CREATE DATABASE {$form->vdbname} WITH OWNER={$form->vdblogin} ENCODING=UTF8
                     ";
                 }
-                $res = vmoodle_execute_query($form, $sql, $sidecnx);
+                $res = vmoodle_execute_query($form, $sql, $side_cnx);
                 if (!$res) {
                     $erroritem->message = get_string('couldnotcreatedb', 'local_vmoodle');
                     $erroritem->on = 'db';
@@ -139,26 +122,26 @@ if ($action == 'doaddupdate') {
                     print_string('databasecreated', 'local_vmoodle');
                     echo "<br/>";
                 }
-                // Make a new connection so we can bind to database.
-                vmoodle_close_connection($form, $sidecnx);
-                $sidecnx = vmoodle_make_connection($form, true);
+                // make a new connection so we can bind to database
+                vmoodle_close_connection($form, $side_cnx);
+                $side_cnx = vmoodle_make_connection($form, true);
 
-                // Prepare a filter for absolute www roots.
+                /// prepare a filter for absolute www roots
                 $manifest = vmoodle_get_vmanifest($v);
                 $filter[$manifest->templatehost] = $form->vhostname;
-                // Try to setup full datamodel loading database template.
-                if ($res = vmoodle_load_db_template($form, $CFG->dirroot.'/local/vmoodle/'.$v.'_sql/vmoodle_master.'.$form->vdbtype.'.sql', $sidecnx, $filter)) {
+                /// Try to setup full datamodel loading database template
+                if ($res = vmoodle_load_db_template($form, $CFG->dirroot.'/local/vmoodle/'.$v.'_sql/vmoodle_master.'.$form->vdbtype.'.sql', $side_cnx, $filter)) {
                     $errors[] = $res;
                 } else {
                     $done[] = 'databaseloaded';
                     print_string('databaseloaded', 'local_vmoodle');
                     echo "<br/>";
                 }
-                // TODO run customisation SQL script.
+                /// TODO run customisation SQL script
                 $vars = get_object_vars($vmoodle);
                 $vars['sessioncookie'] = strtoupper($vars->shortname);
-                $vars['sessioncookie'] = preg_replace("/[-_]/", '', $vars['sessioncookie']); // Strips out token damaging chars.
-                if ($res = vmoodle_load_db_template($form, $CFG->dirroot.'/local/vmoodle/'.$v.'_sql/vmoodle_setup_template.'.$form->vdbtype.'.sql', $sidecnx, $vars)){
+                $vars['sessioncookie'] = preg_replace("/[-_]/", '', $vars['sessioncookie']); // strips out token damaging chars
+                if ($res = vmoodle_load_db_template($form, $CFG->dirroot.'/local/vmoodle/'.$v.'_sql/vmoodle_setup_template.'.$form->vdbtype.'.sql', $side_cnx, $vars)){
                     $erroritem->message = get_string('errorsetupdb', 'local_vmoodle');
                     $erroritem->on = 'db';
                     $errors[] = $erroritem;
@@ -167,53 +150,52 @@ if ($action == 'doaddupdate') {
                     print_string('databasesetup', 'local_vmoodle');
                     echo '<br/>';
                 }
-                // MNET cross-registration : if mnet enabled cross register the new instance.
+                /// MNET cross-registration : if mnet enabled cross register the new instance
                 if ($form->mnet) {
-                    // Check master host is mnet enabled.
+                    // check master host is mnet enabled
                     if ($CFG->mnet_dispatcher_mode == 'strict') {
 
                         $services = vmoodle_get_service_desc();
-                        // Make a moodle mnet env for the new vmoodle.
-                        $mnetenv = vmoodle_setup_mnet_environment($form, $sidecnx);
-                        unset($mnetenv->keypair); // Do not fit in mnet_host records.
+                        // make a moodle mnet env for the new vmoodle
+                        $mnet_env = vmoodle_setup_mnet_environment($form, $side_cnx);
+                        unset($mnet_env->keypair); // do not fit in mnet_host records. 
 
-                        // Record "this" environment in new peer.
+                        // record "this" environment in new peer
                         echo "registering VMaster in peer<br/> ";
-                        $remotemnet = clone($MNET);
-                        unset($remotemnet->id); // Will force insertion in peer's database.
-                        unset($remotemnet->keypair);
-                        $peer_master_env = vmoodle_register_mnet_peer($form, $remotemnet, $sidecnx);
-                        // Register services for this in peer.
-                        vmoodle_add_services($form, $peer_master_env, $sidecnx, $services);
+                        $remote_MNET = clone($MNET);
+                        unset($remote_MNET->id); // will force insertion in peer's database
+                        unset($remote_MNET->keypair);
+                        $peer_master_env = vmoodle_register_mnet_peer($form, $remote_MNET, $side_cnx);
+                        // register services for this in peer
+                        vmoodle_add_services($form, $peer_master_env, $side_cnx, $services);
 
-                        // Register the new vmoodle in "this" known hosts.
+                        // register the new vmoodle in "this" known hosts
                         echo "registering in VMaster<br/>";
                         $thismoodle = vmoodle_make_this();
-                        $thiscnx = vmoodle_make_connection($thismoodle, true);
-                        if ($thiscnx) {
-                            $mastermnetenv = vmoodle_register_mnet_peer($thismoodle, $mnetenv, $thiscnx);
-                            // Register services for peer in master (this).
-                            vmoodle_add_services($thismoodle, $mastermnetenv, $thiscnx, $services);
-                            vmoodle_close_connection($thismoodle, $thiscnx);
+                        $this_cnx = vmoodle_make_connection($thismoodle, true);
+                        if ($this_cnx){
+                            $master_mnet_env = vmoodle_register_mnet_peer($thismoodle, $mnet_env, $this_cnx);
+                            // register services for peer in master (this)
+                            vmoodle_add_services($thismoodle, $master_mnet_env, $this_cnx, $services);
+                            vmoodle_close_connection($thismoodle, $this_cnx);
                         } else {
                             echo "Error with local connection";
                         }
 
-                        // Register in vmoodle peers.
+
+                        // register in vmoodle peers
                         $mnet_peers = array();
                         echo "Examining other peers<br/>";
-                        $mnetmoodles = $DB->get_records('local_vmoodle', array('mnet' => 1));
-                        if (!empty($mnetmoodles)) {
-                            foreach ($mnetmoodles as $peervmoodle) {
-                                /*
-                                 * Register new vmoodle in older vmoodles and get older vmoodle
-                                 * definitions to make local's.
-                                 */
+                        $mnet_moodles = $DB->get_records('local_vmoodle', array('mnet' => 1));
+                        if (!empty($mnet_moodles)) {
+                            foreach ($mnet_moodles as $peervmoodle) {
+                                // register new vmoodle in older vmoodles and get older vmoodle
+                                // definitions to make local's.
                                 if ($peer_cnx = vmoodle_make_connection($peervmoodle, true)) {
                                     echo "Registering peer in {$peervmoodle->name}<br/> ";
                                     $mnet_peer_envs[] = vmoodle_get_mnet_env($peervmoodle);
-                                    $peer_mnet_env = vmoodle_register_mnet_peer($peervmoodle, $mnetenv, $peer_cnx);
-                                    // Register services for peer in other peers.
+                                    $peer_mnet_env = vmoodle_register_mnet_peer($peervmoodle, $mnet_env, $peer_cnx);                        
+                                    //register services for peer in other peers
                                     vmoodle_add_services($peervmoodle, $peer_mnet_env, $peer_cnx, $services);
                                     vmoodle_close_connection($peervmoodle, $peer_cnx);
                                 } else {
@@ -223,26 +205,26 @@ if ($action == 'doaddupdate') {
                                 }
                             }
                         }
-                        // Register all peers in new vmoodle.
+                        // register all peers in new vmoodle
                         if (!empty($mnet_peer_envs)) {
-                            foreach ($mnet_peer_envs as $peerenv) {
-                                echo "Registering {$peerenv->wwwroot} in peer<br/> ";
-                                $peerenv = vmoodle_register_mnet_peer($form, $peerenv, $sidecnx);
-                                // Register services for other peers in new peer.
-                                vmoodle_add_services($form, $peerenv, $sidecnx, $services);
+                            foreach ($mnet_peer_envs as $peer_env) {
+                                echo "Registering {$peer_env->wwwroot} in peer<br/> ";
+                                $peer_env = vmoodle_register_mnet_peer($form, $peer_env, $side_cnx);
+                                //register services for other peers in new peer
+                                vmoodle_add_services($form, $peer_env, $side_cnx, $services);
                             }
                         }
                         $done[] = 'mnet';
                         print_string('mnetbound', 'local_vmoodle');
                         echo "<br/>";
                     } else {
-                        // Mnet required and master is not mnet.
+                        // mnet required and master is not mnet
                         echo get_string('mastermnetnotice', 'local_vmoodle');
                     }
                 }
-                vmoodle_close_connection($form, $sidecnx);
+                vmoodle_close_connection($form, $side_cnx);
             }
-            // Try to setup cron.
+            /// Try to setup cron
             if ($CFG->ostype != 'WINDOWS') {
                 $crontab = escapeshellarg($form->crontab);
                 $crontabsetup = "echo $crontab | crontab -";
@@ -259,8 +241,8 @@ if ($action == 'doaddupdate') {
         }
 
     } else {
-        // Errors when virtualizing.
-        // Rollback.
+        /// Errors when virtualizing. 
+        // Rollback
         if (@array_key_exists('datapath', $done)) {
             filesystem_clear_dir($form->vdatapath, true, $config->vdatapathbase);
             print_string('datatpathunbound', 'local_vmoodle');
@@ -271,7 +253,10 @@ if ($action == 'doaddupdate') {
             print_string('datatbasedroped', 'local_vmoodle');
         }
 
-        // Bounce to the form again.
+        if (@array_key_exists('mnet', $done)) {
+        }
+        // bounce to the form again.
+        echo "bouncing";
         if ($form->id) {
             $action = 'edit';
         } else {
@@ -280,11 +265,10 @@ if ($action == 'doaddupdate') {
     }
     echo $OUTPUT->box_end();
 }
-
-/* *************************** make the add form *********** */
+/**************************** make the add form ************/
 if ($action == 'add') {
 
-    // Print errors.
+    /// print errors
     if (!empty($errors)) {
         $errorstr = '';
         foreach ($errors as $anError) {
@@ -317,8 +301,7 @@ if ($action == 'add') {
     include "add.html";
     return -1;
 }
-
-/* *************************** make the edit form *********** */
+/**************************** make the edit form ************/
 if ($action == 'edit') {
     $id = required_param('id', PARAM_INT);
 
@@ -327,7 +310,7 @@ if ($action == 'edit') {
         return (-1);
     }
 
-    // Print errors.
+    /// print errors
     if (!empty($errors)) {
         $errorstr = '';
         foreach ($errors as $anError) {
@@ -339,9 +322,8 @@ if ($action == 'edit') {
     }
 
     echo $OUTPUT->heading(get_string('editvmoodle', 'local_vmoodle'));
-
-    // Try to get crontab.
-    if ($CFG->ostype != 'WINDOWS') {
+    /// Try to get crontab
+    if ($CFG->ostype != 'WINDOWS'){
         $crontabcmd = escapeshellcmd('crontab -l');
         $form->crontab = passthru($crontabcmd);
     }
@@ -349,37 +331,37 @@ if ($action == 'edit') {
     include "add.html";
    return -1;
 }
-
-/* *************************** delete a vmoodle and uninstall it *********** */
+/**************************** delete a vmoodle and uninstall it ************/
 if ($action == 'delete') {
     $id = required_param('id', PARAM_INT);
     $vmoodle = $DB->get_record('local_vmoodle', array('id' => $id));
 
     if ($vmoodle) {
-        // Drop record in vmoodle table.
+        /// drop record in vmoodle table
         $DB->delete_records('local_vmoodle', array('id' => $id));
-        // Destroy database. work silently.
+        /// destroy database. work silently
         @vmoodle_drop_database($vmoodle);
-        // Unlink datapath.
+        /// unlink datapath    
         filesystem_clear_dir($vmoodle->vdatapath, FS_FULL_DELETE, '');
-        // Unbind mnet hosts.
+        /// unbind mnet hosts
         if ($vmoodle->mnet){
 
-            // Unregister from me (this).
+            // unregister from me (this)
             $thismoodle = vmoodle_make_this();
-            $thiscnx = vmoodle_make_connection($thismoodle, true);
-            if ($thiscnx) {
+            $this_cnx = vmoodle_make_connection($thismoodle, true);
+            if ($this_cnx){
                 vmoodle_unregister_mnet($vmoodle, $thismoodle);
-                vmoodle_close_connection($vmoodle, $thiscnx);
+                vmoodle_close_connection($vmoodle, $this_cnx);
             }
-            // Unregister from all remaining peers (this).
+            // unregister from all remaining peers (this)
             $mnetpeers = $DB->get_records('local_vmoodle', array('mnet' => 1));
-            if (!empty($mnetpeers)) {
-                foreach ($mnetpeers as $peervmoodle) {
-                    $thiscnx = vmoodle_make_connection($peervmoodle, true);
-                    if ($peer_cnx) {
+            if (!empty($mnetpeers)){
+                foreach($mnetpeers as $peervmoodle){
+                    $this_cnx = vmoodle_make_connection($peervmoodle, true);
+                    if ($peer_cnx){
                         vmoodle_unregister_mnet($vmoodle, $peervmoodle);
                         vmoodle_close_connection($vmoodle, $peer_cnx);
+                    } else {
                     }
                 }
             }

@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace vmoodleadminset_generic;
+Use \Exception;
+
 /**
  * Exception about Command_SetConfig.
  * 
@@ -22,11 +25,7 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_generic;
-Use \Exception;
-
 class Command_SetConfig_Exception extends Exception {
-
     /**
      * Constructor with localized message.
      * @param string $identifier The key identifier for the localized string.

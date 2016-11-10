@@ -29,14 +29,10 @@ Use \StdClass;
  */
 class Command_PurgeCaches extends Command {
 
-    /**
-     * maintenance message. Sets maintenance mode off if empty
-     */
+    /** maintenance message. Sets maintenance mode off if empty */
     private $message;
 
-    /**
-     * If command's result should be returned
-     */
+    /** If command's result should be returned */
     private $returned;
 
     /**
@@ -49,7 +45,7 @@ class Command_PurgeCaches extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommandconstants;
+        global $vmcommands_constants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -85,13 +81,12 @@ class Command_PurgeCaches extends Command {
             if ($mnet_host->bootstrap($host, null, 'moodle')) {
                 $mnet_hosts[] = $mnet_host;
             } else {
-                $errormsg = get_string('couldnotcreateclient', 'local_vmoodle', $host);
-                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => $errormsg);
+                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
             }
         }
 
         // Getting command.
-        $command = $this->is_returned();
+        $command = $this->isReturned();
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -99,15 +94,20 @@ class Command_PurgeCaches extends Command {
 
         // Sending requests.
         foreach ($mnet_hosts as $mnet_host) {
-            // Sending request.
+            // Sending request
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                if (debugging()) {
+                    echo '<pre>';
+                    var_dump($rpc_client);
+                    echo '</pre>';
+                }
             } else {
                 $response = json_decode($rpc_client->response);
             }
-            // Recording response.
+            // Recording response
             $responses[$mnet_host->wwwroot] = $response;
         }
 
@@ -121,7 +121,7 @@ class Command_PurgeCaches extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function get_result($host = null, $key = null) {
+    public function getResult($host = null, $key = null) {
         // Checking if command has been runned.
         if (is_null($this->results)) {
             throw new Command_Exception('commandnotrun');
@@ -136,7 +136,7 @@ class Command_PurgeCaches extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } else if (property_exists($result, $key)) {
+        } elseif (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;
@@ -147,7 +147,7 @@ class Command_PurgeCaches extends Command {
      * Get if the command's result is returned.
      * @return boolean True if the command's result should be returned, false otherwise.
      */
-    public function is_returned() {
+    public function isReturned() {
         return $this->returned;
     }
 
@@ -155,7 +155,7 @@ class Command_PurgeCaches extends Command {
      * Set if the command's result is returned.
      * @param boolean $returned True if the command's result should be returned, false otherwise.
      */
-    public function set_returned($returned) {
+    public function setReturned($returned) {
         $this->returned = $returned;
     }
 }

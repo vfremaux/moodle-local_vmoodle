@@ -15,16 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package local_vmoodle
- * @category local
- * @author Bruce Bujon (bruce.bujon@gmail.com)
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
- */
-defined('MOODLE_INTERNAL') || die;
-
-/**
  * Opens and parses/checks a VMoodle instance definition file
- * @param string $location
+ * @param string $location 
+ *
  */
 function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
     global $CFG;
@@ -36,17 +29,17 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
     }
 
     // Decode file.
-    $csvencode = '/\&\#44/';
+    $csv_encode = '/\&\#44/';
     if (isset($CFG->local_vmoodle_csvseparator)) {
-        $csvdelimiter = '\\' . $config->csvseparator;
-        $csvdelimiter2 = $config->csvseparator;
+        $csv_delimiter = '\\' . $config->csvseparator;
+        $csv_delimiter2 = $config->csvseparator;
 
         if (isset($CFG->CSV_ENCODE)) {
-            $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+            $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
         }
     } else {
-        $csvdelimiter = "\;";
-        $csvdelimiter2 = ";";
+        $csv_delimiter = "\;";
+        $csv_delimiter2 = ";";
     }
 
     /*
@@ -80,9 +73,9 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
             'enabled' => 1,
             'mnet' => 1);
 
-    $optionaldefaults = array(
-            'mnet' => 1,
-            'vdbtype' => 'mysqli',
+    $optionalDefaults = array(
+            'mnet' => 1, 
+            'vdbtype' => 'mysqli', 
             'vdbhost' => $CFG->dbhost,
             'vdbpersist' => $CFG->dboptions['dbpersist'],
             'vdbprefix' => 'mdl_',
@@ -104,11 +97,43 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
 
     $textlib = new core_text();
 
-    $i = vmoodle_csv_parse_headers($nodelistlocation, $fp, $headers, $csvdelimiter2);
-    if (!vmoodle_check_headers($headers, $optional, $optionaldefaults)) {
-        return false;
+    if (!$fp = fopen($nodelistlocation, 'rb')) {
+        cli_error(get_string('badnodefile', 'local_vmoodle', $nodelistlocation));
     }
 
+    // Jump any empty or comment line.
+    $text = fgets($fp, 1024);
+    $i = 0;
+    while(vmoodle_is_empty_line_or_format($text, $i == 0)) {
+        $text = fgets($fp, 1024);
+        $i++;
+    }
+
+    $headers = explode($csv_delimiter2, $text);
+
+    // Check for valid field names.
+    foreach ($headers as $h) {
+        $header[] = trim($h);
+        $patternized = implode('|', $patterns) . "\\d+";
+        $metapattern = implode('|', $metas);
+        if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
+            cli_error(get_string('invalidfieldname', 'error', $h));
+            return;
+        }
+
+        if (isset($required[trim($h)])) {
+            $required[trim($h)] = 0;
+        }
+    }
+
+    // Check for required fields.
+    foreach ($required as $key => $value) {
+        if ($value) { 
+            // Required field missing.
+            cli_error(get_string('fieldrequired', 'error', $key));
+            return;
+        }
+    }
     $linenum = 2; // Since header is line 1.
 
     // Take some from admin profile, other fixed by hardcoded defaults.
@@ -116,7 +141,7 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
 
         // Make a new base record.
         $vnode = new StdClass();
-        foreach ($optionaldefaults as $key => $value) {
+        foreach ($optionalDefaults as $key => $value) {
             $vnode->$key = $value;
         }
 
@@ -128,13 +153,13 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
             continue;
         }
 
-        $valueset = explode($csvdelimiter2, $text);
+        $valueset = explode($csv_delimiter2, $text);
         $f = 0;
         foreach ($valueset as $value) {
             // Decode encoded commas.
             $key = $headers[$f];
 
-            // Do we have a global config ?
+            // Do we have a global config ? 
             if (preg_match('/^config_/', $key)) {
                 $smartkey = str_replace('config_', '', $key);
                 $vnode->config->$smartkey = trim($value);
@@ -142,7 +167,7 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
                 continue;
             }
 
-            // Do we have a plugin config ?
+            // Do we have a plugin config ? 
             /*
              * plugin configs will come as f.e. "auth_cas|server" key
              *
@@ -156,24 +181,24 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
                 if (!isset($vnode->$type->$plugin)) {
                     $vnode->$type->$plugin = new StdClass();
                 }
-                $vnode->$type->$plugin->$key = preg_replace($csvencode, $csvdelimiter2, trim($value));
+                $vnode->$type->$plugin->$key = preg_replace($csv_encode, $csv_delimiter2, trim($value));
                 $f++;
                 continue;
             }
 
-            $vnode->$key = preg_replace($csvencode, $csvdelimiter2, trim($value));
+            $vnode->$key = preg_replace($csv_encode, $csv_delimiter2, trim($value));
             $f++;
         }
         $vnodes[] = $vnode;
     }
-
+    
     return $vnodes;
 }
 
 /**
  * Opens and parses/checks a VMoodle nodelist for snapshotting. Basically
  * compatible with nodelist format.
- * @param string $nodelistlocation
+ * @param string $nodelistlocation 
  */
 function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     global $CFG;
@@ -186,17 +211,17 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     }
 
     // Decode file.
-    $csvencode = '/\&\#44/';
+    $csv_encode = '/\&\#44/';
     if (isset($config->csvseparator)) {
-        $csvdelimiter = '\\' . $config->csvseparator;
-        $csvdelimiter2 = $config->csvseparator;
+        $csv_delimiter = '\\' . $config->csvseparator;
+        $csv_delimiter2 = $config->csvseparator;
 
         if (isset($CFG->CSV_ENCODE)) {
-            $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+            $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
         }
     } else {
-        $csvdelimiter = "\;";
-        $csvdelimiter2 = ";";
+        $csv_delimiter = "\;";
+        $csv_delimiter2 = ";";
     }
 
     /*
@@ -212,9 +237,10 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
     }
 
     // Make arrays of valid fields for error checking.
-    $required = array('vhostname' => 1);
+    $required = array('vhostname' => 1,
+            );
 
-    // This will allow using a node creation list to operate.
+    // this will allow using a node creation list to operate
     $optional = array(
             'name' => 1,
             'shortname' => 1,
@@ -230,7 +256,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
             'enabled' => 1,
             'mnet' => 1);
 
-    $optionaldefaults = array(
+    $optionalDefaults = array(
             'mnet' => 1,
             'vdbtype' => 'mysqli',
             'vdbhost' => $CFG->dbhost,
@@ -252,11 +278,43 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
 
     // Get header (field names).
 
-    $i = vmoodle_csv_parse_headers($nodelistlocation, $fp, $headers, $csvdelimiter2);
-    if (!vmoodle_check_headers($headers, $optional, $optionaldefaults)) {
-        return false;
+    if (!$fp = fopen($nodelistlocation, 'rb')) {
+        cli_error(get_string('badnodefile', 'local_vmoodle', $nodelistlocation));
     }
 
+    // Jump any empty or comment line.
+    $text = fgets($fp, 1024);
+    $i = 0;
+    while (vmoodle_is_empty_line_or_format($text, $i == 0)) {
+        $text = fgets($fp, 1024);
+        $i++;
+    }
+
+    $headers = explode($csv_delimiter2, $text);
+
+    // Check for valid field names.
+    foreach ($headers as $h) {
+        $header[] = trim($h);
+        $patternized = implode('|', $patterns) . "\\d+";
+        $metapattern = implode('|', $metas);
+        if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
+            cli_error(get_string('invalidfieldname', 'error', $h));
+            return;
+        }
+
+        if (isset($required[trim($h)])) {
+            $required[trim($h)] = 0;
+        }
+    }
+
+    // Check for required fields.
+    foreach ($required as $key => $value) {
+        if ($value) { 
+            // Required field missing.
+            cli_error(get_string('fieldrequired', 'error', $key));
+            return;
+        }
+    }
     $linenum = 2; // Since header is line 1.
 
     // Take some from admin profile, other fixed by hardcoded defaults.
@@ -264,7 +322,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
 
         // Make a new base record.
         $vnode = new StdClass();
-        foreach ($optionaldefaults as $key => $value) {
+        foreach ($optionalDefaults as $key => $value) {
             $vnode->$key = $value;
         }
 
@@ -276,18 +334,18 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
             continue;
         }
 
-        $valueset = explode($csvdelimiter2, $text);
+        $valueset = explode($csv_delimiter2, $text);
         $f = 0;
         foreach ($valueset as $value) {
             // Decode encoded commas.
             $key = $headers[$f];
 
-            $vnode->$key = preg_replace($csvencode, $csvdelimiter2, trim($value));
+            $vnode->$key = preg_replace($csv_encode, $csv_delimiter2, trim($value));
             $f++;
         }
         $vnodes[] = $vnode;
     }
-
+    
     return $vnodes;
 }
 
@@ -295,7 +353,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
  * Check a CSV input line format for empty or commented lines
  * Ensures compatbility to UTF-8 BOM or unBOM formats
  */
-function vmoodle_is_empty_line_or_format(&$text, $resetfirst = false) {
+function vmoodle_is_empty_line_or_format(&$text, $resetfirst = false){
     static $first = true;
 
     $config = get_config('local_vmoodle');
@@ -315,62 +373,11 @@ function vmoodle_is_empty_line_or_format(&$text, $resetfirst = false) {
         $text = utf8_encode($text);
     }
 
-    // Last chance.
+    // last chance
     if ('ASCII' == mb_detect_encoding($text)) {
         $text = utf8_encode($text);
     }
 
-    // Check the text is empty or comment line and answer true if it is.
+    // Check the text is empty or comment line and answer true if it is
     return preg_match('/^$/', $text) || preg_match('/^(\(|\[|-|#|\/| )/', $text);
-}
-
-function vmoodle_csv_parse_headers($nodelistlocation, &$fp, &$headers, $csvdelimiter2) {
-    if (!$fp = fopen($nodelistlocation, 'rb')) {
-        cli_error(get_string('badnodefile', 'local_vmoodle', $nodelistlocation));
-    }
-
-    // Jump any empty or comment line.
-    $text = fgets($fp, 1024);
-    $i = 0;
-    while (vmoodle_is_empty_line_or_format($text, $i == 0)) {
-        $text = fgets($fp, 1024);
-        $i++;
-    }
-
-    $headers = explode($csvdelimiter2, $text);
-
-    return $i;
-}
-
-function vmoodle_check_headers($headers, $optional, $optionaldefaults, $required) {
-
-    // Check for valid field names.
-    foreach ($headers as $h) {
-        $header[] = trim($h);
-        $patternized = implode('|', $patterns) . "\\d+";
-        $metapattern = implode('|', $metas);
-        if (!(isset($required[$h]) ||
-                isset($optionaldefaults[$h]) ||
-                        isset($optional[$h]) ||
-                                preg_match("/$patternized/", $h) ||
-                                        preg_match("/$metapattern/", $h))) {
-            cli_error(get_string('invalidfieldname', 'error', $h));
-            return false;
-        }
-
-        if (isset($required[trim($h)])) {
-            $required[trim($h)] = 0;
-        }
-    }
-
-    // Check for required fields.
-    foreach ($required as $key => $value) {
-        if ($value) {
-            // Required field missing.
-            cli_error(get_string('fieldrequired', 'error', $key));
-            return false;
-        }
-    }
-
-    return true;
 }

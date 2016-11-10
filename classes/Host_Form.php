@@ -23,47 +23,44 @@
  */
 namespace local_vmoodle;
 
-defined('MOODLE_INTERNAL') || die();
-
 require_once($CFG->libdir.'/formslib.php');
 
 class Host_Form extends \moodleform {
-
     /**
      * Action to call from controller.
      */
     private $mode;
 
     /**
-     * Data array for the form.
-     */
-    private $platformform;
+    * Data array for the form.
+    */
+    private $platform_form;
 
     /**
      * Constructor.
      * @param string $mode The action to call from controler.
-     * @param array $platformform Data to input in fields.
+     * @param array $platform_form Data to input in fields.
      */
-    public function __construct($mode, $platformform = null) {
+    public function __construct($mode, $platform_form = null) {
         // Settings mode and data.
         $this->mode = $mode;
-        $this->platformform = $platformform;
+        $this->platform_form = $platform_form;
 
         // Calling parent's constructor.
-        $params = array('view' => 'management', 'what' => 'do'.$this->mode, 'page' => $this->mode);
-        parent::__construct(new \moodle_url('/local/vmoodle/view.php', $params));
+        parent::__construct(new \moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'do'.$this->mode, 'page' => $this->mode)));
     }
 
     /**
      * Describes the form (each elements' name  corresponds to its name in database).
      */
     public function definition() {
-        global $CFG, $DB;
+        // Global configuration.
+        global $CFG,$DB;
 
         // Settings variables.
         $mform = &$this->_form;
-        $sizeinputtext = 'size="30"';
-        $sizeinputtextbig = 'size="60"';
+        $size_input_text = 'size="30"';
+        $size_input_text_big = 'size="60"';
 
         /*
          * Host's id.
@@ -76,10 +73,10 @@ class Host_Form extends \moodleform {
          */
         $mform->addElement('header', 'featuresform', get_string('addformfeaturesgroup', 'local_vmoodle'));
         // Name.
-        $mform->addElement('text', 'name', get_string('addformname', 'local_vmoodle'), $sizeinputtext);
-        $mform->addHelpButton('name', 'name', 'local_vmoodle');
+        $mform->addElement('text', 'name', get_string('addformname', 'local_vmoodle'), $size_input_text);
+        $mform->addHelpButton('name', 'name','local_vmoodle');
         $mform->setType('name', PARAM_TEXT);
-        if ($this->is_in_add_mode()) {
+        if ($this->isInAddMode()) {
             // Shortname.
             $elmname = get_string('addformshortname', 'local_vmoodle');
             $mform->addElement('text', 'shortname', $elmname, ($this->mode == 'edit' ? 'disabled="disabled" ' : ''));
@@ -93,11 +90,10 @@ class Host_Form extends \moodleform {
         $mform->addHelpButton('description', 'description', 'local_vmoodle');
         $mform->setType('description', PARAM_TEXT);
 
-        if ($this->is_in_add_mode()) {
+        if ($this->isInAddMode()) {
             // Host's name.
             $elmname = get_string('vhostname', 'local_vmoodle');
-            $disabled = ($this->mode == 'edit') ? 'disabled="disabled" ' : '';
-            $mform->addElement('text', 'vhostname', $elmname, $disabled.$sizeinputtext);
+            $mform->addElement('text', 'vhostname', $elmname, ($this->mode == 'edit' ? 'disabled="disabled" ' : '').$size_input_text);
             $mform->addHelpButton('vhostname', 'vhostname', 'local_vmoodle');
             $mform->addElement('checkbox', 'forcedns', get_string('forcedns', 'local_vmoodle'));
             $mform->setType('vhostname', PARAM_URL);
@@ -118,6 +114,7 @@ class Host_Form extends \moodleform {
 
         // Database host.
         $mform->addElement('text', 'vdbhost', get_string('vdbhost', 'local_vmoodle'));
+        //$mform->addHelpButton('vdbhost', 'vdbhost', 'local_vmoodle');
         $mform->setType('vdbhost', PARAM_TEXT);
 
         // Database login.
@@ -129,9 +126,7 @@ class Host_Form extends \moodleform {
         $mform->setType('vdbpass', PARAM_RAW);
 
         // Button for testing database connection.
-        $label = get_string('testconnection', 'local_vmoodle');
-        $attrs = 'onclick="opencnxpopup(\''.$CFG->wwwroot.'\'); return true;"';
-        $mform->addElement('button', 'testconnection', $label, $attrs);
+        $mform->addElement('button', 'testconnection', get_string('testconnection', 'local_vmoodle'), 'onclick="opencnxpopup(\''.$CFG->wwwroot.'\'); return true;"');
 
         // Database name.
         $mform->addElement('text', 'vdbname', get_string('vdbname', 'local_vmoodle'));
@@ -155,7 +150,7 @@ class Host_Form extends \moodleform {
         $mform->addElement('header', 'nfform', get_string('addformnfgroup', 'local_vmoodle'));
 
         // Path for "moodledata".
-        $mform->addElement('text', 'vdatapath', get_string('vdatapath', 'local_vmoodle'), $sizeinputtextbig);
+        $mform->addElement('text', 'vdatapath', get_string('vdatapath', 'local_vmoodle'), $size_input_text_big);
         $mform->addHelpButton('vdatapath', 'vdatapath', 'local_vmoodle');
         $mform->setType('vdatapath', PARAM_TEXT);
 
@@ -188,22 +183,20 @@ class Host_Form extends \moodleform {
             $newsubnetwork = $maxmnet + 1;
         }
         $subnetworks[$newsubnetwork] = $newsubnetwork.' ('.get_string('mnetnew', 'local_vmoodle').')';
-        $label = get_string('multimnet', 'local_vmoodle');
-        $attrs = 'onchange="switcherServices(\''.$newsubnetwork.'\'); return true;"';
-        $mform->addElement('select', 'mnet', $label, $subnetworks, $attrs);
+        $mform->addElement('select', 'mnet', get_string('multimnet', 'local_vmoodle'), $subnetworks, 'onchange="switcherServices(\''.$newsubnetwork.'\'); return true;"');
         $mform->addHelpButton('mnet', 'mnet', 'local_vmoodle');
         $mform->setType('mnet', PARAM_TEXT);
 
         // Services strategy.
-        $servicesstrategies = array(
-            'default' => get_string('servicesstrategydefault', 'local_vmoodle'),
+        $services_strategies = array(
+            'default' => get_string('servicesstrategydefault', 'local_vmoodle'), 
             'subnetwork' => get_string('servicesstrategysubnetwork', 'local_vmoodle')
         );
-        $mform->addElement('select', 'services', get_string('servicesstrategy', 'local_vmoodle'), $servicesstrategies);
+        $mform->addElement('select', 'services', get_string('servicesstrategy', 'local_vmoodle'), $services_strategies);
         $mform->addHelpButton('services', 'services', 'local_vmoodle');
         $mform->setType('services', PARAM_TEXT);
 
-        if ($this->is_in_add_mode()) {
+        if ($this->isInAddMode()) {
             // Template.
             $templatesarray = vmoodle_get_available_templates();
             $mform->addElement('select', 'vtemplate', get_string('vtemplate', 'local_vmoodle'), $templatesarray);
@@ -219,12 +212,13 @@ class Host_Form extends \moodleform {
         $mform->addGroup($buttonarray, 'controlbuttons', '', array(' '), false);
 
         // Rules for the add mode.
-        if ($this->is_in_add_mode()) {
+        if ($this->isInAddMode()) {
             $mform->addRule('name', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('shortname', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vhostname', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vdbhost', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vdblogin', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
+            //$mform->addRule('vdbpass', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vdbname', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vdbprefix', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
             $mform->addRule('vdatapath', get_string('addforminputtexterror', 'local_vmoodle'), 'required', null, 'client');
@@ -235,14 +229,14 @@ class Host_Form extends \moodleform {
      * Test connection validation.
      * @see lib/moodleform#validation($data, $files)
      */
-    public function validation($data, $files = null) {
+    function validation($data, $files = null) {
         global $CFG, $DB;
 
         // Empty array.
         $errors = parent::validation($data, null);
 
         // Checks database connection again, after Javascript test.
-        $database = new \stdClass;
+        $database    = new \stdClass;
         $database->vdbtype = $data['vdbtype'];
         $database->vdbhost = $data['vdbhost'];
         $database->vdblogin = $data['vdblogin'];
@@ -255,7 +249,7 @@ class Host_Form extends \moodleform {
         }
 
         // Checks if database's name doesn't finish with '_'.
-        if ($data['vdbname'][strlen($data['vdbname']) - 1] == '_') {
+        if ($data['vdbname'][strlen($data['vdbname']) -1] == '_') {
             $errors['vdbname'] = get_string('baddatabasenamecoherence', 'local_vmoodle');
         }
 
@@ -274,7 +268,8 @@ class Host_Form extends \moodleform {
             }
         }
 
-        // ATTENTION Checks if user has entered a datapath with only one backslash between each folder and/or file.
+        // ATTENTION Checks if user has entered a datapath with only one backslash between each folder
+        // and/or file.
         if (isset($CFG->ostype)
                 && ($CFG->ostype == 'WINDOWS')
                     && (preg_match('#\\\{3,}#', $data['vdatapath']) > 0)) {
@@ -283,7 +278,7 @@ class Host_Form extends \moodleform {
         }
 
         // Test of values which have to be well-formed and can not be modified after.
-        if ($this->is_in_add_mode()) {
+        if ($this->isInAddMode()) {
 
             // Checks 'shortname', which must have no spaces.
             $shortname = $data['shortname'];
@@ -292,7 +287,7 @@ class Host_Form extends \moodleform {
             }
 
             // Checks 'vhostname', if not already used.
-            if ($this->is_equal_to_another_vhostname($data['vhostname'])) {
+            if ($this->isEqualToAnotherVhostname($data['vhostname'])) {
                 // Check if the vhostname is deleted.
                 $sql = "
                     SELECT
@@ -304,13 +299,13 @@ class Host_Form extends \moodleform {
                         b.vhostname = ?
                     AND
                         b.vhostname = m.wwwroot
-                ";
+                " ; 
                 $resultsqlrequest = $DB->get_record_sql($sql, array($data['vhostname']));
                 if (!empty($resultsqlrequest)) {
-                    if ($resultsqlrequest->deleted == 0) {
+                    if($resultsqlrequest->deleted == 0) {
                         $errors['vhostname'] = get_string('badhostnamealreadyused', 'local_vmoodle');
                     } else {
-                        // Id the plateforme is deleted and the user want to reactivate the vhostname.
+                        //Id the plateforme is deleted and the user want to reactivate the vhostname.
                         if ($data['vtemplate'] == 0) {
                             $sql = "
                                 SELECT
@@ -342,14 +337,15 @@ class Host_Form extends \moodleform {
             }
 
             // Checks 'vdatapath', if not already used.
-            if ($this->is_equal_to_another_dataroot($data['vdatapath'])) {
-                if ($data['vtemplate'] !== 0) {
+            if ($this->isEqualToAnotherDataRoot($data['vdatapath'])) {
+                if ($data['vtemplate'] === 0) {
+                } else {
                     $errors['vdatapath'] = get_string('badmoodledatapathalreadyused', 'local_vmoodle');
                 }
             }
 
             // Checks 'vdbname', if not already used.
-            if ($this->is_equal_to_another_database_name($data['vdbname']) && $data['vtemplate'] != 0) {
+            if ($this->isEqualToAnotherDatabaseName($data['vdbname']) && $data['vtemplate'] != 0) {
                 $errors['vdbname'] = get_string('baddatabasenamealreadyused', 'local_vmoodle');
             }
         }
@@ -361,7 +357,7 @@ class Host_Form extends \moodleform {
      * Test if form is in add mode.
      * @return bool If true, form is in add mode, else false.
      */
-    protected function is_in_add_mode() {
+    protected function isInAddMode() {
         return ($this->mode == 'add');
     }
 
@@ -369,7 +365,7 @@ class Host_Form extends \moodleform {
      * Test if form is in edit mode.
      * @return bool If true, form is in edit mode, else false.
      */
-    protected function is_in_edit_mode() {
+    protected function isInEditMode() {
         return ($this->mode == 'edit');
     }
 
@@ -378,7 +374,7 @@ class Host_Form extends \moodleform {
      * @param string $vhostname The hostname to check.
      * @return bool If TRUE, the chosen hostname is already used, else FALSE.
      */
-    private function is_equal_to_another_vhostname($vhostname) {
+    private function isEqualToAnotherVhostname($vhostname) {
         global $DB;
 
         $sql = "
@@ -386,11 +382,11 @@ class Host_Form extends \moodleform {
                 *
             FROM
                 {local_vmoodle}
-            WHERE
+            WHERE 
                 vhostname LIKE ?
         ";
-        $localvmoodles = $DB->get_records_sql($sql, array('%'.$vhostname));
-        return (empty($localvmoodles) ? false : true);
+        $local_vmoodles = $DB->get_records_sql($sql, array('%'.$vhostname));
+        return (empty($local_vmoodles) ? false : true);
     }
 
     /**
@@ -398,7 +394,7 @@ class Host_Form extends \moodleform {
      * @param  string $vdatapath The datapath to check.
      * @return bool If TRUE, the chosen datapath is already used, else FALSE.
      */
-    private function is_equal_to_another_dataroot($vdatapath) {
+    private function isEqualToAnotherDataRoot($vdatapath) {
         global $DB;
 
         $vmoodles = $DB->get_records('local_vmoodle');
@@ -419,7 +415,7 @@ class Host_Form extends \moodleform {
      * @param string $vdbname The database name to check.
      * @return bool If TRUE, the chosen database name is already used, else FALSE.
      */
-    private function is_equal_to_another_database_name($vdbname) {
+    private function isEqualToAnotherDatabaseName($vdbname) {
         global $DB;
 
         $vdbs = $DB->get_records_sql('SHOW DATABASES');

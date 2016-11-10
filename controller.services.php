@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * This file catches an action and do the corresponding usecase.
  * Called by 'view.php'.
@@ -25,16 +27,14 @@
  *
  * @usecase redefineservices
  */
-defined('MOODLE_INTERNAL') || die();
-
 require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
 
 // Confirmation message.
-$messageobject = new stdclass();
-$messageobject->message = '';
-$messageobject->style = 'notifyproblem';
+$message_object = new stdclass();
+$message_object->message = '';
+$message_object->style = 'notifyproblem';
 
-/* *************************** Define or redefine default services strategy *********** */
+/**************************** Define or redefine default services strategy ************/
 if ($action == 'redefineservices') {
 
     // Processing.
@@ -42,21 +42,21 @@ if ($action == 'redefineservices') {
     if (!empty($defaultservices)) {
 
         // Retrieve submitted data, from the services strategy form.
-        $servicesform = new ServicesStrategy_Form();
-        $submitteddata = $servicesform->get_data();
+        $services_form = new ServicesStrategy_Form();
+        $submitteddata = $services_form->get_data();
 
         // Saves default services strategy.
         set_config('local_vmoodle_services_strategy', serialize($submitteddata));
 
         // Every step was SUCCESS.
-        $messageobject->message = get_string('successstrategyservices', 'local_vmoodle');
-        $messageobject->style = 'notifysuccess';
+        $message_object->message = get_string('successstrategyservices', 'local_vmoodle');
+        $message_object->style = 'notifysuccess';
     } else {
-        $messageobject->message = get_string('badservicesnumber', 'local_vmoodle');
+        $message_object->message = get_string('badservicesnumber', 'local_vmoodle');
     }
 
     // Save confirm message before redirection.
-    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+    $SESSION->vmoodle_ma['confirm_message'] = $message_object;
     redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
     return -1;
 }

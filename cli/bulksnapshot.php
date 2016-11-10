@@ -22,11 +22,11 @@
 define('CLI_SCRIPT', true);
 
 require('../../../config.php');
-require_once($CFG->libdir.'/adminlib.php'); // Various admin-only functions.
-require_once($CFG->libdir.'/upgradelib.php'); // General upgrade/install related functions.
-require_once($CFG->libdir.'/clilib.php'); // Cli only functions.
+require_once($CFG->libdir.'/adminlib.php'); // various admin-only functions
+require_once($CFG->libdir.'/upgradelib.php'); // general upgrade/install related functions
+require_once($CFG->libdir.'/clilib.php'); // cli only functions
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
-require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // Vmoodle cli only functions.
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // vmoodle cli only functions
 
 // Fakes an admin identity for all the process.
 $USER = get_admin();
@@ -55,19 +55,19 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help = "
-Command line VMoodle Snapshot.
+    $help =
+"Command line VMoodle Generator.
 Please note you must execute this script with the same uid as apache!
 
 Options:
---interactive         No interactive questions or confirmations if not present
+--interactive     No interactive questions or confirmations
 -h, --help            Print out this help
 -c, --config          Define an external config file
--n, --nodes           A node to snapshot descriptor CSV file
+-n, --nodes           A node descriptor CSV file
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulksnapshot.php -nodes=nodelist.csv
-"; // TODO: localize - to be translated later when everything is finished.
+"; //TODO: localize - to be translated later when everything is finished
 
     echo $help;
     die;
@@ -118,7 +118,7 @@ foreach ($nodes as $n) {
 
     $n->forcedns = 0;
     $wwwroot = $n->vhostname;
-
+    
     if (empty($wwwroot)) {
         continue;
     }
@@ -137,9 +137,9 @@ foreach ($nodes as $n) {
 
     $automation = true;
 
-    for ($vmoodlestep = 0; $vmoodlestep <= 2; $vmoodlestep++) {
+    for ($vmoodlestep = 0 ; $vmoodlestep <= 2; $vmoodlestep++) {
         mtrace(get_string('clisnapstep', 'local_vmoodle', $vmoodlestep));
-        $return = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
+        $return = include $CFG->dirroot.'/local/vmoodle/controller.management.php';
         if ($return == -1) {
             cli_error(get_string('cliprocesserror', 'local_vmoodle'));
         }
@@ -147,7 +147,7 @@ foreach ($nodes as $n) {
             $input = readline("Continue (y/n|r) ?\n");
             if ($input == 'r' || $input == 'R') {
                 $vmoodlestep--;
-            } else if ($input == 'n' || $input == 'N') {
+            } elseif ($input == 'n' || $input == 'N') {
                 echo "finishing\n";
                 exit;
             }

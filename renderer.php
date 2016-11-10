@@ -14,12 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package     local_vmoodle
- * @category    local
- */
-defined('MOODLE_INTERNAL') || die;
-
 class local_vmoodle_renderer extends plugin_renderer_base {
 
     public function pix_url($image, $subplugin = null) {
@@ -62,13 +56,13 @@ class local_vmoodle_renderer extends plugin_renderer_base {
     private static function image_exists($filepath, $svg = false) {
         if ($svg && file_exists("$filepath.svg")) {
             return "$filepath.svg";
-        } else if (file_exists("$filepath.png")) {
+        } else  if (file_exists("$filepath.png")) {
             return "$filepath.png";
         } else if (file_exists("$filepath.gif")) {
             return "$filepath.gif";
-        } else if (file_exists("$filepath.jpg")) {
+        } else  if (file_exists("$filepath.jpg")) {
             return "$filepath.jpg";
-        } else if (file_exists("$filepath.jpeg")) {
+        } else  if (file_exists("$filepath.jpeg")) {
             return "$filepath.jpeg";
         } else {
             return false;

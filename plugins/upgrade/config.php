@@ -16,22 +16,19 @@
 
 /**
  * Description of assisted commands for code upgrading.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
 namespace vmoodleadminset_upgrade;
+Use \local_vmoodle\commands\Command_Category;
 
-defined('MOODLE_INTERNAL') || die;
-
-use \local_vmoodle\commands\Command_Category;
-
-// Creating category.
+// Creating category
 $category = new Command_Category('upgrade');
 
-$category->add_command(new Command_Upgrade(
+$category->addCommand(new Command_Upgrade(
     'Upgrade databases',
     'Drives the logical upgrade of all Moodles in the network'));
 

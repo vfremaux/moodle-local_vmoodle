@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace vmoodleadminset_generic;
+Use \Exception;
+
 /**
  * Exception about Command_PurgeCaches.
  *
@@ -22,10 +25,6 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_generic;
-
-use \Exception;
-
 class Command_PurgeCaches_Exception extends Exception {
 
     /**

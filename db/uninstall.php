@@ -12,14 +12,12 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-defined('MOODLE_INTERNAL') || die;
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 function xmldb_local_vmoodle_uninstall() {
-    global $DB;
+    global $DB,$CFG;
 
-    // Note this should be NOT really required if standard uninstall does the full job.
+    // note this should be NOT really required if standard uninstall does the full job.
 
     // Dismount all XML-RPC.
     if ($service = $DB->get_record('mnet_service', array('name' => 'mnetadmin'))) {

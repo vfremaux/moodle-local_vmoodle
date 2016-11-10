@@ -1,9 +1,5 @@
-/*
- *
- */
-// jshint undef:false, unused:false
 function vmoodle_manager_confirm(selectobj, confirmtext) {
-    if (selectobj.options[selectobj.selectedIndex].value === 'deleteinstances') {
+    if (selectobj.options[selectobj.selectedIndex].value == 'deleteinstances') {
         if (confirm(confirmtext)) {
             document.forms.vmoodlesform.submit();
             return true;
@@ -12,5 +8,6 @@ function vmoodle_manager_confirm(selectobj, confirmtext) {
         document.forms.vmoodlesform.submit();
         return true;
     }
+
     return false;
 }

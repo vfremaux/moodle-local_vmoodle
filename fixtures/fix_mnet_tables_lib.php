@@ -1,28 +1,12 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-defined('MOODLE_INTERNAL') || die;
 
 function fix_mnet_tables_fixture() {
     global $DB;
 
-    $rpcs = array();
-    $services = array();
-    $badrpcs = array();
-    $badservices = array();
+    $RPCS = array();
+    $SERVICES = array();
+    $BADRPCS = array();
+    $BADSERVICES = array();
 
     echo "<pre>\n";
 
@@ -40,15 +24,15 @@ function fix_mnet_tables_fixture() {
         $g = 0;
         $b = 0;
         foreach ($allrpcs as $rpc) {
-            if (array_key_exists($rpc->xmlrpcpath, $rpcs)) {
-                // Register and remove.
-                $badrpcs[$rpc->id] = $rpcs[$rpc->xmlrpcpath]->id;
+            if (array_key_exists($rpc->xmlrpcpath, $RPCS)) {
+                // Register and remove
+                $BADRPCS[$rpc->id] = $RPCS[$rpc->xmlrpcpath]->id;
                 $DB->delete_records('mnet_rpc', array('id' => $rpc->id));
                 $b++;
             } else {
                 // Record xmlRPC and indexes.
-                $rpcs[$rpc->xmlrpcpath] = $rpc;
-                $rpcids[$rpc->id] = $rpc->xmlrpcpath;
+                $RPCS[$rpc->xmlrpcpath] = $rpc;
+                $RPCIDS[$rpc->id] = $rpc->xmlrpcpath;
                 $g++;
             }
         }
@@ -60,15 +44,15 @@ function fix_mnet_tables_fixture() {
         $b = 0;
         $allservices = $DB->get_records('mnet_service', array(), 'id');
         foreach ($allservices as $s) {
-            if (array_key_exists($s->name, $services)) {
+            if (array_key_exists($s->name, $SERVICES)) {
                 // Register and remove.
-                $badservices[$s->id] = $services[$s->name]->id;
+                $BADSERVICES[$s->id] = $SERVICES[$s->name]->id;
                 $DB->delete_records('mnet_service', array('id' => $s->id));
                 $b++;
             } else {
                 // Record service and indexes.
-                $services[$s->name] = $s;
-                $servicesids[$s->id] = $s->name;
+                $SERVICES[$s->name] = $s;
+                $SERVICEIDS[$s->id] = $s->name;
                 $g++;
             }
         }
@@ -76,14 +60,13 @@ function fix_mnet_tables_fixture() {
 
         // Now control if some bad services were host bound.
         mtrace('Checking RPC to Service bindings');
-        foreach ($badrpcs as $badid => $goodid) {
+        foreach ($BADRPCS as $badid => $goodid) {
             if ($bindings = $DB->get_records('mnet_service2rpc', array('rpcid' => $badid))) {
                 foreach ($bindings as $b) {
-                    if (array_key_exists($b->serviceid, $badservices)) {
+                    if (array_key_exists($b->serviceid, $BADSERVICES)) {
                         // Bad rpc is registered in bad service. Just check good ones are bind them correctly if missing.
-                        $goodservice = $servicesids[$badservices[$b->serviceid]];
-                        $params = array('rpcid' => $goodid, 'serviceid' => $goodservice);
-                        if (!$goodbind = $DB->get_record('mnet_service2rpc', $params)) {
+                        $goodservice = $SERVICEIDS[$BADSERVICES[$b->serviceid]];
+                        if (!$goodbind = $DB->get_record('mnet_service2rpc', array('rpcid' => $goodid, 'serviceid' => $goodservice))) {
                             $binding = new StdClass();
                             $binding->rpcid = $goodrpc;
                             $binding->serviceid = $goodservice;
@@ -106,16 +89,15 @@ function fix_mnet_tables_fixture() {
         $g = 0;
         if ($hostbindings = $DB->get_records('mnet_host2service')) {
             mtrace("fixing host bindings");
-            foreach ($hostbindings as $hb) {
-                if (array_key_exists($hb->serviceid, $servicesids)) {
+            foreach($hostbindings as $hb) {
+                if (array_key_exists($hb->serviceid, $SERVICEIDS)) {
                     // This is a good case. Good serviceid.
                     $g++;
                     continue;
                 }
-                if (array_key_exists($hb->serviceid, $badservices)) {
-                    $goodservice = $servicesids[$badservices[$hb->serviceid]];
-                    $params = array('hostid' => $hb->hostid, 'serviceid' => $goodservice);
-                    if (!$goodbind = $DB->get_record('mnet_host2service', $params)) {
+                if (array_key_exists($hb->serviceid, $BADSERVICES)) {
+                    $goodservice = $SERVICEIDS[$BADSERVICES[$hb->serviceid]];
+                    if (!$goodbind = $DB->get_record('mnet_host2service', array('hostid' => $hb->hostid, 'serviceid' => $goodservice))) {
                         $binding = new StdClass();
                         $binding->hostid = $hb->hostid;
                         $binding->serviceid = $goodservice;

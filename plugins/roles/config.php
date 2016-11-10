@@ -30,10 +30,10 @@ Use \local_vmoodle\commands\Command_Category;
 $category = new Command_Category('roles');
 
 // Adding commands
-$category->add_command(new Command_Role_Sync());
-$category->add_command(new Command_Role_Compare());
-$category->add_command(new Command_Role_Allow_Sync());
-$category->add_command(new Command_Role_Allow_Compare());
+$category->addCommand(new Command_Role_Sync());
+$category->addCommand(new Command_Role_Compare());
+$category->addCommand(new Command_Role_Allow_Sync());
+$category->addCommand(new Command_Role_Allow_Compare());
 
 // Returning the category
 return $category;

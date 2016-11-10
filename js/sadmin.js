@@ -1,18 +1,19 @@
 /*
- *    If elementFinder is not provided, toggles the "hidden" class for the specified element.
- *    If elementFinder is provided, then the "hidden" class will be toggled for the object
- *    returned by the function call elementFinder(element).
- *
- *    If persistent == true, also sets a cookie for this.
- */
-// jshint undef:false, unused:false
+    elementToggleHide (element, elementFinder)
+
+    If elementFinder is not provided, toggles the "hidden" class for the specified element.
+    If elementFinder is provided, then the "hidden" class will be toggled for the object
+    returned by the function call elementFinder(element).
+
+    If persistent == true, also sets a cookie for this.
+*/
 function elementToggleHide(el, persistent, elementFinder, strShow, strHide) {
 
     if (!elementFinder) {
-        var obj = el;
+        var obj = el;  //el:container
         el = document.getElementById('togglehide_'+obj.id);
     } else {
-        var obj = elementFinder(el);
+        var obj = elementFinder(el);  //el:button.
     }
 
     obj = $(el).parent().parent().parent().find('.content');

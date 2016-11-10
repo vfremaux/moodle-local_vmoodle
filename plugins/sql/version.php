@@ -16,7 +16,7 @@
 
 /**
  * Description of Sql plugin library.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)

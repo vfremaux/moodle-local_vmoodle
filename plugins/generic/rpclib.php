@@ -20,8 +20,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    // It must be included from a Moodle page.
-    die('Direct access to this script is forbidden.');
+    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
 require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -88,10 +87,8 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
     $response = new stdClass;
     $response->status = RPC_SUCCESS;
 
-    /*
-     * Keep old hard signalled maintenance mode of 1.9. Can be usefull in case database stops
-     * but needs a patch in config to catch this real case.
-     */
+    // Keep old hard signalled maintenance mode of 1.9. Can be usefull in case database stops
+    // but needs a patch in config to catch this real case.
     $filename = $CFG->dataroot.'/maintenance.html';
 
     if ($message != 'OFF') {

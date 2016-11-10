@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package     local_vmoodle
- * @category    local
- * @author      Bruce Bujon (bruce.bujon@gmail.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -32,12 +32,12 @@ if (get_config('local_vmoodle', 'late_install')) {
 $systemcontext = context_system::instance();
 $hasadmin = false;
 if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // This is AdminSettings Edunao driven administration.
+    // This is AdminSettings Edunao driven administration 
     if (has_capability('local/adminsettings:nobody', $systemcontext)) {
         $hasadmin = true;
     }
 } else {
-    // This is Moodle Standard.
+    // this is Moodle Standard
     if ($ADMIN->fulltree) {
         $hasadmin = true;
     }
@@ -46,9 +46,7 @@ if (is_dir($CFG->dirroot.'/local/adminsettings')) {
 if ($hasadmin) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
-        $label = get_string('vmoodleadministration', 'local_vmoodle');
-        $viewurl = $CFG->wwwroot . '/local/vmoodle/view.php';
-        $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
+        $ADMIN->add('server', new admin_externalpage('vmoodle', get_string('vmoodleadministration', 'local_vmoodle'), $CFG->wwwroot . '/local/vmoodle/view.php', 'local/vmoodle:managevmoodles'));
 
         $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
         $ADMIN->add('localplugins', $settings);
@@ -56,69 +54,26 @@ if ($hasadmin) {
         $yesnoopts[0] = get_string('no');
         $yesnoopts[1] = get_string('yes');
 
-        $key = 'local_vmoodle/automatedschema';
-        $label = get_string('automateschema', 'local_vmoodle');
-        $desc = get_string('automateschema_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $yesnoopts));
+        $settings->add(new admin_setting_configselect('local_vmoodle/automatedschema', get_string('automateschema', 'local_vmoodle'), get_string('automateschema_desc', 'local_vmoodle'), 1, $yesnoopts));
 
         $settings->add(new admin_setting_heading('siteschema', get_string('siteschema', 'local_vmoodle'), ''));
-
-        $key = 'local_vmoodle/vmoodlehost';
-        $label = get_string('vmoodlehost', 'local_vmoodle');
-        $desc = get_string('vmoodlehost_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'http://<%%INSTANCE%%>'));
-
-        $key = 'local_vmoodle/vmoodleip';
-        $label = get_string('vmoodleip', 'local_vmoodle');
-        $desc = get_string('vmoodleip_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vmoodlehost', get_string('vmoodlehost', 'local_vmoodle'), get_string('vmoodlehost_desc', 'local_vmoodle'), 'http://<%%INSTANCE%%>'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vmoodleip', get_string('vmoodleip', 'local_vmoodle'), get_string('vmoodleip_desc', 'local_vmoodle'), ''));
     
         $dbopts['mysqli'] = 'MySQLi';
         $dbopts['postgres'] = 'Postgres';
         $settings->add(new admin_setting_heading('dbschema', get_string('dbschema', 'local_vmoodle'), ''));
-
-        $key = 'local_vmoodle/dbtype';
-        $label = get_string('vdbtype', 'local_vmoodle');
-        $desc = get_string('vdbtype_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 'mysqli', $dbopts));
-
-        $key = 'local_vmoodle/vdbhost';
-        $label = get_string('vdbhost', 'local_vmoodle');
-        $desc = get_string('vdbhost_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'localhost'));
-
-        $key = 'local_vmoodle/vdblogin';
-        $label = get_string('vdblogin', 'local_vmoodle');
-        $desc = get_string('vdblogin_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'root'));
-
-        $key = 'local_vmoodle/vdbpass';
-        $label = get_string('vdbpass', 'local_vmoodle');
-        $desc = get_string('vdbpass_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configpasswordunmask($key, $label, $desc, ''));
-
-        $key = 'local_vmoodle/vdbbasename';
-        $label = get_string('vdbname', 'local_vmoodle');
-        $desc = get_string('vdbname_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'vmdl_<%%INSTANCE%%>'));
-
-        $key = 'local_vmoodle/vdbprefix';
-        $label = get_string('vdbprefix', 'local_vmoodle');
-        $desc = get_string('vdbprefix_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'mdl_'));
-
-        $key = 'local_vmoodle/dbpersist';
-        $label = get_string('vdbpersist', 'local_vmoodle');
-        $desc = get_string('vdbpersist_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $yesnoopts));
-
+        $settings->add(new admin_setting_configselect('local_vmoodle/dbtype', get_string('vdbtype', 'local_vmoodle'), get_string('vdbtype_desc', 'local_vmoodle'), 'mysqli', $dbopts));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vdbhost', get_string('vdbhost', 'local_vmoodle'), get_string('vdbhost_desc', 'local_vmoodle'), 'localhost'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vdblogin', get_string('vdblogin', 'local_vmoodle'), get_string('vdblogin_desc', 'local_vmoodle'), 'root'));
+        $settings->add(new admin_setting_configpasswordunmask('local_vmoodle/vdbpass', get_string('vdbpass', 'local_vmoodle'), get_string('vdbpass_desc', 'local_vmoodle'), ''));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vdbbasename', get_string('vdbname', 'local_vmoodle'), get_string('vdbname_desc', 'local_vmoodle'), 'vmdl_<%%INSTANCE%%>'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/vdbprefix', get_string('vdbprefix', 'local_vmoodle'), get_string('vdbprefix_desc', 'local_vmoodle'), 'mdl_'));
+        $settings->add(new admin_setting_configselect('local_vmoodle/dbpersist', get_string('vdbpersist', 'local_vmoodle'), get_string('vdbpersist_desc', 'local_vmoodle'), 0, $yesnoopts));
+    
         $settings->add(new admin_setting_heading('fileschema', get_string('fileschema', 'local_vmoodle'), ''));
-
-        $key = 'local_vmoodle/vdatapathbase';
-        $label = get_string('vdatapath', 'local_vmoodle');
-        $desc = get_string('vdatapath_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, '/var/moodledata/<%%INSTANCE%%>'));
-
+        $settings->add(new admin_setting_configtext('local_vmoodle/vdatapathbase', get_string('vdatapath', 'local_vmoodle'), get_string('vdatapath_desc', 'local_vmoodle'), '/var/moodledata/<%%INSTANCE%%>'));
+    
         $settings->add(new admin_setting_heading('mnetschema', get_string('mnetschema', 'local_vmoodle'), ''));
     
         $subnetworks = array('-1' => get_string('nomnet', 'local_vmoodle'));
@@ -131,84 +86,38 @@ if ($hasadmin) {
             }
         }
         $subnetworks['NEW'] = get_string('mnetnew', 'local_vmoodle');
-
-        $key = 'local_vmoodle/mnet';
-        $label = get_string('multimnet', 'local_vmoodle');
-        $desc = get_string('multimnet_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $subnetworks));
-
+        $settings->add(new admin_setting_configselect('local_vmoodle/mnet', get_string('multimnet', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $subnetworks));
+    
         // Services strategy.
-        $services_strategies = array('default' => get_string('servicesstrategydefault', 'local_vmoodle'), 
-                                     'subnetwork' => get_string('servicesstrategysubnetwork', 'local_vmoodle'));
-
-        $key = 'local_vmoodle/services';
-        $label = get_string('servicesstrategy', 'local_vmoodle');
-        $desc = get_string('servicesstrategy_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $services_strategies));
+        $services_strategies = array(
+            'default' => get_string('servicesstrategydefault', 'local_vmoodle'), 
+            'subnetwork' => get_string('servicesstrategysubnetwork', 'local_vmoodle')
+        );
+        $settings->add(new admin_setting_configselect('local_vmoodle/services', get_string('servicesstrategy', 'local_vmoodle'), get_string('servicesstrategy_desc', 'local_vmoodle'), 0, $services_strategies));
     
         $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
     
         $onoffopts[0] = get_string('off', 'local_vmoodle');
         $onoffopts[1] = get_string('on', 'local_vmoodle');
-
-        $key = 'local_vmoodle/mnet_key_autorenew';
-        $label = get_string('mnetkeyautorenewenable', 'local_vmoodle');
-        $desc = get_string('mnetkeyautorenew_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $onoffopts));
-
-        $key = 'local_vmoodle/mnet_key_autorenew_gap';
-        $label = get_string('mnetkeyautorenewgap', 'local_vmoodle');
-        $desc = get_string('mnetkeyautorenewgap_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 24 * 3));
-
-        $key = 'local_vmoodle/mnet_key_autorenew_time_hour';
-        $keymin = 'mnet_key_autorenew_time_min';
-        $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
-        $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
-
+        $settings->add(new admin_setting_configselect('local_vmoodle/mnet_key_autorenew', get_string('mnetkeyautorenewenable', 'local_vmoodle'), get_string('mnetkeyautorenew_desc', 'local_vmoodle'), 1, $onoffopts));
+        $settings->add(new admin_setting_configtext('local_vmoodle/mnet_key_autorenew_gap', get_string('mnetkeyautorenewgap', 'local_vmoodle'), get_string('mnetkeyautorenewgap_desc', 'local_vmoodle'), 24 * 3));
+        $settings->add(new admin_setting_configtime('local_vmoodle/mnet_key_autorenew_time_hour', 'mnet_key_autorenew_time_min', get_string('mnetkeyautorenewtime', 'local_vmoodle'), '', array('h' => 0, 'm' => 0)));
+    
         $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
-
-        $key = 'local_vmoodle/cmd_mysql';
-        $label = get_string('mysqlcmd', 'local_vmoodle');
-        $desc = get_string('systempath_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, '/usr/bin/mysql'));
-
-        $key = 'local_vmoodle/cmd_mysqldump';
-        $label = get_string('mysqldumpcmd', 'local_vmoodle');
-        $desc = get_string('systempath_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, '/usr/bin/mysqldump'));
-
-        $key = 'local_vmoodle/cmd_pgsql';
-        $label = get_string('pgsqlcmd', 'local_vmoodle');
-        $desc = get_string('systempath_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, '/usr/bin/psql'));
-
-        $key = 'local_vmoodle/cmd_pgsqldump';
-        $label = get_string('pgsqldumpcmd', 'local_vmoodle');
-        $desc = get_string('systempath_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, '/usr/bin/pg_dump'));
-
+        $settings->add(new admin_setting_configtext('local_vmoodle/cmd_mysql', get_string('mysqlcmd', 'local_vmoodle'), get_string('systempath_desc', 'local_vmoodle'), '/usr/bin/mysql'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/cmd_mysqldump', get_string('mysqldumpcmd', 'local_vmoodle'), get_string('systempath_desc', 'local_vmoodle'), '/usr/bin/mysqldump'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/cmd_pgsql', get_string('pgsqlcmd', 'local_vmoodle'), get_string('systempath_desc', 'local_vmoodle'), '/usr/bin/psql'));
+        $settings->add(new admin_setting_configtext('local_vmoodle/cmd_pgsqldump', get_string('pgsqldumpcmd', 'local_vmoodle'), get_string('systempath_desc', 'local_vmoodle'), '/usr/bin/pg_dump'));
+    
         $settings->add(new admin_setting_heading('massdeployment', get_string('massdeployment', 'local_vmoodle'), ''));
-
+    
         $encodingopts[0] = 'UTF-8';
         $encodingopts[1] = 'ISO-5889-1';
-
-        $key = 'local_vmoodle/encoding';
-        $label = get_string('csvencoding', 'local_vmoodle');
-        $desc = get_string('csvencoding_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $encodingopts));
-
+        $settings->add(new admin_setting_configselect('local_vmoodle/encoding', get_string('csvencoding', 'local_vmoodle'), get_string('csvencoding_desc', 'local_vmoodle'), 1, $encodingopts));
+    
         $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
         $yesno = array(0 => get_string('no'), 1 => get_string('yes'));
-
-        $key = 'local_vmoodle/force_https_proto';
-        $label = get_string('forcehttpsproto', 'local_vmoodle');
-        $desc = get_string('multimnet_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $yesno));
-
-        $key = 'local_vmoodle/allow_mnet_user_system_admin';
-        $label = get_string('allowmnetusersasadmin', 'local_vmoodle');
-        $desc = get_string('multimnet_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $yesno));
+        $settings->add(new admin_setting_configselect('local_vmoodle/force_https_proto', get_string('forcehttpsproto', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $yesno));
+        $settings->add(new admin_setting_configselect('local_vmoodle/allow_mnet_user_system_admin', get_string('allowmnetusersasadmin', 'local_vmoodle'), get_string('multimnet_desc', 'local_vmoodle'), 0, $yesno));
     }
 }

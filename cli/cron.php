@@ -22,9 +22,9 @@
  * or anything that needs to be run on a regular basis.
  * this script will override a virtual Moodle identity on base of an input parameter
  *
- * @package    local_vmoodle
- * @subpackage local
- * @copyright  2008 Valery Fremaux
+ * @package    core
+ * @subpackage cli
+ * @copyright  2009 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,14 +35,12 @@ $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 // Config preload to get real roots.
 require('../../../config.php');
-require_once($CFG->dirroot.'/lib/clilib.php');      // Cli only functions.
+require_once($CFG->dirroot.'/lib/clilib.php');      // cli only functions
 require_once($CFG->dirroot.'/lib/cronlib.php');
 
-// Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('help' => false,
-                                                     'host' => true),
-                                               array('h' => 'help',
-                                                     'H' => 'host'));
+// now get cli options
+list($options, $unrecognized) = cli_get_params(array('help' => false, 'host' => true),
+                                               array('h' => 'help', 'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -50,8 +48,8 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help = "
-Execute periodic cron actions.
+    $help =
+"Execute periodic cron actions.
 
 Options:
 -h, --help            Print out this help
@@ -66,8 +64,8 @@ Example:
 }
 
 if (!empty($options['host'])) {
-    // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']); // Mtrace not yet available.
+    // arms the vmoodle switching
+    echo('Arming for '.$options['host']); // mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 

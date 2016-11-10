@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * @package local_vmoodle
  * @category local
@@ -21,13 +23,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (C) 2014 onwards Microsoft Open Technologies, Inc. (http://msopentech.com/)
  */
-defined('MOODLE_INTERNAL') || die();
-
 require_once($CFG->dirroot.'/lib/formslib.php');
 
 class CopyScriptsParams_Form extends moodleform {
 
-    public function definition() {
+    function definition() {
         $mform = $this->_form;
 
         $mform->addelement('header', 'maindbhead', get_string('maindb', 'local_vmoodle'));
@@ -40,9 +40,7 @@ class CopyScriptsParams_Form extends moodleform {
 
         $mform->addelement('header', 'cronlineshead', get_string('cronlines', 'local_vmoodle'));
         $mform->setExpanded('cronlineshead');
-        $cliopstr = get_string('clioperated', 'local_vmoodle');
-        $webopstr = get_string('weboperated', 'local_vmoodle');
-        $cronoptions = array('cli' => $cliopstr, 'web' => $webopstr);
+        $cronoptions = array('cli' => get_string('clioperated', 'local_vmoodle'), 'web' => get_string('weboperated', 'local_vmoodle'));
         $mform->addElement('select', 'cronmode', get_string('cronmode', 'local_vmoodle'), $cronoptions);
         $mform->setType('cronmode', PARAM_TEXT);
 

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The final step of wizard.
  * Displays report of command command.
@@ -23,7 +25,6 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-defined('MOODLE_INTERNAL') || die();
 
 // Adding requirements.
 require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
@@ -35,7 +36,7 @@ $platforms = $SESSION->vmoodle_sa['platforms'];
 $successfull_platforms = array();
 $failed_platforms = array();
 foreach ($platforms as $host => $platform) {
-    if ($command->get_result($host, 'status') == RPC_SUCCESS) {
+    if ($command->getResult($host, 'status') == RPC_SUCCESS) {
         $successfull_platforms[$host] = $platform;
     } else {
         $failed_platforms[$host] = $platform;
@@ -43,8 +44,8 @@ foreach ($platforms as $host => $platform) {
 }
 
 // Displaying general result.
-if (!is_null($command->get_result())) {
-    echo $command->get_result();
+if (!is_null($command->getResult())) {
+    echo $command->getResult();
 }
 
 // Displaying successfull commands.
@@ -58,9 +59,9 @@ if (!empty($successfull_platforms)) {
     foreach ($successfull_platforms as $host => $platform) {
         echo '<tr class="r'.$i.'">'.
                 '<td><b>'.$platform.'</b></td>'.
-                '<td>'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>'.
+                '<td>'.get_string('rpcstatus'.$command->getResult($host, 'status'), 'local_vmoodle').'</td>'.
                 '<td style="width: 25%;">'.
-                $command->get_result($host, 'message').
+                $command->getResult($host, 'message').
                 '</td>'.
             '</tr>';
         $i = ($i+1)%2;
@@ -73,25 +74,25 @@ if (!empty($successfull_platforms)) {
 $i = 0;
 if (!empty($failed_platforms)) {
     echo '<table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">'.
-            '<tbody>'.
-                '<tr>'.
+            '<tbody>' .
+                '<tr>' .
                     '<th scope="col" class="header c0" style="vertical-align: top; text-align: left; width: 20%; white-space: nowrap;" colspan="3"><b>'.get_string('failedplatforms', 'local_vmoodle').'</b></th>' .
                 '</tr>';
     foreach ($failed_platforms as $host => $platform) {
         echo '<tr class="r'.$i.'">' .
                 '<td><b>'.$platform.'</b></td>' .
-                '<td style="text-align: left;">'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>' .
+                '<td style="text-align: left;">'.get_string('rpcstatus'.$command->getResult($host, 'status'), 'local_vmoodle').'</td>' .
                 '<td style="width: 25%;">';
-        if ($command->get_result($host, 'status') > 200 && $command->get_result($host, 'status') < 520) {
+        if ($command->getResult($host, 'status') > 200 && $command->getResult($host, 'status') < 520) {
             echo $OUTPUT->single_button(new moodle_url('view.php', array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($host))), get_string('runcmdagain', 'local_vmoodle'), 'get');
         } else {
             echo '&nbsp;';
         }
-        echo '</td>' .
+        echo     '</td>' .
             '</tr>' .
             '<tr class="r'.$i.'" valign="top">' .
                 '<td>'.get_string('details', 'local_vmoodle').'</td>' .
-                '<td colspan="2">'.implode('<br/>', $command->get_result($host, 'errors')).'</td>' .
+                '<td colspan="2">'.implode('<br/>', $command->getResult($host, 'errors')).'</td>' .
             '</tr>';
         $i = ($i+1)%2;
     }
@@ -101,10 +102,7 @@ if (!empty($failed_platforms)) {
 
 // Displaying controls.
 echo '<center>';
-$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runotherpfm'));
-echo $OUTPUT->single_button($buttonurl, get_string('runotherplatforms', 'local_vmoodle'), 'get');
-$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runothercmd'));
-echo $OUTPUT->single_button($buttonurl, get_string('runothercommand', 'local_vmoodle'), 'get');
-$buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'newcommand'));
-echo $OUTPUT->single_button($buttonurl, get_string('runnewcommand', 'local_vmoodle'), 'get');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runotherpfm')), get_string('runotherplatforms', 'local_vmoodle'), 'get');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'runothercmd')), get_string('runothercommand', 'local_vmoodle'), 'get');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'newcommand')), get_string('runnewcommand', 'local_vmoodle'), 'get');
 echo '</center>';

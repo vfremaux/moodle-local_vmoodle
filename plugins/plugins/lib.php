@@ -16,7 +16,7 @@
 
 /**
  * This library provides command for synchronize role capabilites.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)

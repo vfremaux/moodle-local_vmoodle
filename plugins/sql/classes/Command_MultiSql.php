@@ -1,35 +1,18 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace vmoodleadminset_sql;
+Use \local_vmoodle\commands\Command;
+Use \local_vmoodle\commands\Command_Exception;
+Use \StdClass;
 
 /**
  * Describes meta-administration multiple SQL (script) command.
- *
+ * 
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.Fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-namespace vmoodleadminset_sql;
-
-defined('MOODLE_INTERNAL') || die;
-
-use \local_vmoodle\commands\Command;
-use \local_vmoodle\commands\Command_Exception;
-use \StdClass;
-
 class Command_MultiSql extends Command {
 
     /**
@@ -57,7 +40,7 @@ class Command_MultiSql extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $sqls, $parameters = null, $rpcommand = null) {
-        global $vmcommandconstants;
+        global $vmcommands_constants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -66,13 +49,13 @@ class Command_MultiSql extends Command {
             throw new Command_Sql_Exception('sqlemtpycommand', $this->name);
         } else {
             // Looking for parameters
-            preg_match_all(Command::PLACEHOLDER, $sqls, $sql_vars);
+            preg_match_all(Command::placeholder, $sqls, $sql_vars);
             // Checking parameters to show
             foreach($sql_vars[2] as $key => $sql_var) {
                 $is_param = !(empty($sql_vars[1][$key]));
-                if (!$is_param && !array_key_exists($sql_var, $vmcommandconstants)) {
+                if (!$is_param && !array_key_exists($sql_var, $vmcommands_constants)) {
                     throw new Command_Sql_Exception('sqlconstantnotgiven', (object)array('constant_name' => $sql_var, 'command_name' => $this->name));
-                } else if ($is_param && !array_key_exists($sql_var, $this->parameters)) {
+                } elseif ($is_param && !array_key_exists($sql_var, $this->parameters)) {
                     throw new Command_Sql_Exception('sqlparameternotgiven', (object)array('parameter_name' => $sql_var, 'command_name' => $this->name));
                 }
             }
@@ -88,7 +71,7 @@ class Command_MultiSql extends Command {
      * @throws Command_Sql_Exception
      */
     public function run($hosts) {
-        global $CFG;
+        global $CFG, $USER;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -107,13 +90,13 @@ class Command_MultiSql extends Command {
         $responses = array();
 
         // Creating peers.
-        $mnethosts = array();
+        $mnet_hosts = array();
 
         foreach ($hosts as $host => $name) {
-            $mnethost = new \mnet_peer();
+            $mnet_host = new \mnet_peer();
 
-            if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnethost;
+            if ($mnet_host->bootstrap($host, null, 'moodle')) {
+                $mnet_hosts[] = $mnet_host;
             } else {
                 $responses[$host] = (object) array(
                     'status' => MNET_FAILURE,
@@ -122,27 +105,33 @@ class Command_MultiSql extends Command {
             }
         }
 
+        // Getting command.
+        // $command = $this->isReturned();
+
         // Creating XMLRPC client.
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
-        $rpcclient->add_param($this->_get_generated_command(), 'string');
-        $rpcclient->add_param($this->values, 'array');
-        $rpcclient->add_param(false, 'boolean');
-        $rpcclient->add_param(true, 'boolean'); // Telling other side we are a multiple command.
+        $rpc_client = new \local_vmoodle\XmlRpc_Client();
+        $rpc_client->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
+        $rpc_client->add_param($this->_getGeneratedCommand(), 'string');
+        $rpc_client->add_param($this->values, 'array');
+        $rpc_client->add_param(false, 'boolean');
+        $rpc_client->add_param(true, 'boolean'); // telling other side we are a multiple command
 
         // Sending requests.
-        foreach ($mnethosts as $mnethost) {
+        foreach($mnet_hosts as $mnet_host) {
             // Sending request.
-            if (!$rpcclient->send($mnethost)) {
+            if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
+                if (debugging()) {
+                    print_object($rpc_client);
+                }
             } else {
-                $response = json_decode($rpcclient->response);
+                $response = json_decode($rpc_client->response);
             }
 
             // Recording response.
-            $responses[$mnethost->wwwroot] = $response;
+            $responses[$mnet_host->wwwroot] = $response;
         }
 
         // Saving results.
@@ -155,7 +144,7 @@ class Command_MultiSql extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function get_result($host = null, $key = null) {
+    public function getResult($host = null, $key = null) {
 
         // Checking if command has been runned.
         if (is_null($this->results)) {
@@ -171,7 +160,7 @@ class Command_MultiSql extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } else if (property_exists($result, $key)) {
+        } elseif (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;
@@ -182,7 +171,7 @@ class Command_MultiSql extends Command {
      * Get SQL command.
      * @return SQL command.
      */
-    public function get_sql() {
+    public function getSql() {
         return $this->sqls;
     }
 
@@ -190,7 +179,7 @@ class Command_MultiSql extends Command {
      * Get if the command's result is returned.
      * @return boolean True if the command's result should be returned, false otherwise.
      */
-    public function is_returned() {
+    public function isReturned() {
         return $this->returned;
     }
 
@@ -198,7 +187,7 @@ class Command_MultiSql extends Command {
      * Set if the command's result is returned.
      * @param boolean $returned True if the command's result should be returned, false otherwise.
      */
-    public function set_returned($returned) {
+    public function setReturned($returned) {
         $this->returned = $returned;
     }
 
@@ -206,19 +195,18 @@ class Command_MultiSql extends Command {
      * Get the command to execute.
      * @return string The final SQL command to execute.
      */
-    private function _get_generated_command() {
-        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replace_parameters_values'), $this->get_sql());
+    private function _getGeneratedCommand() {
+        return preg_replace_callback(self::placeholder, array($this, '_replaceParametersValues'), $this->getSql());
     }
 
     /**
      * Bind the replace_parameters_values function to create a callback.
-     * Indirect use of this function.
-     * @param array $matches The placeholders found.
-     * @return string|array The parameters' values.
+      * @param array $matches The placeholders found.
+      * @return string|array The parameters' values.
      */
-    private function _replace_parameters_values($matches) {
+    private function _replaceParametersValues($matches) {
 
-        list($paramname, $paramvalue) = replace_parameters_values($matches, $this->get_parameters(), true, false);
+        list($paramname, $paramvalue) = replace_parameters_values($matches, $this->getParameters(), true, false);
 
         $this->values[$paramname] = $paramvalue;
 

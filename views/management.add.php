@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Form for adding a virtual host.
  *
@@ -22,9 +24,9 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-defined('MOODLE_INTERNAL') || die();
 
-use \local_vmoodle\Host_Form;
+// Loading the library.
+Use \local_vmoodle\Host_Form;
 
 $config = get_config('local_vmoodle');
 
@@ -35,9 +37,9 @@ echo $OUTPUT->box_start();
 
 // Displays the form.
 if (isset($SESSION->vmoodle_mg['dataform'])) {
-    $platformform = new \local_vmoodle\Host_Form('add', $SESSION->vmoodle_mg['dataform']);
+    $platform_form = new \local_vmoodle\Host_Form('add', $SESSION->vmoodle_mg['dataform']);
 } else {
-    $platformform = new \local_vmoodle\Host_Form('add', null);
+    $platform_form = new \local_vmoodle\Host_Form('add', null);
 
     if (!empty($config->automatedschema)) {
         if ($config->mnet == 'NEW') {
@@ -48,9 +50,9 @@ if (isset($SESSION->vmoodle_mg['dataform'])) {
         }
 
         $formdata->services = $config->services;
-        $platformform->set_data($formdata);
+        $platform_form->set_data($formdata);
     }
 }
 
-$platformform->display();
+$platform_form->display();
 echo $OUTPUT->box_end();

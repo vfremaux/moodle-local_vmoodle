@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * @package blocks_vmoodle
  * @category
@@ -21,7 +23,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (C) 2014 onwards Microsoft Open Technologies, Inc. (http://msopentech.com/)
  */
-defined('MOODLE_INTERNAL') || die;
 
 function remove_moodle_version($string) {
     return preg_replace('/moodle\d{2}/', 'moodle', $string);
@@ -29,14 +30,14 @@ function remove_moodle_version($string) {
 
 function change_version($from, $to, $string, $fallbackto = 'from') {
 
-    // Start by protecting any digit sequence that is longer than the moodle version.
+    // start by protecting any digit sequence that is longer than the moodle version
     $string = encode_numeric_sequences($string);
 
     if (strstr($string, $from) !== false) {
         $result = str_replace($from, $to, $string);
         return decode_numeric_sequences($result);
     } else {
-        // We need inject the from or to version depending on fallback.
+        // We need inject the from or to version depending on fallback
         if ($fallbackto == 'from') {
             $inject = $from;
         } else {
@@ -59,10 +60,10 @@ function change_version($from, $to, $string, $fallbackto = 'from') {
 
 function encode_numeric_sequences($string) {
     if (preg_match_all('/[\d][\d][\d]+/', $string, $matches)) {
-        foreach ($matches[0] as $pat) {
+        foreach($matches[0] as $pat) {
             $dest = '';
             $len = strlen($pat);
-            for ($i = 0; $i < $len; $i++) {
+            for ($i = 0 ; $i < $len ; $i++) {
                 $dest .= chr(ord('A') + ord($pat[$i]) - ord('0'));
             }
             $string = str_replace($pat, '$$'.$dest.'$$', $string);
@@ -76,11 +77,11 @@ function decode_numeric_sequences($string) {
 
     if (preg_match_all('/\$\$[A-J]+\$\$/', $string, $matches)) {
         foreach ($matches[0] as $origin) {
-            // Trim start/end markers out.
+            // Trim start/end markers out
             $pat = str_replace('$$', '', $origin);
             $len = strlen($pat);
             $dest = '';
-            for ($i = 0; $i < $len; $i++) {
+            for ($i = 0 ; $i < $len ; $i++) {
                 $dest .= chr(ord($pat[$i]) - ord('A') + ord('0'));
             }
             $string = str_replace($origin, $dest, $string);

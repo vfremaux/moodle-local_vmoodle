@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Form for editing a virtual host.
  *
@@ -22,7 +24,6 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-defined('MOODLE_INTERNAL') || die();
 
 // Print title (heading).
 echo $OUTPUT->heading(get_string('editvmoodle', 'local_vmoodle'));
@@ -30,11 +31,11 @@ echo $OUTPUT->heading(get_string('editvmoodle', 'local_vmoodle'));
 echo $OUTPUT->box_start();
 
 // Displays the form with data (and errors).
-if (!isset($platformform)) {
+if (!isset($platform_form)) {
     $datas = (isset($SESSION->vmoodle_mg['dataform']) ? $SESSION->vmoodle_mg['dataform'] : null);
-    $platformform = new \local_vmoodle\Host_Form('edit', $datas);
+    $platform_form = new \local_vmoodle\Host_Form('edit', $datas);
 }
 
-$platformform->display();
+$platform_form->display();
 
 echo $OUTPUT->box_end();
