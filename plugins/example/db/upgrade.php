@@ -16,11 +16,14 @@
 
 /**
  * Install and upgrade Exemple library for the local Vmoodle.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+defined('MOODLE_INTERNAL') || die;
+
 function xmldb_vmoodleadminset_example_upgrade($oldversion = 0) {
     // Initializing.
     $result = true;

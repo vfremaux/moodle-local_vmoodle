@@ -16,6 +16,8 @@
 
 namespace vmoodleadminset_generic;
 
+defined('MOODLE_INTERNAL') || die;
+
 use \local_vmoodle\commands\Command;
 use \StdClass;
 
@@ -44,7 +46,8 @@ class Command_Maintenance extends Command {
      * @param string $name Command's name.
      * @param string $description Command's description.
      * @param string $sql SQL command.
-     * @param string $parameters Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
+     * @param string $parameters Command's parameters (optional / could be null, Command_Parameter object
+     * or Command_Parameter array).
      * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws Command_Exception
      */
@@ -72,7 +75,7 @@ class Command_Maintenance extends Command {
         global $CFG, $USER;
 
         // Adding constants.
-        require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
+        require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 
         // Checking host.
         if (!is_array($hosts)) {
@@ -88,11 +91,11 @@ class Command_Maintenance extends Command {
         $responses = array();
 
         // Maintenance. Creating peers.
-        $mnet_hosts = array();
+        $mnethosts = array();
         foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
                 $errorstr = get_string('couldnotcreateclient', 'local_vmoodle', $host);
                 $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => $errorstr);
@@ -103,23 +106,23 @@ class Command_Maintenance extends Command {
         $command = $this->is_returned();
 
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance');
-        $rpc_client->add_param($this->get_parameter('message')->get_value(), 'string');
-        $rpc_client->add_param($command, 'boolean');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance');
+        $rpcclient->add_param($this->get_parameter('message')->get_value(), 'string');
+        $rpcclient->add_param($command, 'boolean');
 
         // Maintenance. Sending requests.
-        foreach($mnet_hosts as $mnet_host) {
+        foreach ($mnethosts as $mnethost) {
             // Sending request.
-            if (!$rpc_client->send($mnet_host)) {
+            if (!$rpcclient->send($mnethost)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
         }
 
         // Maintenance. Saving results.

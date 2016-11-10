@@ -16,11 +16,13 @@
 
 /**
  * Description of SyncRole plugin library.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  */
+
+defined('MOODLE_INTERNAL') || die;
 
 $plugin = new stdclass;
 $plugin->version = 2015062000;

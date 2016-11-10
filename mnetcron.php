@@ -22,8 +22,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-// requires patching /mnet/xmlrpc/server.php for mnet_keyswap().
-// requires patching /mnet/lib.php for mnet_keyswap().
+// Requires patching /mnet/xmlrpc/server.php for mnet_keyswap().
+// Requires patching /mnet/lib.php for mnet_keyswap().
 
 global $DB;
 
@@ -95,7 +95,7 @@ if (!empty($config->mnet_key_autorenew) && $CFG->mnet_dispatcher_mode != 'none')
     if ($force) {
         mtrace("forced mode");
     }
-    
+
     if ($havetorenew || $force) {
         mtrace("Local key will expire very soon. Renew MNET keys now !!...\n");
         // Renew local key.
@@ -130,10 +130,10 @@ if (!empty($config->mnet_key_autorenew) && $CFG->mnet_dispatcher_mode != 'none')
                     $mnetpeer->updateparams->public_key_expires = $mnetpeer->check_common_name($currentkey);
                     $mnetpeer->commit();
                     mtrace('My key renewed at '.$peer->wwwroot.' till '.userdate($mnetpeer->public_key_expires));
-                    $trace .= userdate(time()).' KEY RENEW from '.$CFG->wwwroot.' to '.$peer->wwwroot." suceeded\n"; 
+                    $trace .= userdate(time()).' KEY RENEW from '.$CFG->wwwroot.' to '.$peer->wwwroot." suceeded\n";
                 } else {
                     mtrace('Failed renewing key with '.$peer->wwwroot."\n");
-                    $trace .= userdate(time()).' KEY RENEW from '.$CFG->wwwroot.' to '.$peer->wwwroot." failed\n"; 
+                    $trace .= userdate(time()).' KEY RENEW from '.$CFG->wwwroot.' to '.$peer->wwwroot." failed\n";
                 }
             }
         }

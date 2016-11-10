@@ -20,7 +20,7 @@
  * Il will be automatically included, remove it if you don't use.
  */
 
-header('Content-Type: application/x-javascript');
-
-require_once('../../../../../config.php');
+require('../../../../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
+
+header('Content-Type: application/x-javascript');

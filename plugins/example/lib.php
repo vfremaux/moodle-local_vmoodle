@@ -20,3 +20,5 @@
  * To change the template for this generated file go to
  * Window - Preferences - PHPeclipse - PHP - Code Templates
  */
+
+defined('MOODLE_INTERNAL') || die;

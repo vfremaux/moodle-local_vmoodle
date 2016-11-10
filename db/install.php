@@ -57,7 +57,7 @@ function xmldb_local_vmoodle_late_install() {
     $oldfunctions = $DB->get_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ');
     if ($oldfunctions) {
         $DB->delete_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ', array());
-        foreach ($oldfunction as $f) {
+        foreach ($oldfunctions as $f) {
             $DB->delete_records('mnet_service2rpc', array('rpcid' => $f->id));
         }
     }

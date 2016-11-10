@@ -79,7 +79,7 @@ function vmoodle_boot_configuration() {
 
             if (!$sidecnx = vmoodle_make_connection($vmaster, true)) {
                 // If vmoodle cnx not valid.
-                die ('VMoodle master server unreachable');
+                die ('VMoodle master server ('.$vmaster->vdbtype.':'.$vmaster->vdbname.'@'.$vmaster->vdbhost.') unreachable from '.$CFG->wwwroot);
             }
 
             $sql = "
@@ -163,7 +163,7 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false) {
                 die ("VMoodle_make_connection : Database not found");
             }
         }
-        return $mysqlsidecnx;
+        return $sidecnx;
     } else if ($vmoodle->vdbtype == 'postgres') {
 
         if (preg_match("/:/", $vmoodle->vdbhost)) {
