@@ -1,40 +1,60 @@
 <?php
-
-namespace vmoodleadminset_test;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Category;
-Use \local_vmoodle\commands\Command_Parameter;
-Use \local_vmoodle\commands\Command_Parameter_Internal;
-Use \local_vmoodle\commands\Command_Exception;
-Use \vmoodleadminset_roles\Command_Role_Sync;
-Use \vmoodleadminset_roles\Command_Role_Compare;
-Use \vmoodleadminset_roles\Command_Role_Capability_Sync;
-Use \vmoodleadminset_upgrade\Command_Upgrade;
-Use \vmoodleadminset_sql\Command_Sql;
-Use \vmoodleadminset_sql\Command_MultiSql;
-Use \vmoodleadminset_test\CommandWrapper;
-Use \Exception;
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of assisted commands for testing generic oommands.
- * 
+ * Install and upgrade SQL library for the local Vmoodle.
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+namespace vmoodleadminset_test;
 
-// Creating category
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Category;
+use \local_vmoodle\commands\Command_Parameter;
+use \local_vmoodle\commands\Command_Parameter_Internal;
+use \local_vmoodle\commands\Command_Exception;
+use \vmoodleadminset_roles\Command_Role_Sync;
+use \vmoodleadminset_roles\Command_Role_Compare;
+use \vmoodleadminset_roles\Command_Role_Capability_Sync;
+use \vmoodleadminset_upgrade\Command_Upgrade;
+use \vmoodleadminset_sql\Command_Sql;
+use \vmoodleadminset_sql\Command_MultiSql;
+use \vmoodleadminset_test\CommandWrapper;
+use \Exception;
+
+/**
+ * Description of assisted commands for testing generic oommands.
+ */
+
+// Creating category.
 $category = new Command_Category('test');
 
-// Adding commands
+// Adding commands.
 $cmd = new Command_Sql(
     'Command 1',
     'Command without parameter.',
     'SELECT aa FROM bb'
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/********************************/
+/* ****************************** */
 
 $cmd = new Command_Sql(
     'Command 2',
@@ -46,9 +66,9 @@ $cmd = new Command_Sql(
         'The boolean'
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/********************************/
+/* ****************************** */
 
 $cmd = new Command_Sql(
     'Command 3',
@@ -61,9 +81,9 @@ $cmd = new Command_Sql(
         true
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/********************************/
+/* ****************************** */
 
 $cmd = new Command_Sql(
     'Command 4',
@@ -76,9 +96,9 @@ $cmd = new Command_Sql(
         false
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/********************************/
+/* ****************************** */
 
 $param1 = new Command_Parameter(
     'parameter1',
@@ -86,9 +106,9 @@ $param1 = new Command_Parameter(
     'The enum choice',
     null,
     array(
-        'value1' => vmoodle_get_string('value1', 'vmoodleadminset_test'),
-        'value2' => vmoodle_get_string('value2', 'vmoodleadminset_test'),
-        'value3' => vmoodle_get_string('value3', 'vmoodleadminset_test'),
+        'value1' => get_string('value1', 'vmoodleadminset_test'),
+        'value2' => get_string('value2', 'vmoodleadminset_test'),
+        'value3' => get_string('value3', 'vmoodleadminset_test'),
     )
 );
 $cmd = new Command_Sql(
@@ -97,9 +117,9 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/********************************/
+/* ****************************** */
 
 $param1 = new Command_Parameter(
     'parameter1',
@@ -118,7 +138,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*********************************/
 
@@ -133,7 +153,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /************************************/
 
@@ -149,7 +169,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /**************************************/
 
@@ -164,7 +184,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*****************************************/
 
@@ -180,7 +200,7 @@ $cmd = new Command_Sql(
     'SELECT [[?parameter1]] FROM bb',
     $param1
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 /*****************************/
 
@@ -196,9 +216,9 @@ $param2 = new Command_Parameter(
     'The enum choice values 2 by default',
     'value2',
     array(
-        'value1' => vmoodle_get_string('value1', 'vmoodleadminset_test'),
-        'value2' => vmoodle_get_string('value2', 'vmoodleadminset_test'),
-        'value3' => vmoodle_get_string('value3', 'vmoodleadminset_test'),
+        'value1' => get_string('value1', 'vmoodleadminset_test'),
+        'value2' => get_string('value2', 'vmoodleadminset_test'),
+        'value3' => get_string('value3', 'vmoodleadminset_test'),
     )
 );
 $param3 = new Command_Parameter(
@@ -216,9 +236,9 @@ $cmd = new Command_Sql(
            $param3
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
-/*********************************/
+/* ******************************* */
 
 $param1 = new Command_Parameter(
     'parameter1',
@@ -232,9 +252,9 @@ $param2 = new Command_Parameter(
     'The enum choice values 2 by default',
     'value2',
     array(
-        'value1' => vmoodle_get_string('value1', 'vmoodleadminset_test'),
-        'value2' => vmoodle_get_string('value2', 'vmoodleadminset_test'),
-        'value3' => vmoodle_get_string('value3', 'vmoodleadminset_test'),
+        'value1' => get_string('value1', 'vmoodleadminset_test'),
+        'value2' => get_string('value2', 'vmoodleadminset_test'),
+        'value3' => get_string('value3', 'vmoodleadminset_test'),
     )
 );
 $param3 = new Command_Parameter_Internal(
@@ -252,7 +272,7 @@ $cmd = new Command_Sql(
         $param3
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 $cmd = new Command_Sql(
     'Command 13',
@@ -263,7 +283,7 @@ $cmd = new Command_Sql(
         'vmoodleadminset_test\\CommandWrapper::myTestFunction'
     )
 );
-$category->addCommand($cmd);
+$category->add_command($cmd);
 
 $test_rpcommad = new Command_Sql(
     'Command 14',
@@ -294,13 +314,13 @@ $cmd = new Command_Sql(
     )
 );
 
-$test_rpcommad->attachRPCommand($cmd);
-$category->addCommand($test_rpcommad);
+$test_rpcommad->attach_rpc_ommand($cmd);
+$category->add_command($test_rpcommad);
 
-$category->addCommand(new Command_Role_Sync());
-$category->addCommand(new Command_Role_Capability_Sync());
-$category->addCommand(new Command_Role_Compare());
-$category->addCommand(new Command_Upgrade());
-    
-// Returning the category
+$category->add_command(new Command_Role_Sync());
+$category->add_command(new Command_Role_Capability_Sync());
+$category->add_command(new Command_Role_Compare());
+$category->add_command(new Command_Upgrade());
+
+// Returning the category.
 return $category;

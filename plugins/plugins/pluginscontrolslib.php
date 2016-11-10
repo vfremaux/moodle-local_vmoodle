@@ -44,18 +44,18 @@ abstract class plugin_remote_control {
      * @param string $fqplugin a fully qualified plugin with type
      *
      */
-    function __construct($type, $plugin) {
+    public function __construct($type, $plugin) {
         $this->type = $type;
         $this->plugin = $plugin;
     }
 
-    abstract function action($action);
-    abstract function is_enabled();
+    public abstract function action($action);
+    public abstract function is_enabled();
 }
 
 class mod_remote_control extends plugin_remote_control {
 
-    function action($action) {
+    public function action($action) {
         global $DB;
 
         if (!$module = $DB->get_record('modules', array('name' => $this->plugin))) {
@@ -65,48 +65,63 @@ class mod_remote_control extends plugin_remote_control {
         switch ($action) {
 
             case 'enable':
-                $DB->set_field('modules', 'visible', '1', array('id' => $module->id)); // Show main module
-                $DB->set_field('course_modules', 'visible', '1', array('visibleold' => 1, 'module' => $module->id)); // Get the previous saved visible state for the course module.
-                // clear the course modinfo cache for courses
-                // where we just made something visible
+                $DB->set_field('modules', 'visible', '1', array('id' => $module->id)); // Show main module.
+                // Get the previous saved visible state for the course module.
+                $DB->set_field('course_modules', 'visible', '1', array('visibleold' => 1, 'module' => $module->id));
+                /*
+                 * clear the course modinfo cache for courses
+                 * where we just made something visible
+                 */
                 $sql = "
                     SELECT
                         DISTINCT course,
                         course
-                    FROM 
+                    FROM
                         {course_modules}
-                    WHERE 
+                    WHERE
                         visible = 1 AND
-                        module = ?";
+                        module = ?
+                ";
                 if ($courseids = $DB->get_records_sql($sql, array($module->id))) {
-                    foreach(array_keys($courseids) as $cid) {
+                    foreach (array_keys($courseids) as $cid) {
                         rebuild_course_cache($cid);
                     }
                 }
                 break;
 
             case 'disable':
-                $DB->set_field('modules', 'visible', '0', array('id' => $module->id)); // Hide main module
-                // Remember the visibility status in visibleold
-                // and hide...
-                $sql = "UPDATE {course_modules}
-                           SET visibleold=visible, visible=0
-                         WHERE module=?";
+                $DB->set_field('modules', 'visible', '0', array('id' => $module->id)); // Hide main module.
+                /*
+                 * Remember the visibility status in visibleold
+                 * and hide...
+                 */
+                $sql = "
+                    UPDATE
+                        {course_modules}
+                    SET 
+                        visibleold = visible,
+                        visible = 0
+                    WHERE
+                        module = ?
+                ";
                 $DB->execute($sql, array($module->id));
 
-                // clear the course modinfo cache for courses
-                // where we just deleted something
+                /*
+                 * clear the course modinfo cache for courses
+                 * where we just deleted something
+                 */
                 $sql = "
                     SELECT
                         DISTINCT course,
                         course
-                    FROM 
+                    FROM
                         {course_modules}
-                    WHERE 
+                    WHERE
                         visibleold = 1 AND
-                        module = ?";
+                        module = ?
+                ";
                 if ($courseids = $DB->get_records_sql($sql, array($module->id))) {
-                    foreach(array_keys($courseids) as $cid) {
+                    foreach (array_keys($courseids) as $cid) {
                         rebuild_course_cache($cid);
                     }
                 }
@@ -115,20 +130,20 @@ class mod_remote_control extends plugin_remote_control {
         return 0;
     }
 
-    function is_enabled() {
+    public function is_enabled() {
         global $DB;
 
         if (!$module = $DB->get_record('modules', array('name' => $this->plugin))) {
             return null;
         }
 
-        return $DB->get_field('modules', 'visible', array('id' => $module->id)); // Hide main module
+        return $DB->get_field('modules', 'visible', array('id' => $module->id)); // Hide main module.
     }
 }
 
 class local_remote_control extends plugin_remote_control {
 
-    function action($action) {
+    public function action($action) {
         global $DB;
 
         if (!$block = $DB->get_record('block', array('name' => $this->plugin))) {
@@ -137,17 +152,17 @@ class local_remote_control extends plugin_remote_control {
 
         switch ($action) {
             case 'enable':
-                $DB->set_field('block', 'visible', '1', array('id' => $block->id));      // Show block
+                $DB->set_field('block', 'visible', '1', array('id' => $block->id));      // Show block.
                 break;
 
             case 'disable':
-                $DB->set_field('block', 'visible', '0', array('id' => $block->id));      // Hide block
+                $DB->set_field('block', 'visible', '0', array('id' => $block->id));      // Hide block.
                 break;
         }
         return 0;
     }
 
-    function is_enabled(){
+    public function is_enabled(){
         global $DB;
 
         if (!$block = $DB->get_record('block', array('name' => $this->plugin))) {
@@ -158,9 +173,9 @@ class local_remote_control extends plugin_remote_control {
     }
 }
 
-class message_remote_control extends plugin_remote_control{
+class message_remote_control extends plugin_remote_control {
 
-    function action($action){
+    public function action($action){
         global $DB;
 
         if (!$processor = $DB->get_record('message_processors', array('name' => $this->plugin))) {
@@ -169,16 +184,16 @@ class message_remote_control extends plugin_remote_control{
 
         switch($action){
             case 'enable':
-                $DB->set_field('message_processors', 'enabled', '1', array('id' => $processor->id));      // Enable output
+                $DB->set_field('message_processors', 'enabled', '1', array('id' => $processor->id));      // Enable output.
                 break;
             case 'disable':
-                $DB->set_field('message_processors', 'enabled', '0', array('id' => $processor->id));      // Disable output
+                $DB->set_field('message_processors', 'enabled', '0', array('id' => $processor->id));      // Disable output.
                 break;
         }
         return 0;
     }
 
-    function is_enabled() {
+    public function is_enabled() {
         global $DB;
 
         if (!$processor = $DB->get_record('message_processors', array('name' => $this->plugin))) {
@@ -189,11 +204,11 @@ class message_remote_control extends plugin_remote_control{
     }
 }
 
-class filter_remote_control extends plugin_remote_control{
+class filter_remote_control extends plugin_remote_control {
 
-    function action($action) {
+    public function action($action) {
 
-        switch($action){
+        switch ($action) {
             case 'enable':
                 $newstate = TEXTFILTER_ON;
                 filter_set_global_state($this->fqplugin, $newstate);
@@ -207,7 +222,7 @@ class filter_remote_control extends plugin_remote_control{
 
     }
 
-    function is_enabled(){
+    public function is_enabled(){
         return filter_is_enabled($this->plugin);
     }
 }

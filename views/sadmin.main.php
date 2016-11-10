@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Manage the command wizard.
  *
@@ -24,6 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Declaring parameters.
 if (isset($SESSION->vmoodle_sa['wizardnow'])) {

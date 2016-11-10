@@ -14,10 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace vmoodleadminset_generic;
-Use \local_vmoodle\commands\Command;
-Use \StdClass;
-
 /**
  * Describes meta-administration plugin's command for Maintenance setup.
  * 
@@ -26,6 +22,11 @@ Use \StdClass;
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_generic;
+
+use \local_vmoodle\commands\Command;
+use \StdClass;
+
 class Command_SetPluginConfig extends Command {
 
     /**
@@ -43,7 +44,7 @@ class Command_SetPluginConfig extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -53,7 +54,7 @@ class Command_SetPluginConfig extends Command {
         }
 
         foreach ($parameters as $param) {
-            if (!in_array($param->getName(), array('key', 'value'))) {
+            if (!in_array($param->get_name(), array('key', 'value'))) {
                 throw new Command_SetConfig_Exception('unexpectedparam');
             }
         }
@@ -95,19 +96,19 @@ class Command_SetPluginConfig extends Command {
         }
 
         // Getting command.
-        $command = $this->isReturned();
+        $command = $this->is_returned();
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config');
 
-        $pluginkey = $this->getParameter('key')->getValue();
+        $pluginkey = $this->get_parameter('key')->get_value();
         $parts = explode('/', $pluginkey);
-        $key = array_pop($parts); // take last as key
-        $plugin = implode('/', $parts); // take the rest as plugin (minds those plugins as auth/cas or auth/ldap)
+        $key = array_pop($parts); // Take last as key.
+        $plugin = implode('/', $parts); // Take the rest as plugin (minds those plugins as auth/cas or auth/ldap).
 
         $rpc_client->add_param($key, 'string');
-        $rpc_client->add_param($this->getParameter('value')->getValue(), 'string');
+        $rpc_client->add_param($this->get_parameter('value')->get_value(), 'string');
         $rpc_client->add_param($plugin, 'string');
         $rpc_client->add_param($command, 'boolean');
 
@@ -117,12 +118,7 @@ class Command_SetPluginConfig extends Command {
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpc_client);
-                    echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
             } else {
                 $response = json_decode($rpc_client->response);
             }
@@ -140,7 +136,7 @@ class Command_SetPluginConfig extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
         if (is_null($this->results)) {
             throw new Command_Exception('commandnotrun');
@@ -166,7 +162,7 @@ class Command_SetPluginConfig extends Command {
      * Get if the command's result is returned.
      * @return bool True if the command's result should be returned, false otherwise.
      */
-    public function isReturned() {
+    public function is_returned() {
         return $this->returned;
     }
 
@@ -174,7 +170,7 @@ class Command_SetPluginConfig extends Command {
      * Set if the command's result is returned.
      * @param bool $returned True if the command's result should be returned, false otherwise.
      */
-    public function setReturned($returned) {
+    public function set_returned($returned) {
         $this->returned = $returned;
     }
 }

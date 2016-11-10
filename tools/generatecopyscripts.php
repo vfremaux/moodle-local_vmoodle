@@ -92,12 +92,12 @@ if ($data = $mform->get_data()) {
             $hostreps[$vhost->name]->olddbname = $vhost->vdbname;
             $hostreps[$vhost->name]->newdbname = str_replace($data->fromversion, $data->toversion, $hostreps[$vhost->name]->olddbname);
 
-            // this is a bit tricky, but we need to manage soem special cases due to production apparent domains
+            // this is a bit tricky, but we need to manage soem special cases due to production apparent domains.
             $hostreps[$vhost->name]->originwwwroot = $vhost->vhostname;
             $hostreps[$vhost->name]->currentwwwroot = $vhost->vhostname;
-            // Explicits the next version
+            // Explicits the next version.
             $hostreps[$vhost->name]->currentwwwroot = change_version($data->fromversion, $data->toversion, $hostreps[$vhost->name]->currentwwwroot, 'to');
-            // Revert to explicit archive
+            // Revert to explicit archive.
             $hostreps[$vhost->name]->archivewwwroot = change_version($data->toversion, $data->fromversion, $hostreps[$vhost->name]->currentwwwroot);
             // Finally locally remove the moodle version marker for production exposed domains.
             // Note that current version may NOT have changed from original in most cases.
@@ -119,9 +119,9 @@ if ($data = $mform->get_data()) {
         }
     }
 
-    // Pre save databases for backup
+    // Pre save databases for backup.
 
-    // Main host DB copy;
+    // Main host DB copy.
     $backupdbstr = '# Backup DB creation for '.$SITE->fullname."\n";
     $backupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$main->olddbname}_bak;' \n";
     $backupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$main->olddbname}_bak;' \n";
@@ -130,7 +130,7 @@ if ($data = $mform->get_data()) {
     $backupdbtransfer .= 'mysqldump '.$main->olddbname.' -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' > temp.sql'."\n";
     $backupdbtransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname.'_bak < temp.sql'."\n";
 
-    // Active Vhosts DB copy
+    // Active Vhosts DB copy.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 
@@ -146,13 +146,13 @@ if ($data = $mform->get_data()) {
         }
     }
 
-    // Drop backup set
+    // Drop backup set.
 
-    // Main host DB copy;
+    // Main host DB copy.
     $dropbackupdbstr = '# Drop Backup DB for '.$SITE->fullname."\n";
     $dropbackupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$main->olddbname}_bak;' \n";
 
-    // Active Vhosts DB copy
+    // Active Vhosts DB copy.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 
@@ -191,9 +191,9 @@ if ($data = $mform->get_data()) {
         }
     }
 
-    // Database generator
+    // Database generator.
 
-    // Main host DB copy;
+    // Main host DB copy.
     $dbstr = '# DB copy for '.$SITE->fullname."\n";
     $dbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$main->newdbname};' \n";
     $dbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$main->newdbname};' \n";
@@ -205,10 +205,10 @@ if ($data = $mform->get_data()) {
     $datatransfer .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
     $datatransfer .= 'sed -i \'s/'.$main->originwwwrootsed.'/'.$main->currentwwwrootsed.'/g\' temp'.$data->toversion.'.sql'."\n";
 
-    // process main database for all peer host names, paths and references
+    // Process main database for all peer host names, paths and references.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
-            // this is a special copy that works the opposite way : newwwwroot is the older version to patch into the older database.
+            // This is a special copy that works the opposite way : newwwwroot is the older version to patch into the older database.
             $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->currentwwwrootsed.'/'.$hostreps[$vhost->name]->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->originwwwrootsed.'/'.$hostreps[$vhost->name]->currentwwwrootsed.'/g\' temp'.$data->toversion.'.sql'."\n";
 
@@ -219,15 +219,15 @@ if ($data = $mform->get_data()) {
 
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->newdbname.' < temp'.$data->toversion.'.sql'."\n";
 
-    // old DB replacement
+    // Old DB replacement.
     $datatransfer .= '# Old DB adjustements for '.$SITE->fullname."\n";
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$main->olddbname};' \n";
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$main->olddbname};' \n";
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
 
-    // Main host replacements
+    // Main host replacements.
 
-    // Active Vhosts DB copy
+    // Active Vhosts DB copy.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 
@@ -244,7 +244,7 @@ if ($data = $mform->get_data()) {
             $datatransfer .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->newdbname.' < temp'.$data->toversion.'.sql'."\n";
 
-            // old DB replacement
+            // Old DB replacement.
             $datatransfer .= '# Old DB adjustements for '.$vhost->name."\n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$hostreps[$vhost->name]->olddbname};' \n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$hostreps[$vhost->name]->olddbname};' \n";
@@ -252,12 +252,12 @@ if ($data = $mform->get_data()) {
         }
     }
 
-    // Main host data copy
+    // Main host data copy.
     $datastr = '# Data copy for '.$SITE->fullname."\n";
     $datastr .= "sudo -uwww-data rm -rf {$main->newdataroot}\n";
     $datastr .= "sudo -uwww-data rsync -r {$main->olddataroot} {$main->tomoodledatacontainer}\n";
 
-    // Active Vhosts data copy
+    // Active Vhosts data copy.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 
@@ -267,14 +267,16 @@ if ($data = $mform->get_data()) {
             $datastr .= "sudo -uwww-data mkdir {$hostreps[$vhost->name]->newdataroot}\n";
             $datastr .= "sudo -uwww-data rsync -r {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
 
-            // Vhost replacements
+            // Vhost replacements.
         }
     }
 
-    // Moodle cronlines generator
-    // Moodle data generator
+    /*
+     * Moodle cronlines generator
+     * Moodle data generator
+     */
 
-    // Main host DB copy;
+    // Main host DB copy.
     $cronstr = '# Cronlines '.$SITE->fullname."\n";
     if ($data->cronmode == 'cli') {
         $cronstr .= '*/10 * * * *  php '.$main->newdirroot.'/admin/cli/cron.php'."\n";
@@ -284,8 +286,10 @@ if ($data = $mform->get_data()) {
         $cronstr .= '*/1 * * * *  wget -q -O /dev/null '.$main->newwwwroot.'/blocks/vmoodle/vcron.php'."\n";
     }
 
-    // Moodle tools sudo generator
-    // Moodle data generator
+    /*
+     * Moodle tools sudo generator
+     * Moodle data generator
+     */
     if (is_dir($CFG->dirroot.'/admin/tool/delivery')) {
         $sudostr = '# Sudo file processing (must be root)'."\n";
         $sudostr .= '/bin/cp -f /etc/sudoers.d/moodle'.$data->fromversion.'_sudos /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
@@ -294,7 +298,7 @@ if ($data = $mform->get_data()) {
         $sudostr .= 'chmod u-w /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
     }
 
-    // Main host config change
+    // Main host config change.
     $configstr = "/bin/cp -f {$main->newdirroot}/config.php {$main->newdirroot}/config.php.bak\n";
     $configstr .= "/bin/cp -f {$main->olddirroot}/config.php {$main->newdirroot}/config.php\n";
     $configstr .= "/bin/cp -f {$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php.bak\n";
@@ -307,7 +311,7 @@ if ($data = $mform->get_data()) {
 
     $configstr .= 'sed -i \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
 
-    // Main host upgrade
+    // Main host upgrade.
     $preupgradestr = '# Pre upgrade for '.$SITE->fullname."\n";
     $preupgradestr .= "sudo -uwww-data php {$main->newdirroot}/admin/cli/mysql_compressed_rows.php --fix\n";
 
@@ -319,7 +323,7 @@ if ($data = $mform->get_data()) {
     $postupgradestr .= "sudo -uwww-data php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$main->archivewwwroot}\n";
     $postupgradestr .= "wget {$main->archivewwwroot}/admin/cron.php?forcerenew=1\n";
 
-    // Active Vhosts upgrades
+    // Active Vhosts upgrades.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 

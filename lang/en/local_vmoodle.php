@@ -1,13 +1,27 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Capabilities
+// Capabilities.
 
-$string['vmoodle:execute'] = 'Execute meta-administration commands'; // @CORE
-$string['vmoodle:managevmoodles'] = 'Manage moodle satellites'; // @CORE
-$string['vmoodle:myaddinstance'] = 'Can add instance to my pages'; // @CORE
-$string['vmoodle:addinstance'] = 'Can add instance'; // @CORE
+$string['vmoodle:execute'] = 'Execute meta-administration commands';
+$string['vmoodle:managevmoodles'] = 'Manage moodle satellites';
+$string['vmoodle:myaddinstance'] = 'Can add instance to my pages';
+$string['vmoodle:addinstance'] = 'Can add instance';
 
-// Local strings
+// Local strings.
 
 $string['addall'] = 'Add all';
 $string['addformdbgroup'] = 'Database ';
@@ -80,7 +94,7 @@ $string['commandemptydescription'] = 'The command\'s description is empty.';
 $string['commandemptyname'] = 'The command\'s name is empty.';
 $string['commandformnotlinked'] = 'No command linked to the form.';
 $string['commandnotaparameter'] = 'One of parameters of the command {$a} is not a Vmoodle_Parameter object.';
-$string['commandnotexists'] = 'The command doesn\'t exist'; 
+$string['commandnotexists'] = 'The command doesn\'t exist';
 $string['commands'] = 'Commands';
 $string['commandsadministration'] = 'Commands administration:';
 $string['commandwrongparametertype'] = 'Parameters of the command {$a} aren\'t supported types.';
@@ -358,8 +372,8 @@ $string['wrongplugin'] = 'Wrong plugin.';
 $string['wwwrootexceedscsrlimits'] = 'The choosen wwwroot exceeds 64 chars length. This is not compatible with MNET openssl CSR requirements.';
 
 /*** Help Strings ***/
-$string['name'] = 'Name'; //@CORE
-$string['name_help'] = '  //@CORE
+$string['name'] = 'Name';
+$string['name_help'] = '
 <p><b>Public Name of the Instance</b></p>
 
 <p>This name is the apparent instance name as known on the master
@@ -367,8 +381,8 @@ moodle side, and will serve as preset for the Moodle instance name. This
 name can be updated after instance creation.</p>
 ';
 
-$string['shortname'] = 'Short Name'; // @CORE
-$string['shortname_help'] = ' // @CORE
+$string['shortname'] = 'Short Name';
+$string['shortname_help'] = '
 <p><b>Shortname for the Instance</b></p>
 
 <p>The shortname given here will be preset as shortname of the
@@ -378,15 +392,14 @@ instance is created.</p>
 <p>The short name MUST be a token WITHOUT SPACES.</p>
 ';
 
-$string['description'] = 'Description'; // @CORE
-$string['description_help'] = ' // @CORE
+$string['description'] = 'Description';
+$string['description_help'] = '
 <p>This text will be setup as base moodle description in the local
 instance datamodel. It may be updated after instance creation.</p>
 ';
- 
 
-$string['vhostname'] = 'Hostname'; // @CORE
-$string['vhostname_help'] = ' // @CORE
+$string['vhostname'] = 'Hostname';
+$string['vhostname_help'] = '
 <p><b>Instance Effective Hostname</b></p>
 
 <p>This field defines the apparent Web name of the new instance. Generally, you should use a %%INSTANCE%% metatag that will be replaced with the instance shortname. This will allow each new instance to be independantly identified on the Web. The atual subdomain will be automatically constructed using the lowercased shortname.</p>
@@ -405,14 +418,14 @@ $string['vhostname_help'] = ' // @CORE
 <p>Other binding solutions might be possible, but we do not have evaluation for them.</p>
 ';
 
-$string['vdbhost_help'] = '<p><b>Instance Local Database</b></p> // @CORE
+$string['vdbhost_help'] = '<p><b>Instance Local Database</b></p>
 
 <p>Must contain a valid hostname:port pattern where the database
 holding the instance\'s own datamodel will run. This host must have a
 suitable database, and must have network connectivity from the master
 moodle website server.</p>';
 
-$string['vdbtype_help'] = ' //@CORE
+$string['vdbtype_help'] = '
 <p><b>Instance Database Type</b></p>
 
 <p>The vmoodle add-on has implementation for MySQL and PostgreSQL
@@ -421,7 +434,7 @@ unique master moodle. Other databases supported by the standard
 distribution of Moodle are not supported for virtualization.</p>
 ';
 
-$string['vdbname_help'] = ' // @CORE
+$string['vdbname_help'] = '
 <p><b>Instance Database Name</b></p>
 
 <p>Allows database name definition for the created instance. This
@@ -429,14 +442,14 @@ name CANNOT be updated. It is actually preset to a default based on the
 instance shortname.</p>
 ';
 
-$string['vdbpersist_help'] = ' // @CORE
+$string['vdbpersist_help'] = '
 <p><b>Database Connection Persistance</b></p>
 
 <p>This dropdown allows selecting if the instance may use persistent
 connection to its own database. This parameter can be updated.</p>
 ';
 
-$string['vdatapath_help'] = ' // @CORE
+$string['vdatapath_help'] = '
 <p><b>Physical File System for the Instance</b></p>
 
 <p>Any user file will be uploaded within a single data volume
@@ -452,7 +465,7 @@ instances are writable by the master server.</p>
 instance is created.</p>
 ';
 
-$string['mnet_help'] = ' // @CORE
+$string['mnet_help'] = '
 <p><b>MNET Activation of the Instance</b></p>
 
 <p>New virtual hosts can be integrated directly in the MNET master
@@ -462,9 +475,9 @@ network settings will not be configurated.</p>
 <p>It can be possible to mix instances with and without the network.
 By default, all the instances activating the MNET network will be in the
 same MNET network.</p>
-';   
-   
-$string['services_help'] = ' // @CORE
+';
+
+$string['services_help'] = '
 <p><b>Services strategy</b></p>
 
 <p>This field allows services strategy definition, when defining a
@@ -479,9 +492,9 @@ without selecting a subnetwork, or when the virtual host disables MNET.</p>
 be synchronized with one actual member of the subnetwork. It is
 necessary to remember that all members of a subnetwork are synchronized
 in terms of services.</p>
-';   
+';
 
-$string['vtemplate_help'] = ' // @CORE
+$string['vtemplate_help'] = '
 <p><b>Vmoodle Template</b></p>
 
 <p>When a VMoodle host is instantiated, the contextual part of the
@@ -493,17 +506,17 @@ state.</p>
 configuration.</p>
 <p>The preset instances should be formed with 2 directories :</p>
 <ul>
-	<li>The first directory contains two SQL scripts called :
-	"moodle_master.&lt;base&gt;.sql" and
-	"moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; can be "MySQL"
-	or "PostgreSQL" typed, depending on the choosen template\'s model. The
-	first script loads the database with a typed data model, coming from
-	the host model of the template. The second script execute
-	contextualised SQL request, using some specific parameters coming from
-	the instance definition form.</li>
-	<li>The second directory contains a preformed "moodledata"
-	directory copy. This directory can contain any set of files, coming
-	from the host model of the template.</li>
+    <li>The first directory contains two SQL scripts called :
+    "moodle_master.&lt;base&gt;.sql" and
+    "moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; can be "MySQL"
+    or "PostgreSQL" typed, depending on the choosen template\'s model. The
+    first script loads the database with a typed data model, coming from
+    the host model of the template. The second script execute
+    contextualised SQL request, using some specific parameters coming from
+    the instance definition form.</li>
+    <li>The second directory contains a preformed "moodledata"
+    directory copy. This directory can contain any set of files, coming
+    from the host model of the template.</li>
 </ul>
 <p>In order to correct all absolute paths registered by the host
 model, the template ask the presence of an additional "manifest" file,
@@ -519,7 +532,4 @@ $string['templatetext_help'] = 'Write here the server script template with place
 <li>%DBUSER% : DB User</li>
 <li>%DBPASS% : DB Pass</li>
 <li>%DATAROOT% : Moodledata location</li>
-
 ';
-
-

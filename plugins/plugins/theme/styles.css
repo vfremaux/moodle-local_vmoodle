@@ -7,7 +7,7 @@ table#plugincompare td.header {
 }
 
 table#plugincompare td.cell {
-    padding: 0px;
+    padding: 0;
 }
 
 table#plugincompare td.headinghighlight, table#plugincompare th.headinghighlight {

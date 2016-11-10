@@ -1,4 +1,7 @@
-/* Coordinates of capability to synchronize */
+/*
+ * Coordinates of capability to synchronize
+ */
+// jshint undef:false, unused:false
 
 var vmpluginlib_row = -1;
 var vmpluginlib_col = -1;
@@ -10,7 +13,7 @@ var vmpluginlib_col = -1;
  * @param    name    string        The name of capability.
  */
 function setPlugin(col, row, name, host) {
-    // Get HTML elements
+    // Get HTML elements.
     var plugin = document.getElementById('plugin');
     var src_pltfrm = document.getElementById('source_platform');
     var plug_cell = document.getElementById('plug_0_'+row);
@@ -19,41 +22,41 @@ function setPlugin(col, row, name, host) {
     var pltfrm_checkbox;
     
     if (plugin.value == '') {
-        // Recording cell
+        // Recording cell.
         vmpluginlib_col = col;
         vmpluginlib_row = row;
-        // Adding decoration
+        // Adding decoration.
         plug_cell && addClass(plug_cell, 'choosenheading');
         cell && addClass(cell, 'choosencell');
-        // Saving plugin choice
+        // Saving plugin choice.
         plugin.value = name;
-        // Saving source platform
+        // Saving source platform.
         src_pltfrm.value = host;
-        // Enabling sync platforms
+        // Enabling sync platforms.
         i = 1;
-        while(pltfrm_checkbox = document.getElementById('platform_'+i)) {
+        while (pltfrm_checkbox = document.getElementById('platform_' + i)) {
             if (i != col)
                 pltfrm_checkbox.disabled = '';
             i++;
         }
     } else if (vmpluginlib_col == col && vmpluginlib_row == row) {
 
-        // Initializing cell coordinates
+        // Initializing cell coordinates.
         vmpluginlib_col = -1;
         vmpluginlib_row = -1;
 
-        // Removing decoration
+        // Removing decoration.
         plug_cell && removeClass(plug_cell, 'choosenheading');
         cell && removeClass(cell, 'choosencell');
 
-        // Removing capability
+        // Removing capability.
         plugin.value = '';
 
-        // Removing source platform
+        // Removing source platform.
         src_pltfrm.value = '';
 
-        // Disabling platforms
-        while(pltfrm_checkbox = document.getElementById('platform_'+i)) {
+        // Disabling platforms.
+        while(pltfrm_checkbox = document.getElementById('platform_' + i)) {
             pltfrm_checkbox.checked = '';
             pltfrm_checkbox.disabled = 'disabled';
             i++;
@@ -67,28 +70,28 @@ function setPlugin(col, row, name, host) {
  */
 function validate_syncplugins() {
 
-    // Initializing variables
+    // Initializing variables.
     var i = 1;
     var sync = false;
 
-    // Getting HTML elements
+    // Getting HTML elements.
     var plugin = document.getElementById('plugin');
     var src_pltfrm = document.getElementById('source_platform');
     var validation_message = document.getElementById('plugincompare_validation_message');
     var sync_pltfrm;
 
-    // Checking if plugin
+    // Checking if plugin.
     if (plugin.value == '') {
         validation_message.innerHTML = vmoodle_pluginlib_notinstalled;
         return false;
     }
-    // Checking source platform
+    // Checking source platform.
     if (src_pltfrm.value == '') {
         validation_message.innerHTML = vmoodle_rolelib_nosrcpltfrm;
         return false;
     }
 
-    // Checking sync platforms
+    // Checking sync platforms.
     while(sync_pltfrm = document.getElementById('platform_'+i)) {
         if (sync_pltfrm.checked) {
             sync = true;
@@ -99,8 +102,9 @@ function validate_syncplugins() {
     if (!sync) {
         validation_message.innerHTML = vmoodle_pluginlib_nosyncpltfrm;
         return false;
-    } else
+    } else {
         validation_message.innerHTML = '';
+    }
     return confirm(vmoodle_rolelib_confirmpluginvisibilitysync);
 }
 
@@ -110,12 +114,12 @@ function validate_syncplugins() {
  * @param    row        integer        The row of current cell.
  */
 function cellOver(col, row) {
-    // Getting HTML elements
-    var plug_cell = document.getElementById('plug_0_'+row);
-    var pltfrm_cell = document.getElementById('plug_'+col);
-    var cell = document.getElementById('plug_'+col+'_'+row);
-//    alert(cell.id);
-    // Adding CSS classes
+    // Getting HTML elements.
+    var plug_cell = document.getElementById('plug_0_' + row);
+    var pltfrm_cell = document.getElementById('plug_' + col);
+    var cell = document.getElementById('plug_' + col + '_' + row);
+
+    // Adding CSS classes.
     plug_cell && addClass(plug_cell, 'headinghighlight');
     pltfrm_cell && addClass(pltfrm_cell, 'headinghighlight');
     cell && addClass(cell, 'cellhighlight');
@@ -127,12 +131,12 @@ function cellOver(col, row) {
  * @param    row        integer        The row of current cell.
  */
 function cellOut(col, row) {
-    // Getting HTML elements
+    // Getting HTML elements.
     alert(col+ ' '+row);
-    var plug_cell = document.getElementById('plug_0_'+row);
-    var pltfrm_cell = document.getElementById('plug_'+col);
-    var cell = document.getElementById('plug_'+col+'_'+row);
-    // Removing CSS classes
+    var plug_cell = document.getElementById('plug_0_' + row);
+    var pltfrm_cell = document.getElementById('plug_' + col);
+    var cell = document.getElementById('plug_' + col + '_' + row);
+    // Removing CSS classes.
     plug_cell && removeClass(plug_cell, 'headinghighlight');
     pltfrm_cell && removeClass(pltfrm_cell, 'headinghighlight');
     cell && removeClass(cell, 'cellhighlight');
