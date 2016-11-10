@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Declare RPC function set and utilities for rpc calls.
  *
@@ -19,13 +34,10 @@
  * management tasks (bock/vmoodle:canexecuteremotecalls)
  */
 
-// Including libraries
+// Including libraries.
 require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->libdir.'/dmllib.php');
 
-/**
- * Constants.
- */
 if (!defined('RPC_SUCCESS')) {
     define('RPC_TEST', 100);
     define('RPC_SUCCESS', 200);
@@ -48,12 +60,14 @@ if (!defined('RPC_SUCCESS')) {
 function invoke_local_user($user, $capability = false, $context = null) {
     global $CFG, $USER, $DB;
 
-    // Creating response
+    // Creating response.
     $response = new stdclass;
     $response->status = RPC_SUCCESS;
 
-    // Checking user
-    if (!array_key_exists('username', $user) || !array_key_exists('remoteuserhostroot', $user) || !array_key_exists('remotehostroot', $user)) {
+    // Checking user.
+    if (!array_key_exists('username', $user) ||
+            !array_key_exists('remoteuserhostroot', $user) ||
+                    !array_key_exists('remotehostroot', $user)) {
         debug_trace("USER CHECK FAILED 1 bad user structure : ".json_encode($user));
         $response->status = RPC_FAILURE_USER;
         $response->errors[] = 'Bad client user format.';
@@ -68,9 +82,9 @@ function invoke_local_user($user, $capability = false, $context = null) {
         $response->error = 'Empty username.';
         return(json_encode($response));
     }
-    
-    // Get local identity
-    if (!$remotehost = $DB->get_record('mnet_host', array('wwwroot' => $user['remotehostroot']))){
+
+    // Get local identity.
+    if (!$remotehost = $DB->get_record('mnet_host', array('wwwroot' => $user['remotehostroot']))) {
         debug_trace("USER CHECK FAILED 3 (unregistered host) : ".json_encode($user));
         $response->status = RPC_FAILURE;
         $response->errors[] = 'Calling host is not registered. Check MNET configuration';
@@ -80,14 +94,14 @@ function invoke_local_user($user, $capability = false, $context = null) {
 
     $userhost = $DB->get_record('mnet_host', array('wwwroot' => $user['remoteuserhostroot']));
 
-    if (!$localuser = $DB->get_record('user', array('username' => addslashes($user['username']), 'mnethostid' => $userhost->id))){
+    if (!$localuser = $DB->get_record('user', array('username' => addslashes($user['username']), 'mnethostid' => $userhost->id))) {
         debug_trace("USER CHECK FAILED 4 (account) : ".json_encode($user));
         $response->status = RPC_FAILURE_USER;
         $response->errors[] = "Calling user has no local account. Register remote user first";
         $response->error = "Calling user has no local account. Register remote user first";
         return(json_encode($response));
     }
-    // Replacing current user by remote user
+    // Replacing current user by remote user.
 
     $USER = $localuser;
 
@@ -154,11 +168,11 @@ function mnetadmin_rpc_bind_peer($username, $userhost, $remotehost, $new_peer, $
     }
 
     debug_trace('RPC : Binding service strategy');
-    // bind the service strategy.
+    // Bind the service strategy.
     if (!empty($servicestrategy)) {
-        $DB->delete_records('mnet_host2service', array('hostid' => $peerobj->id)); // eventually deletes something on the way
+        $DB->delete_records('mnet_host2service', array('hostid' => $peerobj->id)); // Eventually deletes something on the way.
         foreach ($servicestrategy as $servicename => $servicestate) {
-            $servicestate = (object)$servicestate; // ensure it is object
+            $servicestate = (object)$servicestate; // Ensure it is object.
             $service = $DB->get_record('mnet_service', array('name' => $servicename));
             $host2service = new stdclass();
             $host2service->hostid = $peerobj->id;
@@ -204,8 +218,7 @@ function mnetadmin_rpc_unbind_peer($username, $userhost, $remotehost, $peer_wwwr
         }
     } else {
         // If host cannot be find. LET IT SILENT, it is unbound !
-        // $response->status = RPC_FAILURE_RECORD;
-        // $response->errors[] = 'Host with \'wwwroot = '.$peer_wwwroot.'\' cannot be find.';
+        assert(true);
     }
 
     // Returns response (success or failure).
@@ -218,16 +231,17 @@ function mnetadmin_rpc_unbind_peer($username, $userhost, $remotehost, $peer_wwwr
  * @return string The error message.
  */
 function parse_wlerror() {
-    // Getting contents form PHP buffer
+    // Getting contents form PHP buffer.
     $contents = ob_get_contents();
     $contents = str_replace(array('<br/>', '<br />', '<br>'), ' ', $contents);
-    // Checking if is a notify message
+    // Checking if is a notify message.
     if (!substr_compare($contents, '<div class="notifytiny"', 0, 13)) {
-        // Checking if stacktrace is present
-        if ($pos = strpos($contents, '<ul'))
-        $contents = substr($contents, 0, $pos);
+        // Checking if stacktrace is present.
+        if ($pos = strpos($contents, '<ul')) {
+            $contents = substr($contents, 0, $pos);
+        }
     }
-    // Removing all tags for XML RPC
+    // Removing all tags for XML RPC.
     return strip_tags($contents);
 }
 
@@ -246,7 +260,7 @@ function mnetadmin_keyswap($function, $params) {
     $application    = $params[2];
     $forcerenew     = $params[3];
     if ($forcerenew == 0){
-        // standard keyswap for first key recording 
+        // Standard keyswap for first key recording.
         if (!empty($CFG->mnet_register_allhosts)) {
             $mnet_peer = new mnet_peer();
             $keyok = $mnet_peer->bootstrap($wwwroot, $pubkey, $application);
@@ -256,15 +270,16 @@ function mnetadmin_keyswap($function, $params) {
         }
     } else {
         $mnet_peer = new mnet_peer();
-        // we can only renew hosts that we know something about.
-        if ($mnet_peer->set_wwwroot($wwwroot)){
+        // We can only renew hosts that we know something about.
+        if ($mnet_peer->set_wwwroot($wwwroot)) {
             $mnet_peer->public_key = clean_param($pubkey, PARAM_PEM);
             $mnet_peer->public_key_expires = $mnet_peer->check_common_name($pubkey);
             $mnet_peer->updateparams->public_key = clean_param($pubkey, PARAM_PEM);
             $mnet_peer->updateparams->public_key_expires = $mnet_peer->check_common_name($pubkey);
             $mnet_peer->commit();
         } else {
-            return false; // avoid giving our key to unkown hosts.
+            // Avoid giving our key to unkown hosts.
+            return false;
         }
     }
     return $MNET->public_key;
@@ -273,6 +288,6 @@ function mnetadmin_keyswap($function, $params) {
 /**
  * Load plugins' RPC functions.
  */
-foreach(glob($CFG->dirroot.'/local/vmoodle/plugins/*/rpclib.php') as $rpclib) {
+foreach (glob($CFG->dirroot.'/local/vmoodle/plugins/*/rpclib.php') as $rpclib) {
     require_once $rpclib;
 }

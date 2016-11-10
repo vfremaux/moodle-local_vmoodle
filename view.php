@@ -52,7 +52,7 @@ $PAGE->requires->css ('/local/vmoodle/theme/styles.php');
 if ((@$SESSION->vmoodle_sa['wizardnow'] == 'report')
         && !(isset($SESSION->vmoodle_sa['command'])
              && ($command = unserialize($SESSION->vmoodle_sa['command']))
-                && $command->isRunned())) {
+                && $command->has_run())) {
     $SESSION->vmoodle_sa['wizardnow'] = 'commandchoice';
     redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')));
 }

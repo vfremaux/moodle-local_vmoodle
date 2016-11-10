@@ -23,14 +23,14 @@
  */
 
 if ((defined('CLI_SCRIPT') && CLI_SCRIPT) && !defined('WEB_CRON_EMULATED_CLI') && !defined('CLI_VMOODLE_OVERRIDE')) return;
-require_once $CFG->dirroot."/local/vmoodle/bootlib.php";
+require_once $CFG->dirroot.'/local/vmoodle/bootlib.php';
 
 // This configurations settings will tell where VMoodle can rely on a local_vmoodle virtual moodling
 // records.
 
 $CFG->vmasterdbhost = 'localhost';
 $CFG->vmasterdbtype = 'mysqli';
-$CFG->vmasterdbname = 'moodle28_generic';
+$CFG->vmasterdbname = 'moodle31_generic';
 $CFG->vmasterdblogin = 'root';
 $CFG->vmasterdbpass = 'spr1ngb0ks';
 $CFG->vmasterdbpersist =  false;

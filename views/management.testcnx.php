@@ -22,8 +22,6 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-
-// Loading $CFG configuration.
 require('../../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 

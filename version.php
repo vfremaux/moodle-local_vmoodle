@@ -15,23 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Version details
  *
- * @package     local_vmoodle
- * @category    local
- * @author      Valery Fremaux <valery.fremaux@gmail.com>
- * @copyright   2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_vmoodle
+ * @category   local
+ * @copyright  2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2016052402; // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014111001; // Requires this Moodle version
-$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics)
+$plugin->version = 2016052402; // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2015050500; // Requires this Moodle version.
+$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-$plugin->release = "2.8.0 (Build 2015061900)";
+$plugin->release = '2.9.0 (Build 2016052400)';
 $plugin->cron = 5;
 
 // Non moodle attributes.
-$plugin->codeincrement = '2.8.0000';
+$plugin->codeincrement = '2.9.0000';
