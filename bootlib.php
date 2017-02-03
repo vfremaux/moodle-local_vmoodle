@@ -52,6 +52,29 @@ function vmoodle_get_hostname() {
         }
         $CFG->vmoodlename = $_SERVER['SERVER_NAME'];
     }
+
+    if (!empty($CFG->vmoodleusesubpaths)) {
+        $uri = preg_replace('#^/#', '', $_SERVER['REQUEST_URI']);
+        // echo "URI : ".$uri.'<br/>';
+        if (!preg_match('#/$#', $uri)) {
+            $path = dirname($uri);
+        } else {
+            $path = $uri;
+        }
+        // echo "Dir URI : ".$path.'<br/>';
+        $pathparts = explode('/', $path);
+        $firstpath = array_shift($pathparts);
+        // echo "Firstdir URI : ".$firstpath.'<br/>';
+        if (($firstpath != '') && ($firstpath != '/') && ($firstpath != '.')) {
+            // If request uri goes into a subdir.
+            if (is_link($CFG->dirroot.'/'.$firstpath)) {
+                // Symbolic links in dirroot are characteristic to submoodledirs.
+                $CFG->vmoodleroot .= '/'.$firstpath;
+                $CFG->vmoodlename .= '/'.$firstpath;
+            }
+        }
+        // echo "Baseroot : ".$CFG->vmoodleroot.'<br/>';
+    }
 }
 
 /**
