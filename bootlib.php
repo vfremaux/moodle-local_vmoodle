@@ -20,6 +20,8 @@
  * @author          valery.fremaux (valery.fremaux@gmail.com)
  */
 
+define('VMOODLE_BOOT', true);
+
 function vmoodle_get_hostname() {
     global $CFG;
 
@@ -38,7 +40,8 @@ function vmoodle_get_hostname() {
     if (defined('CLI_VMOODLE_OVERRIDE')) {
         $CFG->vmoodleroot = CLI_VMOODLE_OVERRIDE;
         $CFG->vmoodlename = preg_replace('/https?:\/\//', '', CLI_VMOODLE_OVERRIDE);
-        echo 'resolving name to : '.$CFG->vmoodlename."\n";
+        $parts = explode('.', $CFG->vmoodlename);
+        $CFG->vhost = array_shift($parts);
         return;
     }
 
@@ -83,6 +86,10 @@ function vmoodle_get_hostname() {
  */
 function vmoodle_boot_configuration() {
     global $CFG;
+
+    if (empty($CFG->dirroot)) {
+        die('VMoodle installs need $CFG->dirroot be defined explicitely in config.php.'."\n");
+    }
 
     /*
      * vconfig provides an bypassed configuration using vmoodle host definition
@@ -157,7 +164,35 @@ function vmoodle_boot_configuration() {
         } else {
             die("VMoodling : Unsupported Database for VMoodleMaster");
         }
-    } else if ($CFG->vmoodledefault) {
+
+        // Apply child default config if any.
+        /**
+         * Note that hard config cannot be anymore overriden by administration.
+         *
+         * Setup will additionnaly apply a local/defaults.php file if exists.
+         */
+        if (!empty($CFG->vmoodlehardchildsdefaults)) {
+            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardchildsdefaults.'.php';
+            if (file_exists($default)) {
+                include($default);
+            }
+        }
+
+    } else if (empty($CFG->vmoodlenodefault)) {
+
+        // Apply master config hard defaults if any.
+        /**
+         * Note that hard config cannot be anymore overriden by administration.
+         *
+         * Setup will additionnaly apply a local/defaults.php file if exists.
+         */
+        if (!empty($CFG->vmoodlehardmasterdefaults)) {
+            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardmasterdefaults.'.php';
+            if (file_exists($default)) {
+                include($default);
+            }
+        }
+
         // Do nothing, just bypass.
         assert(true);
     } else {
