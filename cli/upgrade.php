@@ -51,17 +51,20 @@ if (!isset($CFG->dirroot)) {
 require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('non-interactive'   => false,
-                                                     'allow-unstable'    => false,
-                                                     'host'              => false,
-                                                     'test'              => false,
-                                                     'help'              => false),
-                                               array('h' => 'help'));
+list($options, $unrecognized) = cli_get_params(
+    array('non-interactive'   => false,
+          'allow-unstable'    => false,
+          'host'              => false,
+          'test'              => false,
+          'help'              => false),
+    array('h' => 'help',
+          'H' => 'host')
+);
 
 $interactive = empty($options['non-interactive']);
 
 if ($unrecognized) {
-    $unrecognized = implode("\n", $unrecognized);
+    $unrecognized = implode("\n  ", $unrecognized);
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
@@ -203,7 +206,9 @@ set_config('branch', $branch);
 upgrade_noncore(true);
 
 // Log in as admin - we need doanything permission when applying defaults.
-\core\session\manager::set_user(get_admin());
+if ($admin = get_admin()) {
+    \core\session\manager::set_user($admin);
+}
 
 // Apply all default settings, just in case do it twice to fill all defaults.
 admin_apply_default_settings(null, false);
