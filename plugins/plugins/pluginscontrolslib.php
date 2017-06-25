@@ -55,6 +55,10 @@ abstract class plugin_remote_control {
 
 class mod_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('mod', $plugin);
+    }
+
     public function action($action) {
         global $DB;
 
@@ -143,6 +147,10 @@ class mod_remote_control extends plugin_remote_control {
 
 class local_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('local', $plugin);
+    }
+
     public function action($action) {
         global $DB;
 
@@ -175,6 +183,10 @@ class local_remote_control extends plugin_remote_control {
 
 class message_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('message', $plugin);
+    }
+
     public function action($action){
         global $DB;
 
@@ -206,16 +218,20 @@ class message_remote_control extends plugin_remote_control {
 
 class filter_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('filter', $plugin);
+    }
+
     public function action($action) {
 
         switch ($action) {
             case 'enable':
                 $newstate = TEXTFILTER_ON;
-                filter_set_global_state($this->fqplugin, $newstate);
+                filter_set_global_state($this->plugin, $newstate);
                 break;
             case 'disable':
                 $newstate = TEXTFILTER_OFF;
-                filter_set_global_state($this->fqplugin, $newstate);
+                filter_set_global_state($this->plugin, $newstate);
                 break;
         }
         return 0;
@@ -228,6 +244,10 @@ class filter_remote_control extends plugin_remote_control {
 }
 
 class repository_remote_control extends plugin_remote_control{
+
+    public function __construct($plugin) {
+        return parent::__construct('repository', $plugin);
+    }
 
     function action($state){
 
@@ -267,6 +287,10 @@ class plagiarism_remote_control extends plugin_remote_control{
 */
 
 class qbehaviour_remote_control extends plugin_remote_control{
+
+    public function __construct($plugin) {
+        return parent::__construct('qbehaviour', $plugin);
+    }
 
     function action($state){
 
@@ -341,6 +365,10 @@ class qbehaviour_remote_control extends plugin_remote_control{
 
 class qtype_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('qtype', $plugin);
+    }
+
     function action($action) {
 
         $qtypes = question_bank::get_all_qtypes();
@@ -367,6 +395,10 @@ class qtype_remote_control extends plugin_remote_control {
 }
 
 class portfolio_remote_control extends plugin_remote_control {
+
+    public function __construct($plugin) {
+        return parent::__construct('portfolio', $plugin);
+    }
 
     function action($action) {
 
@@ -397,6 +429,10 @@ class portfolio_remote_control extends plugin_remote_control {
 }
 
 class auth_remote_control extends plugin_remote_control {
+
+    public function __construct($plugin) {
+        return parent::__construct('auth', $plugin);
+    }
 
     function action($action) {
         global $CFG;
@@ -456,6 +492,10 @@ class auth_remote_control extends plugin_remote_control {
 
 class courseformat_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('format', $plugin);
+    }
+
     function action($action) {
 
         $allplugins = plugin_manager::instance()->get_plugins();
@@ -490,6 +530,10 @@ class courseformat_remote_control extends plugin_remote_control {
 }
 
 class editor_remote_control extends plugin_remote_control {
+
+    public function __construct($plugin) {
+        return parent::__construct('editor', $plugin);
+    }
 
     function action($action) {
 
@@ -532,6 +576,10 @@ class editor_remote_control extends plugin_remote_control {
 
 class enrol_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('enrol', $plugin);
+    }
+
     function action($action) {
 
         $enabled = enrol_get_plugins(true);
@@ -567,6 +615,10 @@ class enrol_remote_control extends plugin_remote_control {
 
 class assignsubmission_remote_control extends plugin_remote_control {
 
+    public function __construct($plugin) {
+        return parent::__construct('assignsubmission', $plugin);
+    }
+
     function action($action) {
 
         $pluginmanager = new assign_plugin_manager('assignsubmission');
@@ -589,6 +641,10 @@ class assignsubmission_remote_control extends plugin_remote_control {
 
 
 class assignfeedback_remote_control extends plugin_remote_control {
+
+    public function __construct($plugin) {
+        return parent::__construct('assignfeedback', $plugin);
+    }
 
     function action($action) {
 

@@ -68,6 +68,10 @@ $string['badshortname'] = 'Le nom raccourci ne doit pas comporter d\'espaces...'
 $string['badtemplatation'] = 'Erreur dans le chargement de la base de données depuis le template choisi (lecture écriture ou suppression de fichiers).';
 $string['badthishostdata'] = 'Impossible de récupérer les données de la plate-forme courante, depuis la table \'mnet_host\'.';
 $string['badvhostname'] = 'Forme de l\'hôte incorrecte...';
+$string['behaviour'] = 'Comportement';
+$string['clustering'] = 'Réglages de clusterisation';
+$string['configclusters'] = 'Clusters';
+$string['configclusterix'] = 'Numéro de cluster';
 $string['cancelcommand'] = 'Annuler la commande';
 $string['capfilter'] = 'Filtre de capacités';
 $string['categoryignored'] = 'La catégorie {$a} a été ignorée :';
@@ -304,6 +308,7 @@ $string['successedithost'] = 'Edition de la plate-forme terminée.';
 $string['successfinishedcapture'] = 'Capture de la plate-forme terminée.';
 $string['successfullplatforms'] = 'Succès des plates-formes :';
 $string['successstrategyservices'] = 'Déploiement de la stratégie de service(s) par défaut effectué.';
+$string['syncvmoodleregister'] = 'Synchroniser les registres VMoodle';
 $string['tabpoolmanage'] = 'Gestion des instances';
 $string['tabpoolsadmin'] = 'Super administration';
 $string['tabpoolservices'] = 'Stratégie de services';
@@ -542,3 +547,9 @@ $string['templatetext_help'] = 'Ecrivez ici le texte du script avec des marque p
 <li>%DBPASS% : Mot de passe de la base de données</li>
 <li>%DATAROOT% : Position du moodledata</li>
 ';
+
+$string['configclusters_desc'] = 'Indiquez ici le nombre de clusters qui servent vos pages Moodle.';
+
+$string['configclusterix_desc'] = 'Ceci est le numéro du cluster courant pour le traitement de vos tâches de fond distribuées. Sa valeur
+doit être forcée par un fihcier de configuration physique (pas de valeur en base de données ni de cache partagé), à travers une initialisation
+$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] assurée localement. Veuillez à ce que chaque cluster impose une valeur différente.';

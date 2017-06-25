@@ -83,7 +83,7 @@ class Command_Form extends \moodleform {
                 break;
         }
         // Calling parent's constructor.
-        parent::__construct($url->out());
+        parent::__construct($url->out(false));
     }
 
     /**

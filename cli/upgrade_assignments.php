@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    core
+ * @package    local_vmoodle
  * @subpackage cli
- * @copyright  2011 David Mudrak <david@moodle.com>
+ * @copyright  2017 Valery Fremaux (valery.fremaux@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -47,14 +47,14 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help = "
-Invalidates all Moodle internal caches
+Batch converts all pending old assigns.
 
 Options:
 -h, --help            Print out this help
 -H, --host            the virtual host you are working for
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/purge_caches.php
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade_assignments.php
 ";
 
     echo $help;
@@ -71,9 +71,35 @@ if (!empty($options['host'])) {
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot."\n");
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/locallib.php');
+require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/upgradableassignmentstable.php');
+require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/upgradableassignmentsbatchform.php');
 
-purge_all_caches();
+$current = 0;
 
-echo "Done.\n";
+mtrace('Converting old assignments...');
 
-exit(0);
+global $USER;
+$admin = get_admin();
+$USER = $admin;
+
+$assignmentids = tool_assignmentupgrade_load_all_upgradable_assignmentids();
+
+$total = count($assignmentids);
+
+if ($assignmentids) {
+    foreach ($assignmentids as $assignmentid) {
+        list($summary, $success, $log) = tool_assignmentupgrade_upgrade_assignment($assignmentid);
+        $current += 1;
+        $params = array('current' => $current, 'total' => $total);
+        mtrace("Progress : $current / $total");
+        mtrace('>> '.$summary->shortname.' '.$summary->name);
+        mtrace('Success state : '.$success);
+        mtrace($log);
+    }
+} else {
+    mtrace('\t...Nothing to do');
+}
+
+mtrace('Done.');

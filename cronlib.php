@@ -68,7 +68,7 @@ function exec_vhost_cron($vhost) {
  * Common post processing return of a serverside or web cron evocation.
  */
 function vcron_process_result($vhost, $rawresponse) {
-    global $vcron, $CFG;
+    global $vcron, $CFG, $DB;
 
     if ($vcron->TRACE_ENABLE) {
         $crontrace = fopen($vcron->TRACE, 'a');

@@ -18,7 +18,7 @@
  * @package local_vmoodle
  * @category local
  *
- * this script is indented to provide a secured mechanisms to reboot the initial local MNET key
+ * this script is indented to provide a secured mechanism to reboot the initial local MNET key
  * when newly instanciated. This results in executing a primary $mnet->replace_keys(), so the new
  * instance has a valid own MNET setup. This script must be checked against security concerns as
  * not being accessible from any unkown host. The way we know our trusted master is to checkback

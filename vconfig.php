@@ -13,7 +13,6 @@
  * @category local
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @version Moodle 2.2
  **
  * VMoodle configuration
  * Must point to a VMaster server
@@ -23,7 +22,7 @@
  */
 
 if ((defined('CLI_SCRIPT') && CLI_SCRIPT) && !defined('WEB_CRON_EMULATED_CLI') && !defined('CLI_VMOODLE_OVERRIDE')) return;
-require_once $CFG->dirroot.'/local/vmoodle/bootlib.php';
+require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 // This configurations settings will tell where VMoodle can rely on a local_vmoodle virtual moodling
 // records.

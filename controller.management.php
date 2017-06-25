@@ -42,6 +42,7 @@ Use \local_vmoodle\Mnet_Peer;
 
 // Includes the MNET library.
 require_once($CFG->dirroot.'/mnet/lib.php');
+require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 // Add needed javascript here (because addonload() is needed before).
 
@@ -935,7 +936,9 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
     }
 
     if ($action == 'fulldelete') {
-        debug_trace('Full deleting vmoodle host');
+        if (function_exists('debug_trace')) {
+            debug_trace('Full deleting vmoodle host');
+        }
         vmoodle_destroy($vmoodle);
     }
 }
@@ -1122,6 +1125,21 @@ if ($action == 'deleteinstances') {
             }
         }
     }
+}
+
+/* ******************** Sync vmoodle register to all active nodes *********** */
+
+if ($action == 'syncregister') {
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('syncvmoodleregister', 'local_vmoodle'));
+    echo '<pre>';
+    local_vmoodle_sync_register();
+    echo '</pre>';
+    echo '<center>';
+    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    echo '</center>';
+    echo $OUTPUT->footer();
+    die;
 }
 
 // Return to initial 'max_execution_time' value, in every case.

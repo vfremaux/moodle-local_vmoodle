@@ -76,35 +76,28 @@ function mnetadmin_rpc_get_role_capabilities($user, $role, $capabilities = null,
         }
     }
 
-    // Creating SQL filter in WHERE clause.
-    if ($capabilities) {
-        // Formatting capabilities.
-        if (!is_array($capabilities)) {
-            $capabilities = array($capabilities);
-        }
-        $incapabilities = $capabilities;
-        foreach ($incapabilities as &$in_capability) {
-               $in_capability = $in_capability;
-        }
-        $incapabilities = join(',', $incapabilities);
-    }
-
     // Getting capabilities.
     $where = '';
-    $params = array();
-    if (!is_null($capabilities)) {
-        $where = 'where name IN (:cap)';
-        $params = array('cap' => $incapabilities);
+    $inparams = array();
+    if (!empty($capabilities)) {
+        list($insql, $inparams) = $DB->get_in_or_equal($capabilities);
+        $where = "
+            WHERE
+                name $insql
+        ";
     }
 
-    $sql = '
+    $sql = "
         SELECT
             name,
             contextlevel
         FROM
             {capabilities}
-            '.$where;
-    $recordscapabilities = $DB->get_records_sql($sql,$params);
+        $where
+    ";
+    debug_trace("Getting caps ".implode(',', $inparams));
+    $recordscapabilities = $DB->get_records_sql($sql, $inparams);
+
     if (!$recordscapabilities) {
         $response->status = RPC_FAILURE_RECORD;
         $response->errors[] = 'Unable to retrieve capabilities.';
@@ -116,10 +109,17 @@ function mnetadmin_rpc_get_role_capabilities($user, $role, $capabilities = null,
         }
     }
 
-    $capabilityclause = $capabilities ? ' AND capability IN (?)' : '';
+    $capabilityclause = '';
+    $inparams = array();
+    if (!empty($capabilities)) {
+        list($insql, $inparams) = $DB->get_in_or_equal($capabilities);
+        $capabilityclause = " AND capability $insql ";
+    }
+
+    $params = array($recordrole->id);
 
     // Getting role capabilities.
-    $sql = '
+    $sql = "
         SELECT
             capability,
             contextid,
@@ -130,8 +130,8 @@ function mnetadmin_rpc_get_role_capabilities($user, $role, $capabilities = null,
             roleid = ? AND
             contextid = 1
             $capabilityclause
-    ';
-    $recordsrolecapabilities = $DB->get_records_sql($sql,array($recordrole->id, $incapabilities));
+    ";
+    $recordsrolecapabilities = $DB->get_records_sql($sql, array_merge($params, $inparams));
     @ob_clean();
     ob_start();    // Used to prevent HTML output from dmllib methods and capture errors
     if (!$recordsrolecapabilities) {

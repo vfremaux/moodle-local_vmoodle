@@ -40,7 +40,9 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
+$CLI_VMOODLE_PRECHECK = true;
+
+// Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -48,7 +50,9 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
+require_once($CFG->dirroot.'/lib/clilib.php');
+
+// Cli only functions.
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(

@@ -148,7 +148,7 @@ function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = 
                 continue;
             }
 
-            $control = new $actionclass($infos['type'], $plugin);
+            $control = new $actionclass($plugin);
             $action = $infos['action'];
             $return = $control->action($action);
             if ($return !== 0) {

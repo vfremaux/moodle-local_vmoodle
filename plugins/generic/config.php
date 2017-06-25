@@ -34,13 +34,13 @@ use \vmoodleadminset_sql\Command_Sql;
 function vmoodle_config_get_plugins_params() {
     global $CFG, $DB;
 
-    $sql = '
+    $sql = "
         SELECT DISTINCT
             id,
             CONCAT(plugin,'/',name)
         FROM
             {config_plugins}
-    ';
+    ";
     $paramslist = $DB->get_records_sql_menu($sql);
     $paramlist = array_combine(array_values($paramslist), array_values($paramslist));
     return $paramlist;
@@ -49,13 +49,13 @@ function vmoodle_config_get_plugins_params() {
 function vmoodle_config_get_params() {
     global $CFG, $DB;
 
-    $sql = '
+    $sql = "
         SELECT DISTINCT
             id,
             name
         FROM
             {config}
-    ';
+    ";
     $paramslist = $DB->get_records_sql_menu($sql);
     $paramlist = array_combine(array_values($paramslist), array_values($paramslist));
     return $paramlist;
