@@ -30,6 +30,8 @@ use \local_vmoodle\commands\Command;
 use \local_vmoodle\commands\Command_Parameter;
 use \local_vmoodle\commands\Command_Exception;
 use \StdClass;
+use \context_system;
+use \mnet_peer;
 
 class Command_Plugins_Sync extends Command {
 
@@ -52,7 +54,9 @@ class Command_Plugins_Sync extends Command {
          * Creating plugins type parameter. If this parameter has a value, 
          * then all plugins in this type will be synchronized
          */
-        $plugintypes = get_plugin_types();
+        $pm = \core_plugin_manager::instance();
+
+        $plugintypes = $pm->get_plugin_types();
         $label = get_string('plugintypeparamsyncdesc', 'vmoodleadminset_plugins');
         $plugintypeparam = new Command_Parameter('plugintype', 'enum', $label, null, $plugintypes);
 
@@ -90,12 +94,12 @@ class Command_Plugins_Sync extends Command {
         $mnethost = new mnet_peer();
         if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
-                            'status' => MNET_FAILURE,
-                            'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
-                        );
+                'status' => MNET_FAILURE,
+                'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
+            );
 
-            // if we fail, we fail for all.
-            foreach($hosts as $host => $name) {
+            // If we fail, we fail for all.
+            foreach ($hosts as $host => $name) {
                 $this->results[$host] = $response;
             }
             return;
@@ -107,7 +111,7 @@ class Command_Plugins_Sync extends Command {
         $rpcclient->add_param($plugintype, 'string');
 
         // Checking result.
-        if (!($rpcclient->send($mnet_host) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
+        if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
             // Creating response.
             if (!isset($response)) {
                 $response = new Stdclass();
@@ -116,62 +120,64 @@ class Command_Plugins_Sync extends Command {
                 $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
             }
 
-            if (debugging()) {
-                echo '<pre>';
-                var_dump($rpcclient);
-                ob_flush();
-                echo '</pre>';
+            $responses = array();
+            // Sending requests.
+            foreach ($hosts as $host => $name) {
+                $responses[$host] = $response;
             }
 
-            // result is a plugin info structure that needs be replicated remotely to all targets.
-            $plugininfos = $response->value;
+            $this->results = $responses + $this->results;
 
             return;
-        }
+        } else {
 
-        // Initializing responses.
-        $responses = array();
+            // Result is a plugin info structure that needs be replicated remotely to all targets.
+            $plugininfos = $response->value;
 
-        // Creating peers.
-        $mnethosts = array();
-        foreach ($hosts as $host => $name) {
-            $mnethost = new mnet_peer();
-            if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnethost;
-            } else {
-                $responses[$host] = (object) array(
-                                        'status' => MNET_FAILURE,
-                                        'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host)
-                                    );
-            }
-        }
+            // Initializing responses.
+            $responses = array();
 
-        // Creating XMLRPC client
-        $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
-        $rpcclient->add_param($plugininfos, 'object'); // plugininfos structure
-
-        // Sending requests.
-        foreach ($mnethosts as $mnethost) {
-
-            // Sending request
-            if (!$rpcclient->send($mnethost)) {
-                $response = new Stdclass();
-                $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
-                $response->error = 'Set plugin state failed : Remote call error';
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpcclient);
-                    ob_flush();
-                    echo '</pre>';
+            // Creating peers.
+            $mnethosts = array();
+            foreach ($hosts as $host => $name) {
+                $mnethost = new mnet_peer();
+                if ($mnethost->bootstrap($host, null, 'moodle')) {
+                    $mnethosts[] = $mnethost;
+                } else {
+                    $responses[$host] = (object) array(
+                        'status' => MNET_FAILURE,
+                        'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host)
+                    );
                 }
-            } else {
-                $response = json_decode($rpcclient->response);
             }
 
-            // Recording response.
-            $responses[$mnethost->wwwroot] = $response;
+            // Creating XMLRPC client.
+            $rpcclient = new \local_vmoodle\XmlRpc_Client();
+            $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
+            $rpcclient->add_param($plugininfos, 'object'); // Plugininfos structure.
+
+            // Sending requests.
+            foreach ($mnethosts as $mnethost) {
+
+                // Sending request.
+                if (!$rpcclient->send($mnethost)) {
+                    $response = new Stdclass();
+                    $response->status = MNET_FAILURE;
+                    $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                    $response->error = 'Set plugin state failed : Remote call error';
+                    if (debugging()) {
+                        echo '<pre>';
+                        var_dump($rpcclient);
+                        ob_flush();
+                        echo '</pre>';
+                    }
+                } else {
+                    $response = json_decode($rpcclient->response);
+                }
+
+                // Recording response.
+                $responses[$mnethost->wwwroot] = $response;
+            }
         }
 
         // Saving results.

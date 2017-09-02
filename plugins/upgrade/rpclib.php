@@ -41,12 +41,12 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
-function mnetadmin_rpc_upgrade($user, $json_response = true) {
+function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
     global $CFG, $USER;
 
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user)) {
-        if ($json_response) {
+        if ($jsonresponse) {
             return $auth_response;
         } else {
             return json_decode($auth_response);
@@ -64,7 +64,7 @@ function mnetadmin_rpc_upgrade($user, $json_response = true) {
         $response->status = RPC_FAILURE_RUN;
         $response->error = get_string('downgradedcore', 'error');
         $response->errors[] = get_string('downgradedcore', 'error');
-        if ($json_response){
+        if ($jsonresponse){
             return json_encode($response);
         } else {
             return $response;
@@ -76,7 +76,7 @@ function mnetadmin_rpc_upgrade($user, $json_response = true) {
 
     if (!moodle_needs_upgrading()) {
         $response->message = get_string('cliupgradenoneed', 'core_admin', $newversion);
-        if ($json_response){
+        if ($jsonresponse) {
             return json_encode($response);
         } else {
             return $response;
@@ -89,7 +89,7 @@ function mnetadmin_rpc_upgrade($user, $json_response = true) {
         $response->error = vmoodle_get_string('environmentissues', 'vmoodleadminset_upgrade');
         $response->errors[] = vmoodle_get_string('environmentissues', 'vmoodleadminset_upgrade');
         $response->detail = $environment_results;
-        if ($json_response) {
+        if ($jsonresponse) {
             return json_encode($response);
         } else {
             return $response;
@@ -98,11 +98,11 @@ function mnetadmin_rpc_upgrade($user, $json_response = true) {
 
     // Test plugin dependencies.
     $failed = array();
-    if (!plugin_manager::instance()->all_plugins_ok($version, $failed)) {
+    if (!core_plugin_manager::instance()->all_plugins_ok($version, $failed)) {
         $response->status = RPC_FAILURE_RUN;
         $response->error = get_string('pluginschecktodo', 'admin');
         $response->errors[] = get_string('pluginschecktodo', 'admin');
-        if ($json_response) {
+        if ($jsonresponse) {
             return json_encode($response);
         } else {
             return $response;
@@ -129,7 +129,7 @@ function mnetadmin_rpc_upgrade($user, $json_response = true) {
 
     $response->message = get_string('upgradecomplete', 'vmoodleadminset_upgrade', $newversion);
 
-    if ($json_response) {
+    if ($jsonresponse) {
         return json_encode($response);
     } else {
         return $response;

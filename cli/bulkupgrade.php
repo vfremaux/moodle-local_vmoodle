@@ -29,17 +29,21 @@ list($options, $unrecognized) = cli_get_params(
         'help'             => false,
         'allow-unstable'   => false,
         'logroot'          => false,
+        'fullstop'         => false,
+        'verbose'         => false,
     ),
     array(
         'h' => 'help',
         'a' => 'allow-unstable',
         'l' => 'logroot',
+        's' => 'fullstop',
+        'v' => 'verbose',
     )
 );
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error("$unrecognized is not a recognized option\n");
 }
 
 if ($options['help']) {
@@ -50,6 +54,8 @@ Command line ENT Global Updater.
     -h, --help              Print out this help
     -a, --allow-unstable    Print out this help
     -l, --logroot           Root directory for logs.
+    -v, --verbose           Root directory for logs.
+    -s, --fullstop          Stops on first error.
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -74,7 +80,7 @@ $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 // Start updating.
 // Linux only implementation.
 
-echo "Starting upgrading....";
+echo "Starting upgrading....\n";
 
 $i = 1;
 foreach ($allhosts as $h) {
@@ -85,8 +91,19 @@ foreach ($allhosts as $h) {
     $output = array();
     exec($workercmd, $output, $return);
     if ($return) {
-        die("Worker ended with error");
+        if (!empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die("Worker ended with error");
+        } else {
+            echo("Worker ended with error\n");
+            echo implode("\n", $output)."\n";
+        }
+    } else {
+        if ($options['verbose']) {
+            echo implode("\n", $output)."\n";
+        }
     }
 }
 
-echo "done.";
+echo "Done.\n";
+exit(0);

@@ -72,7 +72,7 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
     $response->status = RPC_SUCCESS;
 
     // Getting role.
-    $pm = plugin_manager::instance();
+    $pm = core_plugin_manager::instance();
 
     $allplugins = $pm->get_plugins();
 
@@ -144,11 +144,19 @@ function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = 
 
             // Ignore non implemented.
             if (!class_exists($actionclass)) {
-                debug_trace("failing running remote action on $actionclass. Class not found");
+                if (function_exists('debug_trace')) {
+                    debug_trace("mnetadmin_rpc_set_plugins_states: failing running remote action on $actionclass. Class not found");
+                }
                 continue;
             }
+            if (function_exists('debug_trace')) {
+                debug_trace("Setting state: $actionclass with action $action");
+            }
 
-            $control = new $actionclass($infos['type'], $plugin);
+            $control = new $actionclass($plugin);
+
+            cache_helper::invalidate_by_definition('core', 'plugin_manager');
+
             $action = $infos['action'];
             $return = $control->action($action);
             if ($return !== 0) {
@@ -156,6 +164,10 @@ function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = 
                 $response->errors[] = $return;
             }
             $response->value = 'done.';
+        }
+    } else {
+        if (function_exists('debug_trace')) {
+            debug_trace("Empty plugininfo structure submitted");
         }
     }
 

@@ -25,7 +25,7 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 header('Content-Type: application/x-javascript');
 
-echo 'var vmoodle_pluginlib_notinstalled = "'.get_string('notinstalled', 'vmoodleadminset_plugins').'"; ';
-echo 'var vmoodle_pluginlib_nosrcpltfrm = "'.get_string('nosrcpltfrm', 'vmoodleadminset_plugins').'"; ';
-echo 'var vmoodle_pluginlib_nosyncpltfrm = "'.get_string('nosyncpltfrm', 'vmoodleadminset_plugins').'"; ';
-echo 'var vmoodle_pluginlib_confirmpluginvisibilitysync = "'.get_string('confirmpluginvisibilitysync', 'vmoodleadminset_plugins').'"; ';
+echo 'var vmoodle_pluginlib_notinstalled = "'.get_string('notinstalled', 'vmoodleadminset_plugins').'";';
+echo 'var vmoodle_pluginlib_nosrcpltfrm = "'.get_string('nosrcpltfrm', 'vmoodleadminset_plugins').'";';
+echo 'var vmoodle_pluginlib_nosyncpltfrm = "'.get_string('nosyncpltfrm', 'vmoodleadminset_plugins').'";';
+echo 'var vmoodle_pluginlib_confirmpluginvisibilitysync = "'.get_string('confirmpluginvisibilitysync', 'vmoodleadminset_plugins').'";';

@@ -94,6 +94,15 @@ function invoke_local_user($user, $capability = false, $context = null) {
 
     $userhost = $DB->get_record('mnet_host', array('wwwroot' => $user['remoteuserhostroot']));
 
+    /*
+     * special case : incoming user is Primary Moodle admin. Let go as super administrator and endorse local admin 
+     * for operations. this is a super privilege to do anything.
+     */
+    if (($user['username'] == 'admin') && ($userhost->wwwroot == $CFG->mainwwwroot)) {
+        $USER = get_admin();
+        return '';
+    }
+
     if (!$localuser = $DB->get_record('user', array('username' => addslashes($user['username']), 'mnethostid' => $userhost->id))) {
         debug_trace("USER CHECK FAILED 4 (account) : ".json_encode($user));
         $response->status = RPC_FAILURE_USER;
@@ -105,7 +114,7 @@ function invoke_local_user($user, $capability = false, $context = null) {
 
     $USER = $localuser;
 
-    // Checking capabilities
+    // Checking capabilities.
     if ($capability) {
         if (is_null($context)) {
             $context = context_system::instance();

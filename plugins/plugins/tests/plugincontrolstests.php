@@ -19,8 +19,8 @@ define('CLI_SCRIPT', true);
 require('../../../../../config.php');
 require_once('../pluginscontrolslib.php');
 
-$casauthcontrol = new auth_remote_control('auth/cas');
-$mnetauthcontrol = new auth_remote_control('auth/mnet');
+$casauthcontrol = new auth_remote_control('cas');
+$mnetauthcontrol = new auth_remote_control('mnet');
 
 echo "Test 1 : enable disable mnet \n";
 $mnetauthcontrol->action('enable');
