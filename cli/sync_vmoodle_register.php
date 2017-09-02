@@ -28,18 +28,16 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help'             => false,
-        'withmaster'       => false
+        'help'             => false
     ),
     array(
-        'h' => 'help',
-        'm' => 'withmaster'
+        'h' => 'help'
     )
 );
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error("$unrecognized is not a recognized attribute\n");
 }
 
 if ($options['help']) {
@@ -69,4 +67,6 @@ master host can write into all databases.
 
 echo "Reading VMoodle register....\n";
 
-local_vmoodle_sync_register();
+vmoodle_sync_register();
+
+echo "Done.\n";

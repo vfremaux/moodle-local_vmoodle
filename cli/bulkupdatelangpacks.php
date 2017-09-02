@@ -27,38 +27,42 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help'             => false,
-        'withmaster'       => false,
-        'fullstop'         => false,
-        'debug'            => false,
-        'verbose'          => false,
+        'help'              => false,
+        'withmaster'        => false,
+        'fullstop'          => false,
+        'debug'             => false,
+        'verbose'           => false,
     ),
     array(
         'h' => 'help',
         'm' => 'withmaster',
-        'd' => 'debug',
         'v' => 'verbose',
+        'd' => 'debug',
         's' => 'fullstop',
     )
 );
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error(" $unrecognized is not a recognized option \n");
 }
 
 if ($options['help']) {
     $help = "
-Command line for initializing MNET bindings on nodes.
+Command line for updating language packs.
+This needs an outgoing HTTP request is possible or a suitable proxy is setup in config.
 
-Note : Mnet must be started on all nodes for this script being able to proceed.
+Please note you must execute this script with the same uid as apache!
 
     Options:
-    -m, --withmaster        Init mnet also on main host. If set to 'mainonly', will only init master host.
+    -m, --withmaster        Init mnet also on main host.
     -h, --help              Print out this help
-    -d, --debug             Turns on debug mode on workers.
-    -v, --verbose           Outputs workers output.
-    -s, --fullstop          If present stops on first error.
+    -v, --verbose           Print out the output of each worker
+    -d, --debug             Turn on debug mode of workers
+    -s, --fullstop          If true, stops on first error
+
+Example:
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkupdatelangpacks.php --withmaster
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -68,18 +72,18 @@ Note : Mnet must be started on all nodes for this script being able to proceed.
 
 $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
-$debug = '';
-if (!empty($options['debug'])) {
-    $debug = ' --debug ';
-}
-
 // Start updating.
 // Linux only implementation.
 
-echo "Starting binding mnet....\n";
+echo "Starting updating lang packs...\n";
+
+$debug = '';
+if (!empty($options['debug'])) {
+    $debug = '  --debug ';
+}
 
 if (!empty($options['withmaster'])) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} --bindhost=subs";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/update_langpacks.php {$debug}";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
@@ -89,40 +93,35 @@ if (!empty($options['withmaster'])) {
             echo implode("\n", $output)."\n";
             die("Worker ended with error\n");
         } else {
-            mtrace("Worker ended with error:\n");
+            echo "Worker ended with error\n";
+            echo implode("\n", $output)."\n";
+        }
+    } else {
+        if (!empty($options['verbose'])) {
             echo implode("\n", $output)."\n";
         }
     }
-    if (!empty($options['verbose'])) {
-        echo implode("\n", $output)."\n";
-    }
-}
-
-if (@$options['withmaster'] == 'mainonly') {
-    die("Requested only for master moodle. Exiting\n");
 }
 
 $i = 1;
 if ($allhosts) {
     foreach ($allhosts as $h) {
-        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} --host=\"{$h->vhostname}\" --bindhost=\"{$CFG->mainwwwroot}\" ";
+        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/update_langpacks.php {$debug} --host=\"{$h->vhostname}\" ";
 
         mtrace("Executing $workercmd\n######################################################\n");
         $output = array();
         exec($workercmd, $output, $return);
         if ($return) {
             if (!empty($options['fullstop'])) {
-                echo implode("\n", $output);
-                echo "\n";
+                echo implode("\n", $output)."\n";
                 die("Worker ended with error\n");
+            } else {
+                echo "Worker ended with error:\n";
+                echo implode("\n", $output)."\n";
             }
-            echo "Worker ended with error\n";
-            echo implode("\n", $output);
-            echo "\n";
         } else {
             if (!empty($options['verbose'])) {
                 echo implode("\n", $output)."\n";
-                echo "\n";
             }
         }
     }

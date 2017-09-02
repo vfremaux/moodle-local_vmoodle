@@ -966,7 +966,11 @@ if ($action == 'renewall') {
     // Self renew.
     echo $OUTPUT->header();
     echo '<pre>';
-    $renewuri = new moodle_url('/admin/cron.php', array('forcerenew' => 1));
+    $params = array('forcerenew' => 1);
+    if ($CFG->cronremotepassword) {
+        $params['password'] = $CFG->cronremotepassword;
+    }
+    $renewuri = new moodle_url('/admin/cron.php', $params);
     echo "Running on : $renewuri\n";
 
     echo "#############################\n";
@@ -998,6 +1002,9 @@ if ($action == 'renewall') {
     echo '<pre>';
     foreach ($vmoodles as $vmoodle) {
         $renewuri = $vmoodle->vhostname.'/admin/cron.php?forcerenew=1';
+        if ($CFG->cronremotepassword) {
+            $renewuri .= '&password='.$CFG->cronremotepassword;
+        }
         echo "Running on : $renewuri\n";
 
         echo "#############################\n";

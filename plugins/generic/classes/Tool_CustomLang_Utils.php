@@ -15,22 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Publiscizes some usefull core methods.
  *
  * @package    local_vmoodle
- * @category   local
- * @copyright  2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
+ * @subpackage local
+ * @copyright  2010 David Mudrak <david@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace vmoodleadminset_generic;
+
+use \tool_customlang_utils;
+use \StdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017090100; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2016051900; // Requires this Moodle version.
-$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '3.1.0 (Build 2017090100)';
-$plugin->cron = 5;
+require_once($CFG->dirroot.'/admin/tool/customlang/locallib.php');
 
-// Non moodle attributes.
-$plugin->codeincrement = '3.1.0002';
+class VMoodle_CustomLang_Utils extends tool_customlang_utils {
+
+    public static function get_localpack_location($lang) {
+        return parent::get_localpack_location($lang);
+    }
+
+    public static function get_component_filename($component) {
+        return parent::get_component_filename($component);
+    }
+}

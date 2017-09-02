@@ -26,36 +26,42 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help'             => false,
-        'allow-unstable'   => false,
-        'logroot'          => false,
-        'fullstop'         => false,
-        'verbose'         => false,
+        'help'      => false,
+        'password'  => false,
+        'firstname'  => false,
+        'lastname'  => false,
+        'email'  => false,
+        'enabled'   => false,
+        'fullstop'   => false,
     ),
     array(
         'h' => 'help',
-        'a' => 'allow-unstable',
-        'l' => 'logroot',
+        'p' => 'password',
+        'f' => 'firtname',
+        'l' => 'lastname',
+        'm' => 'email',
+        'e' => 'enabled',
         's' => 'fullstop',
-        'v' => 'verbose',
     )
 );
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error("$unrecognized is not a recognized option\n");
+    cli_error("$unrecognized is not a recognized option. Use --help for information.");
 }
 
 if ($options['help']) {
     $help = "
-Command line ENT Global Updater.
+Resets primary local admin account 'admin'.
 
     Options:
     -h, --help              Print out this help
-    -a, --allow-unstable    Print out this help
-    -l, --logroot           Root directory for logs.
-    -v, --verbose           Root directory for logs.
-    -s, --fullstop          Stops on first error.
+    -e, --enabled           If present reset only enabled instances
+    -p, --password          admin Password
+    -f, --firstname         admin Firstname
+    -l, --lastname          admin Lastname
+    -m, --email             admin Email
+    -s, --fullstop          If set, stops on first failure, otherwise attempt all instances.
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -63,47 +69,58 @@ Command line ENT Global Updater.
     die;
 }
 
-if (!empty($options['logroot'])) {
-    $logroot = $options['logroot'];
+if (!empty($options['enabled'])) {
+    $params = array('enabled' => 1);
 } else {
-    $logroot = $CFG->dataroot;
+    $params= array();
 }
 
-if (!empty($options['allow-unstable'])) {
-    $allowunstable = '--allow-unstable';
-} else {
-    $allowunstable = '';
+$password = '';
+if (!empty($options['password'])) {
+    $password = '--password='.$options['password'];
 }
 
-$allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+$firstname = '';
+if (!empty($options['firstname'])) {
+    $firstname = '--firstname='.$options['firstname'];
+}
+
+$lastname = '';
+if (!empty($options['lastname'])) {
+    $lastname = '--lastname='.$options['lastname'];
+}
+
+$email = '';
+if (!empty($options['email'])) {
+    $email = '--email='.$options['email'];
+}
+
+$allhosts = $DB->get_records('local_vmoodle', $params);
 
 // Start updating.
 // Linux only implementation.
 
-echo "Starting upgrading....\n";
+echo "Starting resetting admins....\n";
 
 $i = 1;
 foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/upgrade.php --host=\"{$h->vhostname}\" ";
-    $workercmd .= "--non-interactive {$allowunstable} > {$logroot}/upgrade_{$h->shortname}.log";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/reset_admin.php {$password} {$firstname} {$lastname} ";
+    $workercmd .= "{$email} --host=\"{$h->vhostname}\" ";
 
     mtrace("Executing $workercmd\n######################################################\n");
+
     $output = array();
     exec($workercmd, $output, $return);
+    echo implode("\n", $output)."\n";
+
     if ($return) {
-        if (!empty($options['fullstop'])) {
-            echo implode("\n", $output)."\n";
+        if (!empty($options['fullsptop'])) {
             die("Worker ended with error");
         } else {
-            echo("Worker ended with error\n");
-            echo implode("\n", $output)."\n";
-        }
-    } else {
-        if ($options['verbose']) {
-            echo implode("\n", $output)."\n";
+            mtrace("Worker failed for {$h->hostname}");
         }
     }
+
 }
 
 echo "Done.\n";
-exit(0);

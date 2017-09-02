@@ -28,10 +28,16 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'help'             => false,
         'logroot'          => false,
+        'debug'            => false,
+        'fullstop'         => false,
+        'verbose'          => false,
     ),
     array(
         'h' => 'help',
         'l' => 'logroot',
+        'd' => 'debug',
+        's' => 'fullstop',
+        'v' => 'verbose',
     )
 );
 
@@ -47,6 +53,9 @@ Command line ENT Global Assignment Updater. (upgrades all old 2.4 assigments to 
     Options:
     -h, --help              Print out this help
     -l, --logroot           Root directory for logs.
+    -d, --debug             Turn on debug in workers.
+    -s, --fullstop          Stop on first error.
+    -v, --verbose           Outputs worker output to console.
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -60,6 +69,11 @@ if (!empty($options['logroot'])) {
     $logroot = $CFG->dataroot;
 }
 
+$debug = '';
+if (!empty($options['debug'])) {
+    $debug = ' --debug ';
+}
+
 $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
 // Start updating.
@@ -69,14 +83,24 @@ echo "Starting bulk upgrading....";
 
 $i = 1;
 foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/upgrade_assignments.php --host=\"{$h->vhostname}\" ";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/upgrade_assignments.php {$debug} --host=\"{$h->vhostname}\" ";
     $workercmd .= " > {$logroot}/upgrade_{$h->shortname}.log";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
     exec($workercmd, $output, $return);
     if ($return) {
-        die("Worker ended with error");
+        if ($options['verbose']) {
+            echo implode("\n", $output)."\n";
+            die("Worker ended with error\n");
+        } else {
+            echo "Worker ended with error:\n";
+            echo implode("\n", $output)."\n";
+        }
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output)."\n";
+        }
     }
 }
 

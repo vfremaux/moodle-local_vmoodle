@@ -31,7 +31,7 @@ class Command_Parameter {
     /**
      * Types of parameter allowed
      */
-    const PARAMETER_TYPES_ALLOWED = 'boolean|enum|text|ltext|internal';
+    const PARAMETER_TYPES_ALLOWED = 'boolean|enum|menum|mhenum|text|ltext|internal';
 
     /**
      * Parameter's name
@@ -41,7 +41,7 @@ class Command_Parameter {
     /**
      * Parameter's type
      */
-    protected $type; // Types : boolean | enum | text | ltext | internal.
+    protected $type; // Types : boolean | enum | menum | mhenum | text | ltext | internal.
 
     /**
      * Parameter's description : uses for label or choices of enum parameter
@@ -94,7 +94,7 @@ class Command_Parameter {
         }
 
         // Checking parameter's values.
-        if ($this->type == 'enum' && !is_array($choices)) {
+        if (($this->type == 'enum' || $this->type == 'menum' || $this->type == 'mhenum') && !is_array($choices)) {
             throw new Command_Exception('parameterallowedvaluesnotgiven', $this->name);
         } else {
             $this->choices = $choices;

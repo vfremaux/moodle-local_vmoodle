@@ -51,11 +51,13 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 list($options, $unrecognized) = cli_get_params(
     array('bindhost'          => false,
           'subnet'            => false,
+          'debug'             => false,
           'host'              => false,
           'test'              => false,
           'help'              => false),
     array('b' => 'bindhost',
           's' => 'subnet',
+          'd' => 'debug',
           'h' => 'help',
           'H' => 'host')
 );
@@ -73,11 +75,12 @@ Please note you must execute this script with the same uid as apache!
 Site defaults may be changed via local/defaults.php.
 
 Options:
---bindhost            Remote host to bind to. If bind host is 'subs', then we perform a master to child binding. If set to a vmoodle wwwroot
-                      the, will bind the child to the master and it's subnet peers.
---subnet              An optional vmoodle subnet number. If given, changes the host vmoodle subnet.
---host                Switches to this host virtual configuration before processing
--h, --help            Print out this help
+    -b, --bindhost        Remote host to bind to. If bind host is 'subs', then we perform a master to child binding. If set to a vmoodle wwwroot
+                          the, will bind the child to the master and it's subnet peers.
+    -s, --subnet          An optional vmoodle subnet number. If given, changes the host vmoodle subnet.
+    -H, --host            Switches to this host virtual configuration before processing.
+    -h, --help            Print out this help.
+    -d, --debug           Turns on debug mode.
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/init_mnet_node.php --host=http://my.virtual.moodle.org ---bind=http://my.master.moodle.org
@@ -101,6 +104,10 @@ if (!empty($options['host'])) {
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo 'Config check : playing for '.$CFG->wwwroot."\n";
+
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
+}
 
 require_once($CFG->dirroot.'/mnet/environment.php');
 require_once($CFG->dirroot.'/mnet/lib.php');
@@ -126,11 +133,12 @@ if ($options['bindhost'] == 'subs') {
     foreach ($subs as $sub) {
         bind($MNET, $sub);
     }
+    echo "Mnet binding service successful (main to subs).\n";
 } else {
     bind($MNET, null, $options['bindhost']);
+    echo "Mnet binding service successful (sub to main).\n";
 }
 
-echo "Mnet binding service successful.\n";
 exit(0); // 0 means success.
 
 
@@ -143,7 +151,7 @@ function bind($mnet, $vmoodlesub, $url = '') {
     static $application;
 
     if (empty($application)) {
-        $application = $DB->get_record('mnet_application', array('name'=>'moodle'));
+        $application = $DB->get_record('mnet_application', array('name' => 'moodle'));
     }
 
     if (!empty($vmoodlesub)) {
@@ -161,18 +169,28 @@ function bind($mnet, $vmoodlesub, $url = '') {
     $mnetpeer->bootstrap($mnetpeer->wwwroot, null, $application->id);
     $mnetpeer->commit();
 
-    // Get default strategy for main to sub service exchanges.
-    vmoodle_get_service_strategy(null, $mainstrategy, $substrategy, 'main');
+    /*
+     * Get default strategy for main to sub service exchanges.
+     * All nodes in the network should have the same vmoodle services settings so
+     * each node knows the main and the sub behaviour.
+     */
+    vmoodle_get_service_strategy(null, $mainstrategy, $peerstrategy, 'main');
 
     // Bind main services.
     if (!empty($vmoodlesub)) {
         // We are in a main.
-        // Bind the main strategy to sub.
-        vmoodle_bind_services($mnetpeer, $mainstrategy);
+        // Bind our main strategy to the peer (which is a sub).
+        mtrace("Binding main strategy to peer $mnetpeer->name\n");
+        try {
+            vmoodle_bind_services($mnetpeer, $mainstrategy);
+        } catch (Exception $ex) {
+            die("Worker has thrown exception : ".$ex->getMessage()."\n");
+        }
 
     } else {
+        // We are in a sub so the peer strategy applies to us regarding the mnetpeer (which is main)
         // Bind the sub strategy to main.
-        vmoodle_bind_services($mnetpeer, $substrategy);
+        mtrace("Binding sub strategy to peer $mnetpeer->name\n");
+        vmoodle_bind_services($mnetpeer, $peerstrategy);
     }
-
 }

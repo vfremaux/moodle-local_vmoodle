@@ -99,7 +99,7 @@ if ($DB->get_dbfamily() !== 'mysql') {
 
 $engine = strtolower($DB->get_dbengine());
 if ($engine !== 'innodb' and $engine !== 'xtradb') {
-    cli_error('This script is for MySQL servers using InnoDB or XtraDB engines only.');
+    cli_error('This script is for MySQL servers using InnoDB or XtraDB engines only. We are working with engine '.$engine);
 }
 
 $generator = $DB->get_manager()->generator;

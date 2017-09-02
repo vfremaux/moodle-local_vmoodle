@@ -41,12 +41,16 @@ $publishes = array('dataexchange' => array(
                         'filename'   => 'rpclib.php',
                         'methods'    => array('mnetadmin_rpc_set_config',
                                               'mnetadmin_rpc_set_maintenance',
-                                              'mnetadmin_rpc_purge_caches'),
+                                              'mnetadmin_rpc_purge_caches',
+                                              'mnetadmin_rpc_get_local_langs',
+                                              'mnetadmin_rpc_set_local_langs'),
     ),
 );
 $subscribes = array(
-    'dataexchange' => array('dataexchange_rpc_fetch_config' => 'local/vmoodle/plugins/generic/rpclib.php/dataexchange_rpc_fetch_config',
-                            'mnetadmin_rpc_set_maintenance' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance',
-                            'mnetadmin_rpc_set_config' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config',
-                            'mnetadmin_rpc_purge_caches' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_purge_caches'),
+    'dataexchange' => array('dataexchange_rpc_fetch_config' => 'local/vmoodle/plugins/generic/rpclib.php/dataexchange_rpc_fetch_config'),
+    'mnetadmin' => array('mnetadmin_rpc_set_maintenance' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_maintenance',
+                         'mnetadmin_rpc_set_config' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config',
+                         'mnetadmin_rpc_get_local_langs' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_local_langs',
+                         'mnetadmin_rpc_set_local_langs' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_local_langs',
+                         'mnetadmin_rpc_purge_caches' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_purge_caches'),
 );

@@ -52,6 +52,8 @@ $vcron->timeout = 300;                              // Time out for CURL call to
 $vcron->trace = $CFG->dataroot.'/vcrontrace.log';   // Trace file where to collect cron outputs.
 $vcron->trace_enable = false;                       // Enables tracing.
 
+$config = get_config('local_vmoodle');
+
 $clusters = 1;
 if (!empty($config->clusters)) {
     $clusters = $config->clusters;
@@ -62,27 +64,33 @@ if (!empty($config->clusterix)) {
     $clusterix = $config->clusterix;
 }
 
-if (!$vmoodles = vmoodle_get_vmoodleset($clusters, $clusterix) {
+if (!$vmoodles = vmoodle_get_vmoodleset($clusters, $clusterix)) {
     die("Nothing to do. No Vhosts");
 }
 
 $allvhosts = array_values($vmoodles);
 
-echo "Moodle VCron... start\n";
-echo "Last croned : ".@$CFG->vmoodle_cron_lasthost."\n";
+echo "Moodle VCron... start in {$vcron->activation} mode \n";
+echo "Previous croned : ".@$config->cron_lasthost."\n";
 
 if ($vcron->strategy == ROUND_ROBIN) {
     $rr = 0;
     foreach ($allvhosts as $vhost) {
         if ($rr == 1) {
+            // From this host, fire a set of crons (usually one). @see RUN_PER_TURN
+            // If we reach the end of the register, we'll need to wait the next run to continue.
             set_config('cron_lasthost', $vhost->id, 'local_vmoodle');
             echo "Round Robin : ".$vhost->vhostname."\n";
             if ($vcron->activation == 'cli') {
-                fire_vhost_cron($vhost);
-            } else {
                 exec_vhost_cron($vhost);
+            } else {
+                fire_vhost_cron($vhost);
             }
-            die('Done.');
+            if ($rr >= RUN_PER_TURN) {
+                // This was the last vhost for this run.
+                die('Done.');
+            }
+            $rr++;
         }
         if ($vhost->id == @$config->cron_lasthost) {
             $rr = 1; // Take next one.

@@ -46,7 +46,7 @@ switch ($wizardnow) {
         break;
 
     case 'report':
-        $result = include 'sadmin.report.php';
+        $result = include($CFG->dirroot.'/local/vmoodle/views/sadmin.report.php');
         break;
 
     default:

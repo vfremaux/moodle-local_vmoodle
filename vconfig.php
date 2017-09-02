@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This is a fake alternative virtual configuration that must be included before calling to
  * lib/setup.php in master configuration.
@@ -29,7 +28,7 @@ require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 $CFG->vmasterdbhost = 'localhost';
 $CFG->vmasterdbtype = 'mysqli';
-$CFG->vmasterdbname = 'moodle31_generic';
+$CFG->vmasterdbname = 'moodle31_generic_2';
 $CFG->vmasterdblogin = 'root';
 $CFG->vmasterdbpass = 'spr1ngb0ks';
 $CFG->vmasterdbpersist =  false;

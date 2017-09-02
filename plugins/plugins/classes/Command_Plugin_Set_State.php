@@ -99,7 +99,7 @@ class Command_Plugin_Set_State extends Command {
         global $CFG, $USER;
 
         // Adding constants.
-        require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
+        include_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 
         // Checking capability to run.
         if (!has_capability('local/vmoodle:execute', \context_system::instance()))
@@ -111,15 +111,8 @@ class Command_Plugin_Set_State extends Command {
         // Getting the state.
         $state = $this->get_parameter('state')->get_value();
 
-        $pm = \plugin_manager::instance();
-
-        $plugininfo = $pm->get_plugin_info($plugin);
-        if (empty($plugininfo->type)) {
-            if (empty($plugininfo)) {
-                $plugininfo = new \StdClass();
-            }
-            $plugininfo->type = $type;
-        }
+        $plugininfo = new \StdClass();
+        $plugininfo->type = $type;
         $plugininfo->action = $state;
 
         $plugininfos[$plugin] = (array)$plugininfo;

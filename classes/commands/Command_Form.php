@@ -119,27 +119,56 @@ class Command_Form extends \moodleform {
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
                 switch ($parameter->get_type()) {
-                    case 'boolean':
+                    case 'boolean': {
                         $mform->addElement('checkbox', $parameter->get_name(), $parameter->get_description());
                         break;
-                    case 'enum':
+                    }
+
+                    case 'enum': {
                         $label = $parameter->get_name();
                         $desc = $parameter->get_description();
                         $options = $parameter->get_choices();
                         $mform->addElement('select', $label, $desc, $options);
                         break;
-                    case 'text':
+                    }
+
+                    case 'menum': {
+                        $label = $parameter->get_name();
+                        $desc = $parameter->get_description();
+                        $options = $parameter->get_choices();
+                        $select = & $mform->addElement('select', $label, $desc, $options);
+                        $select->setMultiple(true);
+                        break;
+                    }
+
+                    case 'mhenum': {
+                        $label = $parameter->get_name();
+                        $desc = $parameter->get_description();
+                        $options = $parameter->get_choices();
+                        $attrs = array('size' => 12);
+                        $select = & $mform->addElement('select', $label, $desc, $options, $attrs);
+                        $select->setMultiple(true);
+                        break;
+                    }
+
+                    case 'text': {
                         $mform->addElement('text', $parameter->get_name(), $parameter->get_description());
                         $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
-                    case 'ltext':
+                    }
+
+                    case 'ltext': {
                         $attrs = 'wrap="virtual" rows="20" cols="50"';
                         $mform->addElement('textarea', $parameter->get_name(), $parameter->get_description(), $attrs);
                         $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
-                    case 'internal':
+                    }
+
+                    case 'internal': {
                         continue 2;
+                    }
                 }
+
                 // Defining value.
                 if ($this->mode == self::MODE_DISPLAY_COMMAND) {
                     $mform->setDefault($parameter->get_name(), $parameter->get_value());

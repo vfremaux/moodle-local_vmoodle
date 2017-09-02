@@ -27,11 +27,14 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help' => false,
+        'help'      => false,
         'collation' => false,
-        'list' => false,
+        'list'      => false,
         'available' => false,
-        'logroot' => false,
+        'logroot'   => false,
+        'debug'     => false,
+        'fullstop'  => false,
+        'verbose'  => false,
     ),
     array(
         'h' => 'help',
@@ -39,6 +42,9 @@ list($options, $unrecognized) = cli_get_params(
         'l' => 'list',
         'a' => 'available',
         'L' => 'logroot',
+        'd' => 'debug',
+        's' => 'fullstop',
+        'v' => 'verbose',
     )
 );
 
@@ -78,6 +84,11 @@ if (!empty($options['list'])) {
     $list = '--list';
 }
 
+$debug = '';
+if (!empty($options['debug'])) {
+    $list = '--debug';
+}
+
 $available = '';
 if (!empty($options['available'])) {
     $available = '--available';
@@ -92,14 +103,24 @@ echo "Starting updating database collation....\n";
 
 $i = 1;
 foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/mysql_collation.php {$collation} {$list} {$available} --host=\"{$h->vhostname}\" ";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/mysql_collation.php {$debug} {$collation} {$list} {$available} --host=\"{$h->vhostname}\" ";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
     exec($workercmd, $output, $return);
     if ($return) {
-        die("Worker ended with error");
+        if (empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die("Worker ended with error\n");
+        }
+        echo "Worker ended with error:\n";
+        echo implode("\n", $output);
+        echo "\n";
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output)."\n";
+        }
     }
 }
 
-echo "done.\n";
+echo "Done.\n";

@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 
+use \moodle_url;
+
 class AdvancedCommand_Form extends \moodleform {
 
     /**

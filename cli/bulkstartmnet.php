@@ -28,11 +28,17 @@ unset($options);
 list($options, $unrecognized) = cli_get_params(
     array(
         'help'             => false,
-        'withmaster'       => false
+        'withmaster'       => false,
+        'verbose'       => false,
+        'debug'       => false,
+        'fullstop'       => false,
     ),
     array(
         'h' => 'help',
-        'm' => 'withmaster'
+        'm' => 'withmaster',
+        'd' => 'debug',
+        'v' => 'verbose',
+        's' => 'fullstop',
     )
 );
 
@@ -48,11 +54,19 @@ Command line for starting MNET on nodes.
     Options:
     -m, --withmaster        Init mnet also on main host.
     -h, --help              Print out this help
+    -d, --debug             Turns on debug mode on workers
+    -v, --verbose           Print out the workers output
+    -s, --fullstop          Stops on first error if set
 
 "; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
+}
+
+$debug = '';
+if (!empty($options['debug'])) {
+    $debug = ' --debug ';
 }
 
 $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
@@ -63,26 +77,48 @@ $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 echo "Starting installing mnet....\n";
 
 if (!empty($options['withmaster'])) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/start_mnet.php ";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/start_mnet.php  {$debug} ";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
     exec($workercmd, $output, $return);
     if ($return) {
-        die("Worker ended with error");
+        if (!empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die("Worker ended with error\n");
+        } else {
+            echo "Worker ended with error:\n";
+            echo implode("\n", $output)."\n";
+        }
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output);
+            echo "\n";
+        }
     }
 }
 
 $i = 1;
 if ($allhosts) {
     foreach ($allhosts as $h) {
-        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/start_mnet.php --host=\"{$h->vhostname}\" ";
+        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/start_mnet.php {$debug} --host=\"{$h->vhostname}\" ";
 
         mtrace("Executing $workercmd\n######################################################\n");
         $output = array();
         exec($workercmd, $output, $return);
         if ($return) {
-            die("Worker ended with error");
+            if (!empty($options['fullstop'])) {
+                echo implode("\n", $output)."\n";
+                die("Worker ended with error\n");
+            } else {
+                echo "Worker ended with error:\n";
+                echo implode("\n", $output)."\n";
+            }
+        } else {
+            if (!empty($options['verbose'])) {
+                echo implode("\n", $output);
+                echo "\n";
+            }
         }
     }
 }

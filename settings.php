@@ -166,6 +166,12 @@ if ($hasadmin) {
         $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
         $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
 
+        $key = 'local_vmoodle/vlogfilepattern';
+        $label = get_string('vlogfilepattern', 'local_vmoodle');
+        $desc = get_string('vlogfilepattern_desc', 'local_vmoodle');
+        $default = '';
+        $settings->add(new admin_setting_configtext($key, $label, $desc, $default));
+
         $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
 
         $key = 'local_vmoodle/cmd_mysql';

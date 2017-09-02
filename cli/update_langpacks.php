@@ -15,19 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script creates config.php file and prepares database.
+ * This script update language packs from Moodle.org.
  *
  * @package    local_vmoodle
  * @category local
  * @subpackage cli
- * @revised by Valery Fremaux for VMoodle upgrades
- * @copyright  2009 Petr Skoda (http://skodak.org)
+ * @author Valery Fremaux for VMoodle upgrades
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-if (function_exists('opcache_reset') && !isset($_SERVER['REMOTE_ADDR'])) {
-    opcache_reset();
-}
 
 global $CLI_VMOODLE_PRECHECK;
 
@@ -38,10 +33,6 @@ $CLI_VMOODLE_PRECHECK = true;
 // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-
-if (!isset($CFG->dirroot)) {
-    die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
-}
 
 require_once($CFG->dirroot.'/lib/clilib.php');
 
@@ -66,16 +57,15 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help = "
-Command line Moodle MNET install.
+Command line Moodle Language packs update.
 Please note you must execute this script with the same uid as apache!
 
 Options:
-    --host                Switches to this host virtual configuration before processing.
-    -h, --help            Print out this help.
-    -d, --debug           Turn on debug mode.
+--host                Switches to this host virtual configuration before processing
+-h, --help            Print out this help
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/start_mnet.php --host=http://my.virtual.moodle.org
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/update_langpacks.php --host=http://my.virtual.moodle.org
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -98,22 +88,19 @@ if (!empty($options['debug'])) {
     $CFG->debug = E_ALL;
 }
 
-require_once($CFG->dirroot.'/mnet/environment.php');
-require_once($CFG->dirroot.'/mnet/lib.php');
+require_once($CFG->libdir.'/adminlib.php');
 
-echo "Starting MNET environment\n";
+echo "Resetting lang caches\n";
 
-global $MNET;
+get_string_manager()->reset_caches();
 
-set_config('mnet_dispatcher_mode', 'strict');
-$MNET = new mnet_environment();
-$MNET->init();
-// Ensure we have a fresh key ourself.
-$MNET->replace_keys();
+$controller = new tool_langimport\controller();
 
-cache_helper::invalidate_by_definition('core', 'config');
+echo "Updating lang packs\n";
 
-echo "MNET initialised with public key:\n----------------------\n";
-echo $MNET->get_public_key();
-echo "\n----------------------------------------------\n\n";
+core_php_time_limit::raise();
+$controller->update_all_installed_languages();
+get_string_manager()->reset_caches();
+
+echo "Done.\n";
 exit(0);

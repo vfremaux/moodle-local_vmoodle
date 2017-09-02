@@ -15,22 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
- *
- * @package    local_vmoodle
- * @category   local
- * @copyright  2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Exception about Command_SetConfig.
+ * 
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_generic;
+Use \Exception;
 
-defined('MOODLE_INTERNAL') || die();
+class Command_SyncLangCustomisation_Exception extends Exception {
 
-$plugin->version = 2017090100; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2016051900; // Requires this Moodle version.
-$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '3.1.0 (Build 2017090100)';
-$plugin->cron = 5;
-
-// Non moodle attributes.
-$plugin->codeincrement = '3.1.0002';
+    /**
+     * Constructor with localized message.
+     * @param string $identifier The key identifier for the localized string.
+     * @param mixed $a An object, string or number that can be used (optional).
+    */
+    public function __construct($identifier, $a=null) {
+        parent::__construct(vmoodle_get_string($identifier, 'vmoodleadminset_generic', $a));
+    }
+}

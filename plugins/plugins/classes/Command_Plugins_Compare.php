@@ -56,11 +56,13 @@ class Command_Plugins_Compare extends Command {
     public function __construct() {
         global $DB;
 
+        $pm = \core_plugin_manager::instance();
+
         // Getting command description.
         $cmdname = vmoodle_get_string('cmdcomparename', 'vmoodleadminset_plugins');
         $cmddesc = vmoodle_get_string('cmdcomparedesc', 'vmoodleadminset_plugins');
 
-        $plugintypes = get_plugin_types();
+        $plugintypes = $pm->get_plugin_types();
         $label = get_string('plugintypeparamcomparedesc', 'vmoodleadminset_plugins');
         $pluginparam = new Command_Parameter('plugintype', 'enum', $label, null, $plugintypes);
 
@@ -197,7 +199,7 @@ class Command_Plugins_Compare extends Command {
         $host_labels = get_available_platforms();
 
         // Getting local plugin info.
-        $pm = \plugin_manager::instance();
+        $pm = \core_plugin_manager::instance();
 
         $localplugins = $pm->get_plugins();
         $localtypeplugins = $localplugins[$plugintype];
@@ -207,7 +209,7 @@ class Command_Plugins_Compare extends Command {
          */
 
         // Creating header.
-        $plugintypes = get_plugin_types();
+        $plugintypes = $pm->get_plugin_types();
         $this->report = '<link href="'.$CFG->wwwroot.'/local/vmoodle/plugins/plugins/theme/styles.css" rel="stylesheet" type="text/css">';
         $this->report .= '<h3>'.get_string('compareplugins', 'vmoodleadminset_plugins', $plugintypes[$plugintype]).'</h3>';
 

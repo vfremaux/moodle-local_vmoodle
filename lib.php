@@ -1056,6 +1056,7 @@ function vmoodle_destroy($vmoodledata) {
  * @param object $vmoodledata the new host definition
  * @param array reference $services the service scheme to apply to new host
  * @param array reference $peerservices the service scheme to apply to new host peers
+ * @param array $domain
  */
 function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $domain = 'peer') {
     global $DB, $CFG;
@@ -1102,14 +1103,17 @@ function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $
 
     // With main force mnet admin whatever is said in defaults.
     if ($domain == 'main') {
+        // This would be the main strategy regaring its subs.
         $services['sso_sp']->publish = 1;
         $services['sso_idp']->subscribe = 1;
-        $services['mnetadmin']->publish = 1;
+        $services['mnetadmin']->subscribe = 1;
+        $services['dataexchange']->publish = 1;
 
-        // Peer is main.
+        // Peer is main and this is our peer strategy. We need publish mnet admin functions to it.
         $peerservices['sso_sp']->subscribe = 1;
         $peerservices['sso_idp']->publish = 1;
-        $peerservices['mnetadmin']->subscribe = 1;
+        $peerservices['mnetadmin']->publish = 1;
+        $peerservices['dataexchange']->subscribe = 1;
 
         if (is_dir($CFG->dirroot.'/mod/sharedresource')) {
             // Bind sharedresource librairies.
@@ -1124,7 +1128,9 @@ function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $
 
         if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
             $services['publishflow']->publish = 1;
+            $services['publishflow']->subscribe = 1;
 
+            $peerservices['publishflow']->publish = 1;
             $peerservices['publishflow']->subscribe = 1;
         }
     }
@@ -1311,6 +1317,9 @@ function vmoodle_bind_services($newmnethost, $services) {
         $DB->delete_records('mnet_host2service', array('hostid' => $newmnethost->id));
         foreach ($services as $servicename => $servicestate) {
             $service = $DB->get_record('mnet_service', array('name' => $servicename));
+            if (!$service) {
+                throw(new Exception("Services Binding : Uninstalled required service $servicename\n"));
+            }
             $host2service = new stdclass();
             $host2service->hostid = $newmnethost->id;
             $host2service->serviceid = $service->id;
@@ -1575,29 +1584,34 @@ function vmoodle_setup_db($vmoodle) {
 /**
  * Synchronizes the vmoodle register to all active subhosts residing in the same DB server.
  */
-function local_vmoodle_sync_register() {
-    global $DB;
+function vmoodle_sync_register() {
+    global $DB, $CFG;
 
     $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+    $targethosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
     $i = 1;
     if ($allhosts) {
-        foreach ($allhosts as $h) {
+        foreach ($targethosts as $t) {
 
-            if ($h->vdbhost != $CFG->dbhost) {
-                echo "Not same vdb host for $h->name . Skiping\n";
+            if ($t->vdbhost != $CFG->dbhost) {
+                echo "Not same vdb host for $t->name . Skipping\n";
                 continue;
             }
 
-            echo "Copying VMoodle register in $h->name \n";
+            echo "Copying VMoodle register in $t->name \n";
 
-            $sql = "TRUNCATE `{$h->vdbname}`.{local_vmoodle} ";
+            $sql = "TRUNCATE `{$t->vdbname}`.{local_vmoodle} ";
             $DB->execute($sql);
 
             foreach ($allhosts as $h) {
+
+                $h->name = str_replace("'", "\\'", $h->name);
+                $h->description = str_replace("'", "\\'", $h->description);
+
                 $sql = "
                     INSERT INTO
-                        `{$h->vdbname}`.{local_vmoodle} (
+                        `{$t->vdbname}`.{local_vmoodle} (
                             `name`,
                             `shortname`,
                             `description`,
@@ -1634,10 +1648,52 @@ function local_vmoodle_sync_register() {
                 ";
 
                 $DB->execute($sql);
-            }
 
+                echo '.';
+            }
+            echo "\n";
         }
     }
 
-    echo "done.\n";
+    echo "Copied.\n";
+}
+
+/**
+ * parses a physical config file describing a moodle to 
+ * extract data for vmoodle integration.
+ *
+ * @param string $configfile the path of the config file.
+ *
+ * @return an array of vmoodle attributes.
+ */
+function vmoodle_parse_config($configfile) {
+    global $CFG;
+
+    // Protect $CFG from overwrite by the analysed config file.
+    $cfg = $CFG;
+
+    if (!is_readable($configfile)) {
+        return null;
+    }
+
+    $shortname = basename($configfile, '.php');
+    $shortname = str_replace('config-moodle-', '', $shortname);
+
+    include($configfile);
+
+    $data['vhostname'] = $CFG->wwwroot;
+    $data['name'] = '';
+    $data['shortname'] = $shortname;
+    $data['vdbname'] = $CFG->dbname;
+    $data['vdbhost'] = $CFG->dbhost;
+    $data['vdblogin'] = $CFG->dbuser;
+    $data['vdbprefix'] = $CFG->prefix;
+    $data['vdbpass'] = $CFG->dbpass;
+    $data['vdatapath'] = $CFG->dataroot;
+    $data['vdbpersist'] = 0;
+
+    // Restore original $CFG values.
+    $CFG = $cfg;
+
+    return $data;
 }

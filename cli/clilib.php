@@ -25,6 +25,7 @@ defined('MOODLE_INTERNAL') || die;
 /**
  * Opens and parses/checks a VMoodle instance definition file
  * @param string $location
+ *
  */
 function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
     global $CFG;

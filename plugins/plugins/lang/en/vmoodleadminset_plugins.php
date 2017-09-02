@@ -47,6 +47,7 @@ $string['tableparamdesc'] = 'Authorisation table';
 $string['syncwithitself'] = 'Synchronizing "{$a->platform}" platform with itself.';
 $string['enable'] = 'Enable';
 $string['disable'] = 'Disable';
+$string['confirmpluginvisibilitysync'] = 'Confirm';
 
 $string['plugincompare_help'] = '
 <h2>Plugin comparison</h2>

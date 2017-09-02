@@ -35,10 +35,16 @@ if (!isset($CFG->dirroot)) {
 
 require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
 
-list($options, $unrecognized) = cli_get_params(array('help' => false,
-                                                     'host' => true),
-                                               array('h' => 'help',
-                                                     'H' => 'host'));
+list($options, $unrecognized) = cli_get_params(
+    array('help' => false,
+          'host' => false,
+          'debug' => false,
+    ),
+    array('h' => 'help',
+          'H' => 'host',
+          'd' => 'debug',
+    )
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n", $unrecognized);
@@ -50,8 +56,9 @@ if ($options['help']) {
 Batch converts all pending old assigns.
 
 Options:
--h, --help            Print out this help
--H, --host            the virtual host you are working for
+    -h, --help            Print out this help
+    -H, --host            the virtual host you are working for
+    -d, --debug           Turn on debug mode
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade_assignments.php
@@ -71,6 +78,11 @@ if (!empty($options['host'])) {
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot."\n");
+
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
+}
+
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/locallib.php');
 require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/upgradableassignmentstable.php');
@@ -78,7 +90,7 @@ require_once($CFG->dirroot . '/'.$CFG->admin.'/tool/assignmentupgrade/upgradable
 
 $current = 0;
 
-mtrace('Converting old assignments...');
+mtrace("Converting old assignments...");
 
 global $USER;
 $admin = get_admin();
@@ -94,12 +106,13 @@ if ($assignmentids) {
         $current += 1;
         $params = array('current' => $current, 'total' => $total);
         mtrace("Progress : $current / $total");
-        mtrace('>> '.$summary->shortname.' '.$summary->name);
+        mtrace(' >> '.$summary->shortname.' '.$summary->name);
         mtrace('Success state : '.$success);
         mtrace($log);
     }
 } else {
-    mtrace('\t...Nothing to do');
+    mtrace("\t...Nothing to do");
 }
 
 mtrace('Done.');
+exit(0);

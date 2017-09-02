@@ -670,6 +670,10 @@ function mnetadmin_rpc_assign_role($callinguser, $targetuser, $rolename, $contex
                                    $contextidentity = '', $starttime = 0, $endtime = 0, $jsonresponse = true) {
     global $CFG, $USER, $DB;
 
+    if (function_exists('debug_trace')) {
+        debug_trace("mnetadmin_rpc_assign_role: Starting");
+    }
+
     $response = new stdclass;
     $response->status = RPC_SUCCESS;
     $response->errors = array();
@@ -692,11 +696,24 @@ function mnetadmin_rpc_assign_role($callinguser, $targetuser, $rolename, $contex
     $siteadmin = (strstr($rolename, '+') !== false);
     $rolename = str_replace('+', '', $rolename);
 
-	// Process site admin operation.
-    if (!$targetuser = $DB->get_record('user', array('username' => $targetuser))) {
+    $params = array('username' => $targetuser);
+    if ($targetuser != 'admin') {
+        // Here we assume that username is unique.
+        $targetuser = $DB->get_record('user', $params);
+    } else {
+        /*
+         * If account is admin it must be necessarily the global administrator comming from remote site.
+         */
+        $adminhost = $DB->get_record('mnet_host', array('wwwroot' => $callinguser['remotehostroot']));
+        $params['mnethostid'] = $adminhost->id;
+        $targetuser = $DB->get_record('user', $params);
+    }
+
+    // Process site admin operation.
+    if (!$targetuser) {
         $response->status = RPC_FAILURE_RECORD;
-        $response->errors[] = ' Not such target user.';
-        $response->error = ' Not such target user.';
+        $response->errors[] = 'mnetadmin_rpc_assign_role: Not such target user.';
+        $response->error = 'mnetadmin_rpc_assign_role: Not such target user.';
         if ($jsonresponse) {
             return json_encode($response);
         } else {
@@ -706,42 +723,48 @@ function mnetadmin_rpc_assign_role($callinguser, $targetuser, $rolename, $contex
 
     if ($siteadmin) {
         if (function_exists('debug_trace')) {
-            debug_trace("Setting $targetuser->username as site admin");
+            debug_trace("mnetadmin_rpc_assign_role: Setting $targetuser->username($targetuser->id) as site admin");
         }
         $response->message .= '<br/>'.fullname($targetuser).' is now site administrator ';
-        $admins = array();
-        foreach (explode(',', $CFG->siteadmins) as $admin) {
-            $admin = (int)$admin;
-            if ($admin) {
-                $admins[$admin] = $admin;
-            }
-        }
 
-        if (!isset($admins[$targetuser->id])) {
-            $admins[$targetuser->id] = $targetuser->id;
-            set_config('siteadmins', implode(',', $admins));
+        // Cleanup in case we have a malformed list.
+        $siteadmins = preg_replace('/,+/', ',', $CFG->siteadmins);
+        $siteadmins = trim($siteadmins, ',');
+        $siteadminsarr = explode(',', $siteadmins);
+
+        if (!in_array($targetuser->id, $siteadminsarr)) {
+            $siteadminsarr[] = $targetuser->id;
+            set_config('siteadmins', implode(',', $siteadminsarr));
         }
     } else {
         if (preg_match('/\b'.$targetuser->id.'\b/', $CFG->siteadmins)) {
             if (function_exists('debug_trace')) {
-                debug_trace("Unset $targetuser->username as site admin");
+                debug_trace("mnetadmin_rpc_assign_role: Unset $targetuser->username as site admin");
             }
 
+            // Cleanup in case we have a malformed list.
+            $siteadmins = preg_replace('/,+/', ',', $CFG->siteadmins);
+            $siteadmins = trim($siteadmins, ',');
+            $siteadminsarr = explode(',', $siteadmins);
+
             // Ensure user IS NOT in admins.
-            $admins = array();
-            foreach (explode(',', $CFG->siteadmins) as $admin) {
-                $admin = (int)$admin;
-                if ($admin != $targetuser->id) {
-                    $admins[$admin] = $admin;
+            $newadmins = array();
+            foreach ($siteadminsarr as $adm) {
+                if ($adm != $targetuser->id) {
+                    $newadmins[] = $adm;
                 }
+                set_config('siteadmins', implode(',', $newadmins));
             }
-            set_config('siteadmins', implode(',', $admins));
+
             $response->message .= '<br/>'.fullname($targetuser).' discarded from site administrators ';
         }
     }
 
     // We admit null role operations for site admin only changes.
     if (empty($rolename)) {
+        if (function_exists('debug_trace')) {
+            debug_trace("mnetadmin_rpc_assign_role: Site admin only operation");
+        }
         if ($jsonresponse) {
             return json_encode($response);
         } else {
@@ -870,7 +893,7 @@ function mnetadmin_rpc_assign_role($callinguser, $targetuser, $rolename, $contex
     }
 
     if (function_exists('debug_trace')) {
-        debug_trace("Got context $contextlevel");
+        debug_trace("mnetadmin_rpc_assign_role: Got context $contextlevel");
     }
 
     if ($unassign) {
@@ -928,7 +951,9 @@ function mnetadmin_rpc_assign_role($callinguser, $targetuser, $rolename, $contex
 }
 
 function mnetadmin_rpc_assign_role_wrapped($wrap) {
-    if (function_exists('debug_trace')) debug_trace("WRAP mnetadmin_rpc_assign_role : ".json_encode($wrap));
+    if (function_exists('debug_trace')) {
+        debug_trace("WRAP mnetadmin_rpc_assign_role : ".json_encode($wrap));
+    }
     return mnetadmin_rpc_assign_role(@$wrap['callinguser'], @$wrap['targetuser'], @$wrap['rolename'],
                                      @$wrap['contextidentityfield'], @$wrap['contextlevel'], @$wrap['contextidentity'],
                                      @$wrap['starttime'], @$wrap['endtime'], @$wrap['json_response']);
@@ -938,7 +963,7 @@ function mnetadmin_rpc_assign_role_wrapped($wrap) {
  * allows checking if a user exists.
  * @param object $callinguser The calling user.
  * @param string $targetuser The username of the user to be created.
- * @param string $userhostname the user's supposed origin .
+ * @param string $whereroot the user's supposed origin .
  *
  * if userhostname is empty, the user is checked locally and his known userhost is mentionned.
  *
@@ -968,10 +993,14 @@ function mnetadmin_rpc_user_exists($callinguser, $targetuser, $whereroot = '', $
         debug_trace("$CFG->wwwroot : asked for $whereroot");
     }
     if (empty($whereroot) || $whereroot == $CFG->wwwroot) {
+        /*
+         * Here we ask to ourself for a local user.
+         */
         if (function_exists('debug_trace')) {
             debug_trace("mnetadmin_rpc_user_exists : local resolution");
         }
-        if (!$response->user = $DB->get_record('user', array('username' => $targetuser))) {
+        $params = array('username' => $targetuser, 'mnethostid' => $CFG->mnet_localhost_id);
+        if (!$response->user = $DB->get_record('user', $params)) {
             if (function_exists('debug_trace')) {
                 debug_trace("User exists : $targetuser did not matched locally.");
             }
@@ -990,11 +1019,14 @@ function mnetadmin_rpc_user_exists($callinguser, $targetuser, $whereroot = '', $
         $userhostid = $response->user->mnethostid;
         $response->user->userknownhost = $DB->get_field_select('mnet_host', 'wwwroot', " id = {$userhostid} AND deleted = 0 ");
     } else {
+        /*
+         * Here we ask to another host if a user comming from us is available there.
+         */
         if (function_exists('debug_trace')) {
             debug_trace("mnetadmin_rpc_user_exists : remote resolution in $whereroot");
         }
         // Make remote call.
-        $userhostroot = $DB->get_field_select('mnet_host', 'wwwroot', " id = $USER->mnethostid AND deleted = 0 "); 
+        $userhostroot = $DB->get_field_select('mnet_host', 'wwwroot', " id = $USER->mnethostid AND deleted = 0 ");
 
         if (!$userhostroot) {
             $extresponse->status = RPC_FAILURE_DATA;
@@ -1021,15 +1053,17 @@ function mnetadmin_rpc_user_exists($callinguser, $targetuser, $whereroot = '', $
         }
         $rpcclient = new mnet_xmlrpc_client();
         $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_user_exists');
+
         $caller = new StdClass();
         $caller->username = $USER->username;
         $caller->remoteuserhostroot = $userhostroot;
         $caller->remotehostroot = $CFG->wwwroot;
-        $rpcclient->add_param($caller, 'struct'); // caller user
+        $rpcclient->add_param($caller, 'struct'); // Caller user full identity
+
         $rpcclient->add_param($targetuser, 'string');
-        $rpcclient->add_param($whereroot, 'string');
+        $rpcclient->add_param($CFG->wwwroot, 'string'); // Ask for a user comming from us.
         $mnet_host = new mnet_peer();
-        $mnet_host->set_wwwroot($whereroot);
+        $mnet_host->set_wwwroot($whereroot); // Go to the target host.
         if (!$response = $rpcclient->send($mnet_host)) {
             $extresponse = new StdClass();
             $extresponse->status = RPC_FAILURE;
@@ -1115,9 +1149,31 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
 
     if (!$onlybounce) {
         if (function_exists('debug_trace')) {
-            debug_trace("Up to create $targetuser ");
+            debug_trace("mnetadmin_rpc_create_user: Up to create $targetuser ");
         }
-        if (!$user = $DB->get_record('user', array('username' => $targetuser))) {
+
+        $params = array('username' => $targetuser);
+        if ($targetuser != 'admin') {
+            // Assuming unique username. TODO : reinforce incomming identity and wrap to user_mnet_hosts
+            // policy for unifying users.
+            $user = $DB->get_record('user', $params);
+        } else {
+            // Find an admin comming from caller. It will be the superadmin.
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($callinguser, true));
+            }
+            $adminhost = $DB->get_record('mnet_host', array('wwwroot' => $callinguser->remotehostroot));
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: host admin ".print_r($adminhost, true));
+            }
+            $params['mnethostid'] = $adminhost->id;
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($params, true));
+            }
+            $user = $DB->get_record('user', $params);
+        }
+
+        if (!$user) {
 
             // Collect eventual profilefields and cleanup user record from them.
             foreach ($userparamsarr as $key => $value) {
@@ -1128,7 +1184,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
             }
 
             if (function_exists('debug_trace')) {
-                debug_trace("Making new user record");
+                debug_trace("mnetadmin_rpc_create_user: Making new user record");
             }
 
             $newuser = (object)$userparams;
@@ -1182,7 +1238,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
             }
             if (!$userid = $DB->insert_record('user', $newuser)) {
                 if (function_exists('debug_trace')) {
-                    debug_trace("REMOTE CALL ERROR : User creation failure");
+                    debug_trace("mnetadmin_rpc_create_user: User creation failure");
                 }
                 $response->status = RPC_FAILURE_RECORD;
                 $response->errors[] = "Could not create the user.";
@@ -1197,7 +1253,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
 
             // add profilefields
             if (function_exists('debug_trace')) {
-                debug_trace("REMOTE CALL : Adding profile fields");
+                debug_trace("mnetadmin_rpc_create_user: Adding profile fields");
             }
             if (!empty($profilefields)) {
                 foreach ($profilefields as $key => $value) {
@@ -1212,10 +1268,10 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                 }
             }
         } else {
-            if (function_exists('debug_trace')) {
-                debug_trace("REMOTE CALL : Reviving user");
-            }
             if ($user->deleted == 1) {
+                if (function_exists('debug_trace')) {
+                    debug_trace("mnetadmin_rpc_create_user: Reviving user");
+                }
                 $user->deleted = 0;
                 foreach ($userparams as $key => $value) {
                     $user->$key = $value;
@@ -1223,7 +1279,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                 $user->username = $targetuser;
                 if (!$userid = $DB->update_record('user', $user)) {
                     if (function_exists('debug_trace')) {
-                        debug_trace("REMOTE CALL ERROR : User revival failure");
+                        debug_trace("mnetadmin_rpc_create_user: User revival failure");
                     }
                     $response->status = RPC_FAILURE_RECORD;
                     $response->errors[] = "Create user REMOTE CALL : Could not revive the user.";
@@ -1237,7 +1293,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                 $response->userid = $userid;
             } else {
                 if (function_exists('debug_trace')) {
-                    debug_trace("Create user REMOTE CALL : User exists");    
+                    debug_trace("mnetadmin_rpc_create_user: User exists");
                 }
             }
         }
@@ -1253,7 +1309,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
             }
         }
         if (function_exists('debug_trace')) {
-            debug_trace('Create user REMOTE CALL : got user data as '.json_encode($userparams));
+            debug_trace('mnetadmin_rpc_create_user: got user data as '.print_r($userparams, true));
         }
     }
 
@@ -1300,7 +1356,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                     $rpc_client->add_param($userhostname, 'string');
                 }
                 if (function_exists('debug_trace')) {
-                    debug_trace("REMOTE CALL : Bouncing to $bouncehost ");
+                    debug_trace("mnetadmin_rpc_create_user: Bouncing to $bouncehost ");
                 }
                 $mnet_host = new mnet_peer();
                 if ($mnet_host->set_wwwroot($bouncehost)) {
@@ -1322,7 +1378,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
                 } else {
                     // Silently ignore unless debugging.
                     if (function_exists('debug_trace')) {
-                        debug_trace("Bounce ignored  : No service capability for $bouncehost ");    
+                        debug_trace("mnetadmin_rpc_create_user: Bounce ignored  : No service capability for $bouncehost ");
                     }
                     $errorstr = 'Create user : (last error) ignoring bounce to '.$bouncehost.' because host communication failed.';
                     $response->errors[] = $errorstr;

@@ -62,7 +62,9 @@ list($options, $unrecognized) = cli_get_params(
           'test'              => false,
           'help'              => false),
     array('h' => 'help',
-          'H' => 'host')
+          'H' => 'host',
+          'u' => 'allow-unstable',
+          't' => 'test')
 );
 
 $interactive = empty($options['non-interactive']);
@@ -81,9 +83,9 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
 --non-interactive     No interactive questions or confirmations
---allow-unstable      Upgrade even if the version is not marked as stable yet,
+-u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
---host                Switches to this host virtual configuration before processing
+-H, --host                Switches to this host virtual configuration before processing
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
 
