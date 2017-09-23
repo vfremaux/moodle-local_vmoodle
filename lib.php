@@ -70,6 +70,41 @@ function vmoodle_get_vmoodles() {
 }
 
 /**
+ * This function is for multicluster repartition of the vcron duty. Usually,
+ * Usually we use one single server with a single vcron task that operates all
+ * vmoodle crons in a round robin or last gap strategy.
+ *
+ * If more than one cluster is used, the vmoodle register is spread into subsets and
+ * each clusters consumes a part of the bulk load.
+ *
+ * Note that the cluster ix comes from an evaluation of the 'clusterix' config key of the local_vmoodle
+ * plugin. there should be provision to force the clusterix from a local $CFG->forced_plugin_settings[(vmoodle']['clusterix']
+ * key being distinct for each cluster.
+ *
+ * @param int $clusters the number of clusters
+ * @param int $clusterix the cluster Id
+ */
+function vmoodle_get_vmoodleset($clusters = 1, $clusterix = 1) {
+    global $DB;
+
+    $allvhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+    if ($clusters < 2) {
+        return $allvhosts;
+    }
+
+    $vhostset = array();
+
+    $i = 0;
+    foreach ($allvhosts as $vh) {
+        if ($i == $clusterix - 1) {
+            $vhostset[$vh->id] = $vh;
+        }
+        $i = ($i + 1) % $clusters;
+    }
+
+    return $vhostset;
+}
+/**
  * setup and configure a mnet environment that describes this vmoodle
  * @uses $USER for generating keys
  * @uses $CFG
@@ -1021,9 +1056,10 @@ function vmoodle_destroy($vmoodledata) {
  * @param object $vmoodledata the new host definition
  * @param array reference $services the service scheme to apply to new host
  * @param array reference $peerservices the service scheme to apply to new host peers
+ * @param array $domain
  */
-function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, $domain = 'peer') {
-    global $DB;
+function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $domain = 'peer') {
+    global $DB, $CFG;
 
     // We will mix in order to an single array of configurated service here.
     $servicesstrategy = unserialize(get_config('local_vmoodle', 'services_strategy'));
@@ -1032,7 +1068,10 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
 
     if (!empty($servicerecs)) {
         // Should never happen; standard services are always there.
-        if ($vmoodledata->services == 'subnetwork' && !empty($servicesstrategy)) {
+        if (@$vmoodlerec->services == 'subnetwork' && !empty($servicesstrategy)) {
+            /*
+             * $vmoodledata may not exist when binding to a master host.
+             */
             foreach ($servicerecs as $key => $service) {
                 $services[$service->name] = new StdClass();
                 $peerservices[$service->name] = new StdClass();
@@ -1064,19 +1103,41 @@ function vmoodle_get_service_strategy($vmoodledata, &$services, &$peerservices, 
 
     // With main force mnet admin whatever is said in defaults.
     if ($domain == 'main') {
+        // This would be the main strategy regaring its subs.
         $services['sso_sp']->publish = 1;
         $services['sso_idp']->subscribe = 1;
-        $services['mnetadmin']->publish = 1;
+        $services['mnetadmin']->subscribe = 1;
+        $services['dataexchange']->publish = 1;
 
-        // Peer is main.
+        // Peer is main and this is our peer strategy. We need publish mnet admin functions to it.
         $peerservices['sso_sp']->subscribe = 1;
         $peerservices['sso_idp']->publish = 1;
-        $peerservices['mnetadmin']->subscribe = 1;
+        $peerservices['mnetadmin']->publish = 1;
+        $peerservices['dataexchange']->subscribe = 1;
+
+        if (is_dir($CFG->dirroot.'/mod/sharedresource')) {
+            // Bind sharedresource librairies.
+            /*
+             * We open the main site as a provider and
+             * all the subs as consumers.
+             */
+            $services['sharedresourceservice']->publish = 1;
+
+            $peerservices['sharedresourceservice']->subscribe = 1;
+        }
+
+        if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
+            $services['publishflow']->publish = 1;
+            $services['publishflow']->subscribe = 1;
+
+            $peerservices['publishflow']->publish = 1;
+            $peerservices['publishflow']->subscribe = 1;
+        }
     }
 }
 
 /**
- * get a proper SQLdump command
+ * get a proper SQLDump command
  * @param object $vmoodledata the complete new host information
  * @return string the shell command 
  */
@@ -1160,7 +1221,7 @@ function vmoodle_dump_files_from_template($templatename, $destpath) {
  * @param object $submitteddata
  *
  */
-function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
+function vmoodle_bind_to_network($submitteddata, &$newmnethost) {
     global $USER, $CFG, $DB, $OUTPUT;
 
     // Getting services schemes to apply.
@@ -1195,7 +1256,7 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
             $rpcclient->add_param($userhostroot, 'string');
             $rpcclient->add_param($CFG->wwwroot, 'string');
             // Peer to bind to.
-            $rpcclient->add_param((array)$newmnet_host, 'array');
+            $rpcclient->add_param((array)$newmnethost, 'array');
             $rpcclient->add_param($peerservices, 'array');
 
             foreach ($subnetworkhosts as $subnetwork_host) {
@@ -1217,8 +1278,8 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
                 $rpcclient2->add_param((array)$tempmember, 'array');
                 $rpcclient2->add_param($services, 'array');
 
-                if (!$rpcclient2->send($newmnet_host)) {
-                    echo $OUTPUT->notification(implode('<br />', $rpcclient2->get_errors($newmnet_host)));
+                if (!$rpcclient2->send($newmnethost)) {
+                    echo $OUTPUT->notification(implode('<br />', $rpcclient2->get_errors($newmnethost)));
                 }
                 unset($rpcclient2); // Free some resource.
             }
@@ -1231,19 +1292,7 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
     $mainhost = new \local_vmoodle\Mnet_Peer(); // This is us.
     $mainhost->set_wwwroot($CFG->wwwroot);
 
-    // Bind the local service strategy to new host.
-    if (!empty($peerservices)) {
-        $DB->delete_records('mnet_host2service', array('hostid' => $newmnet_host->id)); // Eventually deletes something on the way.
-        foreach ($peerservices as $servicename => $servicestate) {
-            $service = $DB->get_record('mnet_service', array('name' => $servicename));
-            $host2service = new stdclass();
-            $host2service->hostid = $newmnet_host->id;
-            $host2service->serviceid = $service->id;
-            $host2service->publish = 0 + @$servicestate->publish;
-            $host2service->subscribe = 0 + @$servicestate->subscribe;
-            $DB->insert_record('mnet_host2service', $host2service);
-        }
-    }
+    vmoodle_bind_services($newmnethost, $peerservices);
 
     $rpcclient = new \local_vmoodle\XmlRpc_Client();
     $rpcclient->reset_method();
@@ -1256,7 +1305,29 @@ function vmoodle_bind_to_network($submitteddata, &$newmnet_host) {
     $rpcclient->add_param((array)$mainhost, 'array');
     $rpcclient->add_param($services, 'array');
 
-    $rpcclient->send($newmnet_host);
+    $rpcclient->send($newmnethost);
+}
+
+function vmoodle_bind_services($newmnethost, $services) {
+    global $DB;
+
+    // Bind the local service strategy to new host.
+    if (!empty($services)) {
+        // Eventually deletes something on the way.
+        $DB->delete_records('mnet_host2service', array('hostid' => $newmnethost->id));
+        foreach ($services as $servicename => $servicestate) {
+            $service = $DB->get_record('mnet_service', array('name' => $servicename));
+            if (!$service) {
+                throw(new Exception("Services Binding : Uninstalled required service $servicename\n"));
+            }
+            $host2service = new stdclass();
+            $host2service->hostid = $newmnethost->id;
+            $host2service->serviceid = $service->id;
+            $host2service->publish = 0 + @$servicestate->publish;
+            $host2service->subscribe = 0 + @$servicestate->subscribe;
+            $DB->insert_record('mnet_host2service', $host2service);
+        }
+    }
 }
 
 /**
@@ -1508,4 +1579,135 @@ function vmoodle_setup_db($vmoodle) {
     $vmoodle->vdbfamily = $vdb->get_dbfamily(); // TODO: BC only for now.
 
     return $vdb;
+}
+
+/**
+ * Synchronizes the vmoodle register to all active subhosts residing in the same DB server.
+ */
+function vmoodle_sync_register() {
+    global $DB, $CFG;
+
+    $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+    $targethosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+
+    $i = 1;
+    if ($allhosts) {
+        foreach ($targethosts as $t) {
+
+            if ($t->vdbhost != $CFG->dbhost) {
+                echo "Not same vdb host for {$t->shortname} {$t->vhostname} . Skipping\n";
+                continue;
+            }
+
+            echo "Copying VMoodle register in {$t->shortname} {$t->vhostname} \n";
+
+            $sql = "TRUNCATE `{$t->vdbname}`.{local_vmoodle} ";
+            $DB->execute($sql);
+
+            foreach ($allhosts as $h) {
+
+                $name = str_replace("'", "\\'", $h->name);
+                $description = str_replace("'", "\\'", $h->description);
+
+                $sql = "
+                    INSERT INTO
+                        `{$t->vdbname}`.{local_vmoodle} (
+                            `name`,
+                            `shortname`,
+                            `description`,
+                            `vhostname`,
+                            `vdbtype`,
+                            `vdbhost`,
+                            `vdblogin`,
+                            `vdbpass`,
+                            `vdbname`,
+                            `vdbprefix`,
+                            `vdbpersist`,
+                            `vdatapath`,
+                            `mnet`,
+                            `enabled`,
+                            `timecreated`
+                        )
+                    VALUES (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?)
+                ";
+
+                $params = array($name,
+                                $h->shortname,
+                                $description,
+                                $h->vhostname,
+                                $h->vdbtype,
+                                $h->vdbhost,
+                                $h->vdblogin,
+                                $h->vdbpass,
+                                $h->vdbname,
+                                $h->vdbprefix,
+                                $h->vdbpersist,
+                                $h->vdatapath,
+                                $h->mnet,
+                                $h->enabled,
+                                $h->timecreated);
+                $DB->execute($sql, $params);
+
+                echo '.';
+            }
+            echo "\n";
+        }
+    }
+
+    echo "Copied.\n";
+}
+
+/**
+ * parses a physical config file describing a moodle to 
+ * extract data for vmoodle integration.
+ *
+ * @param string $configfile the path of the config file.
+ *
+ * @return an array of vmoodle attributes.
+ */
+function vmoodle_parse_config($configfile) {
+    global $CFG;
+
+    // Protect $CFG from overwrite by the analysed config file.
+    $cfg = $CFG;
+
+    if (!is_readable($configfile)) {
+        return null;
+    }
+
+    $shortname = basename($configfile, '.php');
+    $shortname = str_replace('config-moodle-', '', $shortname);
+
+    include($configfile);
+
+    $data['vhostname'] = $CFG->wwwroot;
+    $data['name'] = '';
+    $data['shortname'] = $shortname;
+    $data['vdbname'] = $CFG->dbname;
+    $data['vdbhost'] = $CFG->dbhost;
+    $data['vdblogin'] = $CFG->dbuser;
+    $data['vdbprefix'] = $CFG->prefix;
+    $data['vdbpass'] = $CFG->dbpass;
+    $data['vdatapath'] = $CFG->dataroot;
+    $data['vdbpersist'] = 0;
+
+    // Restore original $CFG values.
+    $CFG = $cfg;
+
+    return $data;
 }

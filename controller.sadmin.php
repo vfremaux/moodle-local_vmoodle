@@ -212,7 +212,9 @@ switch ($action) {
         $platforms = array();
         $allplatforms = get_available_platforms();
         foreach ($formplatforms as $platformroot) {
-            $platforms[$platformroot] = $allplatforms[$platformroot];
+            if (array_key_exists($platformroot, $allplatforms)) {
+                $platforms[$platformroot] = $allplatforms[$platformroot];
+            }
         }
 
         // Checking command.
@@ -275,6 +277,8 @@ switch ($action) {
         // Run the command again on a platform.
         // Checking wizard session.
         if (!isset($SESSION->vmoodle_sa['command'], $_GET['platform'])) {
+            echo $OUTPUT->header();
+            echo $OUTPUT->notification('No registered command');
             return -1;
         }
 
@@ -282,10 +286,12 @@ switch ($action) {
         $command = unserialize($SESSION->vmoodle_sa['command']);
 
         // Getting platform.
-        $platform = required_param('platform', PARAM_URL);
+        $platform = urldecode(required_param('platform', PARAM_TEXT));
         $availableplatforms = get_available_platforms();
 
         if (!array_key_exists($platform, $availableplatforms)) {
+            echo $OUTPUT->header();
+            echo $OUTPUT->notification('No registered targets');
             return -1;
         }
 

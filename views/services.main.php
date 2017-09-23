@@ -38,4 +38,11 @@ if ($services = unserialize(@$config->services_strategy)) {
 
 echo $OUTPUT->box_start();
 $services_form->display();
+
+echo $OUTPUT->heading(get_string('rawstrategy', 'local_vmoodle'));
+echo $OUTPUT->box(get_string('rawstrategy_desc', 'local_vmoodle'));
+echo '<pre>';
+echo @$config->services_strategy;
+echo '</pre>';
+
 echo $OUTPUT->box_end();

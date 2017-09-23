@@ -255,8 +255,8 @@ class Command_Role_Compare extends Command {
             }
 
             // Getting major values.
-            $nbrvaluemax = max(array_map(array($this, '_get_counter_value'), $cappermissions));
-            $nbrcontextmax = max(array_map(array($this, '_get_counter_value'), $capcontexts));
+            $nbrvaluemax = max(array_map(array($this, 'get_counter_value'), $cappermissions));
+            $nbrcontextmax = max(array_map(array($this, 'get_counter_value'), $capcontexts));
 
             // Setting major permission.
             foreach ($cappermissions as $permission => $cappermission) {
@@ -285,7 +285,7 @@ class Command_Role_Compare extends Command {
         }
 
         // Sort capabilities on contextlevel, component and name.
-        uasort($capabilities, array($this, '_order_capability'));
+        uasort($capabilities, array($this, 'order_capability'));
 
         /*
          * Creating html report.
@@ -381,7 +381,7 @@ class Command_Role_Compare extends Command {
      * @param array $counter The counter.
      * @return int The counter value.
      */
-    private function _getCounterValue($counter) {
+    private function get_counter_value($counter) {
         return $counter['count'];
     }
 
@@ -391,7 +391,7 @@ class Command_Role_Compare extends Command {
      * @param object $cap2 The second capability to compare.
      * @return int Return -1 if $cap1 is less than $cap2, 1 if more than $cap2, 0 otherwise.
      */
-    private function _orderCapability($cap1, $cap2) {
+    private function order_capability($cap1, $cap2) {
         if (!($cmp = strcmp($cap1->component, $cap2->component))) {
             return $cmp;
         } else if ($cap1->contextlevel < $cap2->contextlevel) {

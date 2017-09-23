@@ -249,6 +249,8 @@ if ($data = $mform->get_data()) {
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$hostreps[$vhost->name]->olddbname};' \n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$hostreps[$vhost->name]->olddbname};' \n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
+            $datatransfer .= 'rm temp'.$data->fromversion.'.sql'."\n";
+            $datatransfer .= 'rm temp'.$data->toversion.'.sql'."\n";
         }
     }
 
@@ -265,7 +267,12 @@ if ($data = $mform->get_data()) {
             $datastr .= '# Data copy for '.$vhost->name."\n";
             $datastr .= "sudo -uwww-data rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
             $datastr .= "sudo -uwww-data mkdir {$hostreps[$vhost->name]->newdataroot}\n";
-            $datastr .= "sudo -uwww-data rsync -r {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
+            $datastr .= "sudo -uwww-data rsync -r -o -p -g --del {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
+            $datastr .= '# Purge eventual caches of '.$vhost->name."\n";
+            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/cache\n";
+            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/localcache\n";
+            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/muc\n";
+            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/sessions\n";
 
             // Vhost replacements.
         }
@@ -335,6 +342,7 @@ if ($data = $mform->get_data()) {
             $preupgradestr .= '# Pre upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
             $preupgradestr .= "sudo -uwww-data php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_compressed_rows.php --fix --host={$hostreps[$vhost->name]->currentwwwroot}\n";
 
+            $postupgradestr .= "\n";
             $postupgradestr .= '# Post upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
             $postupgradestr .= "sudo -uwww-data php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/purge_caches.php --host={$hostreps[$vhost->name]->currentwwwroot}\n";
             if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {

@@ -25,20 +25,22 @@ define('CLI_SCRIPT', true);
 global $CLI_VMOODLE_PRECHECK;
 
 $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
-require_once($CFG->dirroot.'/local/vmoodle/fixtures/fix_mnet_tables_lib.php'); // Fixture primitives.
-
-// Ensure errors are well explained.
-$CFG->debug = 31676;
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('verbose' => false,
-                                                     'help'    => false,
-                                                     'host'    => false),
-                                               array('h' => 'help',
-                                                     'v' => 'verbose',
-                                                     'H' => 'host'));
+list($options, $unrecognized) = cli_get_params(
+    array('verbose' => false,
+          'help'    => false,
+          'host'    => false,
+          'debug'   => false
+    ),
+    array('h' => 'help',
+          'v' => 'verbose',
+          'H' => 'host',
+          'd' => 'debug'
+    )
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -53,9 +55,10 @@ Command line MNET Table Consistancy Fixture.
     binding records.
 
     Options:
-    --verbose               Provides lot of output
+    --verbose           Provides lot of output
     -h, --help          Print out this help
     -H, --host          Set the host (physical or virtual) to operate on
+    -d, --debug         Turns debug mode on.
 "; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
@@ -70,7 +73,13 @@ if (!empty($options['host'])) {
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
 
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot);
+
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
+}
+
+require_once($CFG->dirroot.'/local/vmoodle/fixtures/fix_mnet_tables_lib.php'); // Fixture primitives.
 
 fix_mnet_tables_fixture();
