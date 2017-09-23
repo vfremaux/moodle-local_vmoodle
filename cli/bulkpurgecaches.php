@@ -29,11 +29,13 @@ list($options, $unrecognized) = cli_get_params(
         'help'             => false,
         'verbose'          => false,
         'fullstop'         => false,
+        'debug'            => false,
     ),
     array(
         'h' => 'help',
         'v' => 'verbose',
         'f' => 'fullstop',
+        'd' => 'debug',
     )
 );
 
@@ -50,6 +52,7 @@ Command line Global Cache clearance
     -h, --help              Print out this help
     -v, --verbose           Print out workers output.
     -f, --fullstop          Stops on first error.
+    -d, --debug             Turns on debug mode.
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -62,11 +65,16 @@ $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 // Start updating.
 // Linux only implementation.
 
-echo "Starting bulk cache purging....";
+echo "Starting bulk cache purging....\n";
+
+$debug = '';
+if (!empty($options['debug'])) {
+    $debug = ' --debug ';
+}
 
 $i = 1;
 foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" ";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" {$debug} ";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
@@ -74,19 +82,17 @@ foreach ($allhosts as $h) {
 
     if ($return) {
         if (empty($options['fullstop'])) {
-            echo implode("\n", $output);
-            echo "\n";
+            echo implode("\n", $output)."\n";
             die("Worker ended with error\n");
         }
-        echo "Worker ended with error\n";
-        echo implode("\n", $output);
-        echo "\n";
+        echo "Worker ended with error:\n";
+        echo implode("\n", $output)."\n";
+        echo "Pursuing anyway\n";
     } else {
         if (!empty($options['verbose'])) {
-            echo implode("\n", $output);
-            echo "\n";
+            echo implode("\n", $output)."\n";
         }
     }
 }
 
-echo "All done.";
+echo "All done.\n";

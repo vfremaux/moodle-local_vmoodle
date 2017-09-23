@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 use \local_vmoodle\commands\Command;
 use \local_vmoodle\commands\Command_Exception;
 use \local_vmoodle\commands\Command_Parameter;
+use \moodle_url;
 
 require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');

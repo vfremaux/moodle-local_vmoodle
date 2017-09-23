@@ -111,15 +111,16 @@ class Command_Plugin_Set_State extends Command {
         // Getting the state.
         $state = $this->get_parameter('state')->get_value();
 
-        $plugininfo = new \StdClass();
-        $plugininfo->type = $type;
-        $plugininfo->action = $state;
-
-        $plugininfos[$plugin] = (array)$plugininfo;
+        $stateval = 0;
+        if ($state == 'enable') {
+            $stateval = 1;
+        }
+        $plugininfos = array($plugin => $stateval);
 
         // Creating XMLRPC client to change remote configuration.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
         $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
+        $rpcclient->add_param($type, 'string');
         $rpcclient->add_param($plugininfos, 'array');
 
         // Initializing responses.

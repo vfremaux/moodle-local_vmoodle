@@ -166,8 +166,9 @@ function bind($mnet, $vmoodlesub, $url = '') {
 
     $mnetpeer = new mnet_peer();
     $mnetpeer->wwwroot = $remoteurl;
-    $mnetpeer->bootstrap($mnetpeer->wwwroot, null, $application->id);
+    $mnetpeer->bootstrap($mnetpeer->wwwroot, null, $application->id, true);
     $mnetpeer->commit();
+    cache_helper::invalidate_by_definition('core', 'config');
 
     /*
      * Get default strategy for main to sub service exchanges.

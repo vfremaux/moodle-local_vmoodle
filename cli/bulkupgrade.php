@@ -85,7 +85,11 @@ echo "Starting upgrading....\n";
 $i = 1;
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/upgrade.php --host=\"{$h->vhostname}\" ";
-    $workercmd .= "--non-interactive {$allowunstable} > {$logroot}/upgrade_{$h->shortname}.log";
+    if (empty($options['verbose']) || !empty($options['logroot'])) {
+        $workercmd .= "--non-interactive {$allowunstable} > {$logroot}/upgrade_{$h->shortname}.log";
+    } else {
+        $workercmd .= "--non-interactive {$allowunstable} ";
+    }
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
@@ -93,13 +97,14 @@ foreach ($allhosts as $h) {
     if ($return) {
         if (!empty($options['fullstop'])) {
             echo implode("\n", $output)."\n";
-            die("Worker ended with error");
+            die("Worker ended with error\n");
         } else {
-            echo("Worker ended with error\n");
+            echo "Worker ended with error:\n";
             echo implode("\n", $output)."\n";
+            echo "Pursuing anyway\n";
         }
     } else {
-        if ($options['verbose']) {
+        if (!empty($options['verbose'])) {
             echo implode("\n", $output)."\n";
         }
     }

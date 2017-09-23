@@ -108,6 +108,9 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
         set_config('maintenance_message', null);
     }
 
+    // Be really sure we drop caches.
+    cache_helper::invalidate_by_definition('core', 'config');
+
     debug_trace('RPC Bind : Sending response');
 
     // Returns response (success or failure).
@@ -194,30 +197,31 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
     }
 
     // Start checking and collecting lang files to prepare.
-    $pluginsinset = explode(',', $plugins);
     $langfiles = array();
-    if (empty($pluginsinset)) {
+    debug_trace(var_export($plugins));
+    if (empty($plugins)) {
         // Creating response.
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "Empty plugin set";
+        debug_trace("Empty pluginset");
         if ($jsonrequired) {
             return json_encode($response);
         }
         return $response;
     } else {
-        if ($plugins == 'all') {
+        if (in_array('all', $plugins)) {
             $plugininset = array_values(VMoodle_CustomLang_Utils::list_components());
         }
-        foreach ($plugininset as $inset) {
+        foreach ($plugins as $inset) {
             $langfiles[] = VMoodle_CustomLang_Utils::get_component_filename($inset);
         }
     }
 
     // Start checking languages and prepare final archive catalog.
-    $languages = explode(',', $langs);
+    debug_trace(var_export($langs));
     $locations = array();
-    if (empty($languages)) {
+    if (empty($langs)) {
         // Creating response.
         $response = new stdClass;
         $response->status = RPC_FAILURE;
@@ -227,7 +231,12 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         }
         return $response;
     } else {
-        foreach ($languages as $lang) {
+
+        if (in_array('all', $langs)) {
+            $langs = VMoodle_CustomLang_Utils::get_installed_langs();
+        }
+
+        foreach ($langs as $lang) {
             $location = VMoodle_CustomLang_Utils::get_localpack_location($lang);
             if (is_dir($location)) {
                 $locations[] = $location;
@@ -339,4 +348,46 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
         return json_encode($response);
     }
     return $response;
+}
+
+/**
+ * Receives a in message zip archive all local lang files to replace in the moodledata local lang customisation.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $locallangzipcontent A string containing the zip fie content.
+ */
+function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filename, $filecontent, $jsonrequired = true) {
+    global $CFG;
+
+    $return = new StdClass;
+    $return->status = RPC_SUCCESS;
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Receiving moode file');
+    }
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+    }
+
+    $context = context_system::instance();
+
+    $filerec = new StdClass;
+    $filerec->contextid = $context->id;
+    $filerec->component = $component;
+    $filerec->filearea = $filearea;
+    $filerec->itemid = $itemid;
+    $filerec->filepath = dirname($filename).'/';
+    $filerec->filename = basename($filename);
+
+    $fs = get_file_storage();
+
+    $fs->create_file_from_string($filerec, $filecontent);
+
+    if ($jsonrequired) {
+        return json_encode($return);
+    }
+    return $return;
 }

@@ -83,6 +83,19 @@ function invoke_local_user($user, $capability = false, $context = null) {
         return(json_encode($response));
     }
 
+    // Check user mnet host single identity condition
+    if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {
+        $config = get_config('block_user_mnet_hosts');
+        if (!empty($config->singleaccountcheck)) {
+            $params = array('username' => addslashes($user['username']), 'deleted' => 0);
+            if ($localuser = $DB->get_record('user', $params)) {
+                debug_trace("USER CHECK SUCCESS : ".json_encode($user));
+                $USER = $localuser;
+                return '';
+            }
+        }
+    }
+
     // Get local identity.
     if (!$remotehost = $DB->get_record('mnet_host', array('wwwroot' => $user['remotehostroot']))) {
         debug_trace("USER CHECK FAILED 3 (unregistered host) : ".json_encode($user));
