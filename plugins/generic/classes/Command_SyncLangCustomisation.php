@@ -28,6 +28,7 @@ use \local_vmoodle\commands\Command;
 use \local_vmoodle\commands\Command_Parameter;
 use \local_vmoodle\commands\Command_Exception;
 use \StdClass;
+use \mnet_peer;
 
 class Command_SyncLangCustomisation extends Command {
 
@@ -75,14 +76,14 @@ class Command_SyncLangCustomisation extends Command {
         );
         $pluginsopts = array_merge($arr, $pluginsopts);
         $label = get_string('pluginparamdesc', 'vmoodleadminset_generic');
-        $pluginparam = new Command_Parameter('plugin', 'mhenum', $label, null, $pluginsopts);
+        $pluginparam = new Command_Parameter('plugins', 'mhenum', $label, null, $pluginsopts);
 
         $langsopts = get_string_manager()->get_list_of_translations(true);
         $arr = array('all' => get_string('alllanguages', 'vmoodleadminset_generic'),
         );
         $pluginsopts = array_merge($arr, $langsopts);
         $label = get_string('langparamdesc', 'vmoodleadminset_generic');
-        $langparam = new Command_Parameter('lang', 'menum', $label, null, $pluginsopts);
+        $langparam = new Command_Parameter('langs', 'menum', $label, null, $pluginsopts);
 
         // Creating command.
         parent::__construct($cmdname, $cmddesc, array($platformparam, $pluginparam, $langparam));
@@ -133,13 +134,15 @@ class Command_SyncLangCustomisation extends Command {
 
         $plugins = $this->get_parameter('plugins')->get_value();
 
-        $langs = $this->get_parameter('lang')->get_value();
+        $langs = $this->get_parameter('langs')->get_value();
 
+        debug_trace('Launching get_local_langs on source ');
         // Creating XMLRPC client to get the remote customisation language pack.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_get_local_langs');
-        $rpcclient->add_param($plugins, 'string');
-        $rpcclient->add_param($langs, 'string');
+        $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_local_langs');
+        $rpcclient->add_param($plugins, 'struct'); // plugins.
+        $rpcclient->add_param($langs, 'struct'); // languages.
+        $rpcclient->add_param(true, 'string'); // Not jsonrequired.
 
         // Checking result.
         if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
@@ -162,15 +165,17 @@ class Command_SyncLangCustomisation extends Command {
             return;
         } else {
 
+            $langzipcontent = $response->zipcontent;
+
             // Set Config. Initializing responses.
             $responses = array();
 
             // Creating peers.
-            $mnet_hosts = array();
+            $mnethosts = array();
             foreach ($hosts as $host => $name) {
-                $mnet_host = new \mnet_peer();
-                if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                    $mnet_hosts[] = $mnet_host;
+                $mnethost = new \mnet_peer();
+                if ($mnethost->bootstrap($host, null, 'moodle')) {
+                    $mnethosts[] = $mnethost;
                 } else {
                     $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
                 }
@@ -180,26 +185,25 @@ class Command_SyncLangCustomisation extends Command {
             $command = $this->is_returned();
 
             // Creating XMLRPC client.
-            $rpc_client = new \local_vmoodle\XmlRpc_Client();
-            $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_copy_local_lang');
-            $rpc_client->add_param($this->get_parameter('platform')->get_value(), 'string');
-            $rpc_client->add_param($this->get_parameter('plugin')->get_value(), 'string');
-            $rpc_client->add_param($this->get_parameter('lang')->get_value(), 'string');
-            $rpc_client->add_param(null, 'string');
-            $rpc_client->add_param($command, 'boolean');
+            $rpcclient = new \local_vmoodle\XmlRpc_Client();
+            $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_local_langs');
+            $rpcclient->add_param($langzipcontent, 'string');
+            $rpcclient->add_param(true, 'string');
 
+            debug_trace('Launching set_local_langs on targets');
             // Set Config. Sending requests.
-            foreach($mnet_hosts as $mnet_host) {
+            foreach($mnethosts as $mnethost) {
+                debug_trace('Launching set_local_langs on '.$rpcclient->wwwroot);
                 // Sending request.
-                if (!$rpc_client->send($mnet_host)) {
+                if (!$rpcclient->send($mnethost)) {
                     $response = new StdClass();
                     $response->status = MNET_FAILURE;
-                    $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
+                    $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
                 } else {
-                    $response = json_decode($rpc_client->response);
+                    $response = json_decode($rpcclient->response);
                 }
                 // Recording response.
-                $responses[$mnet_host->wwwroot] = $response;
+                $responses[$mnethost->wwwroot] = $response;
             }
 
             // Set Config. Saving results.

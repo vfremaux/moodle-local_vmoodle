@@ -130,9 +130,8 @@ class Command_Plugins_Sync extends Command {
 
             return;
         } else {
-
-            // Result is a plugin info structure that needs be replicated remotely to all targets.
-            $plugininfos = $response->value;
+            // Result is a plugin info array that needs be replicated remotely to all targets.
+            $plugininfos = (array) $response->value;
 
             // Initializing responses.
             $responses = array();
@@ -146,33 +145,34 @@ class Command_Plugins_Sync extends Command {
                 } else {
                     $responses[$host] = (object) array(
                         'status' => MNET_FAILURE,
-                        'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host)
+                        'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host),
                     );
                 }
             }
 
             // Creating XMLRPC client.
-            $rpcclient = new \local_vmoodle\XmlRpc_Client();
-            $rpcclient->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
-            $rpcclient->add_param($plugininfos, 'object'); // Plugininfos structure.
+            $rpcclient2 = new \local_vmoodle\XmlRpc_Client();
+            $rpcclient2->set_method('local/vmoodle/plugins/plugins/rpclib.php/mnetadmin_rpc_set_plugins_states');
+            $rpcclient2->add_param($plugintype, 'string'); // plugintype.
+            $rpcclient2->add_param($plugininfos, 'struct'); // Serialized plugininfos structure.
 
             // Sending requests.
             foreach ($mnethosts as $mnethost) {
 
                 // Sending request.
-                if (!$rpcclient->send($mnethost)) {
+                if (!$rpcclient2->send($mnethost)) {
                     $response = new Stdclass();
                     $response->status = MNET_FAILURE;
-                    $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                    $response->errors[] = implode('<br/>', $rpcclient2->get_errors($mnethost));
                     $response->error = 'Set plugin state failed : Remote call error';
                     if (debugging()) {
                         echo '<pre>';
-                        var_dump($rpcclient);
+                        var_dump($rpcclient2);
                         ob_flush();
                         echo '</pre>';
                     }
                 } else {
-                    $response = json_decode($rpcclient->response);
+                    $response = json_decode($rpcclient2->response);
                 }
 
                 // Recording response.

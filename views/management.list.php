@@ -113,7 +113,11 @@ if ($vmoodles) {
 
         $auth = is_enabled_auth('multimnet') ? 'multimnet' : 'mnet';
         $jumpurl = new moodle_url('/auth/'.$auth.'/jump.php', array('hostwwwroot' => $vmoodle->vhostname));
+
         $vmoodlelnk = '<a href="'.$jumpurl.'" target="_blank" >'.$vmoodle->name.'</a>';
+        if ($mnethost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
+            $vmoodlelnk .= '<br/>'.$mnethost->name;
+        }
 
         $hostlnk = "<a href=\"{$vmoodle->vhostname}\" target=\"_blank\">{$vmoodle->vhostname}</a>";
         $crongapstr = "<span style=\"color:red\">$vmoodle->lastcrongap s.</span>";

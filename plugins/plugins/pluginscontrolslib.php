@@ -195,8 +195,8 @@ class local_remote_control extends plugin_remote_control {
             require_once($CFG->dirroot.'/local/'.$this->plugin.'/lib.php');
         }
 
-        $enablefuncname = 'local_'.$plugin.'_enable';
-        $disablefuncname = 'local_'.$plugin.'_disable';
+        $enablefuncname = 'local_'.$this->plugin.'_enable';
+        $disablefuncname = 'local_'.$this->plugin.'_disable';
 
         switch ($action) {
 
@@ -494,10 +494,18 @@ class auth_remote_control extends plugin_remote_control {
         global $CFG;
 
         get_enabled_auth_plugins(true); // fix the list of enabled auths
-        if (empty($CFG->auth)) {
+
+        $auth = get_config('moodle', 'auth');
+        $auth = preg_replace('/,$/', '', $auth);
+        $auth = preg_replace('/^,/', '', $auth);
+        if (empty($auth)) {
+            $auth = 'manual';
+        }
+
+        if (empty($auth)) {
             $authsenabled = array();
         } else {
-            $authsenabled = explode(',', $CFG->auth);
+            $authsenabled = explode(',', $auth);
         }
 
         if (!exists_auth_plugin($this->plugin)) {
@@ -506,11 +514,12 @@ class auth_remote_control extends plugin_remote_control {
 
         switch ($action) {
             case 'enable':
-                // add to enabled list
+                // Add to enabled list.
                 if (!in_array($this->plugin, $authsenabled)) {
-                    $authsenabled[] = $auth;
+                    $authsenabled[] = $this->plugin;
                     $authsenabled = array_unique($authsenabled);
-                    set_config('auth', implode(',', $authsenabled));
+                    $newauth = implode(',', $authsenabled);
+                    set_config('auth', $newauth);
                 }
                 break;
 
@@ -572,8 +581,10 @@ class format_remote_control extends plugin_remote_control {
             case 'disable': {
                 if ($this->is_enabled()) {
                     if (get_config('moodlecourse', 'format') === $this->plugin) {
+                        debug_trace("Cannot disable course format $this->plugin");
                         return get_string('cannotdisableformat', 'error');
                     }
+                    debug_trace('disabling');
                     set_config('disabled', 1, 'format_'. $this->plugin);
                 }
                 break;

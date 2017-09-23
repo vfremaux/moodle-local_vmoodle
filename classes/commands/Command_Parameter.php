@@ -155,7 +155,7 @@ class Command_Parameter {
      */
     public function get_value() {
         if (is_null($this->value)) {
-            throw new Command_Exception('paramtervaluenotdefined', $this->name);
+            throw new Command_Exception('parametervaluenotdefined', $this->name);
         }
         return $this->value;
     }

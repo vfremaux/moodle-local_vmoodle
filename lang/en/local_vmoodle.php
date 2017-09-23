@@ -273,6 +273,7 @@ $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
 $string['renewallbindings'] = 'Renew all bindings';
 $string['restorebackup'] = 'Restore backup';
+$string['restart'] = 'Restart process';
 $string['retrieveplatforms'] = 'Retrieve platforms';
 $string['rpcstatus'] = 'Undefined status.';
 $string['rpcstatus100'] = 'Test command.';

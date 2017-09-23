@@ -28,10 +28,12 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help'             => false
+        'help'             => false,
+        'debug'            => false
     ),
     array(
-        'h' => 'help'
+        'h' => 'help',
+        'd' => 'debug'
     )
 );
 
@@ -55,11 +57,16 @@ master host can write into all databases.
 
     Options:
     -h, --help              Print out this help
+    -d, --debug             Turn on debug mode
 
 "; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
+}
+
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
 }
 
 // Start updating.

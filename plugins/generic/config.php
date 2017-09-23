@@ -141,6 +141,9 @@ $cmd = new Command_SetPluginConfig(
     array($param1, $param2));
 $category->add_command($cmd);
 
+$cmd = new Command_CopyFile();
+$category->add_command($cmd);
+
 $cmd = new Command_SyncLangCustomisation();
 $category->add_command($cmd);
 

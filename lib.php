@@ -1595,19 +1595,19 @@ function vmoodle_sync_register() {
         foreach ($targethosts as $t) {
 
             if ($t->vdbhost != $CFG->dbhost) {
-                echo "Not same vdb host for $t->name . Skipping\n";
+                echo "Not same vdb host for {$t->shortname} {$t->vhostname} . Skipping\n";
                 continue;
             }
 
-            echo "Copying VMoodle register in $t->name \n";
+            echo "Copying VMoodle register in {$t->shortname} {$t->vhostname} \n";
 
             $sql = "TRUNCATE `{$t->vdbname}`.{local_vmoodle} ";
             $DB->execute($sql);
 
             foreach ($allhosts as $h) {
 
-                $h->name = str_replace("'", "\\'", $h->name);
-                $h->description = str_replace("'", "\\'", $h->description);
+                $name = str_replace("'", "\\'", $h->name);
+                $description = str_replace("'", "\\'", $h->description);
 
                 $sql = "
                     INSERT INTO
@@ -1629,25 +1629,39 @@ function vmoodle_sync_register() {
                             `timecreated`
                         )
                     VALUES (
-                        '{$h->name}',
-                        '{$h->shortname}',
-                        '{$h->description}',
-                        '{$h->vhostname}',
-                        '{$h->vdbtype}',
-                        '{$h->vdbhost}',
-                        '{$h->vdblogin}',
-                        '{$h->vdbpass}',
-                        '{$h->vdbname}',
-                        '{$h->vdbprefix}',
-                        '{$h->vdbpersist}',
-                        '{$h->vdatapath}',
-                        {$h->mnet},
-                        {$h->enabled},
-                        {$h->timecreated}
-                    )
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?)
                 ";
 
-                $DB->execute($sql);
+                $params = array($name,
+                                $h->shortname,
+                                $description,
+                                $h->vhostname,
+                                $h->vdbtype,
+                                $h->vdbhost,
+                                $h->vdblogin,
+                                $h->vdbpass,
+                                $h->vdbname,
+                                $h->vdbprefix,
+                                $h->vdbpersist,
+                                $h->vdatapath,
+                                $h->mnet,
+                                $h->enabled,
+                                $h->timecreated);
+                $DB->execute($sql, $params);
 
                 echo '.';
             }

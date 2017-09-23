@@ -1140,7 +1140,7 @@ if ($action == 'syncregister') {
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('syncvmoodleregister', 'local_vmoodle'));
     echo '<pre>';
-    local_vmoodle_sync_register();
+    vmoodle_sync_register();
     echo '</pre>';
     echo '<center>';
     echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
