@@ -42,11 +42,22 @@ if ($action == 'redefineservices') {
     if (!empty($defaultservices)) {
 
         // Retrieve submitted data, from the services strategy form.
-        $servicesform = new ServicesStrategy_Form();
+        $servicesform = new \local_vmoodle\ServicesStrategy_Form();
         $submitteddata = $servicesform->get_data();
 
+        $storedconfig = new Stdclass();
+        foreach ($submitteddata as $key => $value) {
+            if ($key == 'submitbutton') {
+                continue;
+            }
+            if (preg_match('/_description$/', $key)) {
+                continue;
+            }
+            $storedconfig->$key = $value;
+        }
+
         // Saves default services strategy.
-        set_config('local_vmoodle_services_strategy', serialize($submitteddata));
+        set_config('services_strategy', serialize($storedconfig), 'local_vmoodle');
 
         // Every step was SUCCESS.
         $messageobject->message = get_string('successstrategyservices', 'local_vmoodle');
@@ -57,6 +68,6 @@ if ($action == 'redefineservices') {
 
     // Save confirm message before redirection.
     $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'services')));
     return -1;
 }

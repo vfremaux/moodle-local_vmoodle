@@ -166,6 +166,12 @@ if ($hasadmin) {
         $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
         $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
 
+        $key = 'local_vmoodle/vlogfilepattern';
+        $label = get_string('vlogfilepattern', 'local_vmoodle');
+        $desc = get_string('vlogfilepattern_desc', 'local_vmoodle');
+        $default = '';
+        $settings->add(new admin_setting_configtext($key, $label, $desc, $default));
+
         $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
 
         $key = 'local_vmoodle/cmd_mysql';
@@ -198,7 +204,7 @@ if ($hasadmin) {
         $desc = get_string('csvencoding_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $encodingopts));
 
-        $settings->add(new admin_setting_heading('tools', get_string('tools', 'local_vmoodle'), ''));
+        $settings->add(new admin_setting_heading('behaviour', get_string('behaviour', 'local_vmoodle'), ''));
         $yesno = array(0 => get_string('no'), 1 => get_string('yes'));
 
         $key = 'local_vmoodle/force_https_proto';
@@ -210,5 +216,19 @@ if ($hasadmin) {
         $label = get_string('allowmnetusersasadmin', 'local_vmoodle');
         $desc = get_string('multimnet_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $yesno));
+
+        $settings->add(new admin_setting_heading('clustering', get_string('clustering', 'local_vmoodle'), ''));
+        $ixs = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        $ixoptions = array_combine($ixs, $ixs);
+
+        $key = 'local_vmoodle/clusters';
+        $label = get_string('configclusters', 'local_vmoodle');
+        $desc = get_string('configclusters_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
+
+        $key = 'local_vmoodle/clusterix';
+        $label = get_string('configclusterix', 'local_vmoodle');
+        $desc = get_string('configclusterix_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
     }
 }

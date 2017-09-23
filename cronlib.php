@@ -46,7 +46,7 @@ function fire_vhost_cron($vhost) {
         return false;
     }
 
-    vcron_process_result($vhost, $rawresponse);
+    vcron_process_result($vhost, $rawresponse, $timestampsend, $timestampreceive);
 }
 
 /**
@@ -54,29 +54,42 @@ function fire_vhost_cron($vhost) {
  *
  *
  */
-function exec_vhost_cron($vhost) {
+function exec_vhost_cron($vhost, $detached = false) {
     global $CFG;
 
-    $cmd = 'php "'.$CFG->dirroot.'/local/vmoodle/cli/cron.php" --host='.$vhost->vhostname;
+    $dtc = '';
+    if ($detached) {
+        $dtc = '&';
+    }
+
+    $timestampsend = time();
+    $cmd = 'php "'.$CFG->dirroot.'/local/vmoodle/cli/cron.php" --host='.$vhost->vhostname.' '.$dtc;
+    $timestampreceive = time();
 
     exec($cmd, $rawresponse);
 
-    vcron_process_result($vhost, $rawresponse);
+    vcron_process_result($vhost, implode("\n", $rawresponse), $timestampsend, $timestampreceive);
 }
 
 /**
  * Common post processing return of a serverside or web cron evocation.
+ * @param object $vhost
+ * @param string $rawresponse
+ * @param int $timestampsend
+ * @param int $timestampreceive
  */
-function vcron_process_result($vhost, $rawresponse) {
-    global $vcron, $CFG;
+function vcron_process_result($vhost, $rawresponse, $timestampsend, $timestampreceive) {
+    global $vcron, $CFG, $DB;
 
-    if ($vcron->TRACE_ENABLE) {
-        $crontrace = fopen($vcron->TRACE, 'a');
+    if ($vcron->traceenable) {
+        $crontrace = fopen($vcron->trace, 'a');
     }
 
+    $config = get_config('local_vmoodle');
+
     // A centralised per host trace for vcron monitoring.
-    if (!empty($CFG->vlogfilepattern)) {
-        $logfile = str_replace('%%VHOSTNAME%%', $vhost->vhostname, $CFG->vlogfilepattern);
+    if (!empty($config->vlogfilepattern)) {
+        $logfile = str_replace('%VHOSTNAME%', basename($vhost->vhostname), $config->vlogfilepattern);
         $logfile = preg_replace('#https?://#', '', $logfile);
         if ($log = fopen($logfile, 'w')) {
             fputs($log, $rawresponse);
@@ -85,19 +98,19 @@ function vcron_process_result($vhost, $rawresponse) {
     }
 
     // A debug trace for developers.
-    if ($vcron->TRACE_ENABLE) {
+    if ($vcron->traceenable) {
         if ($crontrace) {
-            fputs($crontrace, "VCron start on $vhost->vhostname : $timestamp_send\n" );
+            fputs($crontrace, "VCron start on $vhost->vhostname : $timestampsend\n" );
             fputs($crontrace, $rawresponse."\n");
-            fputs($crontrace, "VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n" );
+            fputs($crontrace, "VCron stop on $vhost->vhostname : $timestampreceive\n#################\n\n" );
             fclose($crontrace);
         }
     }
-    echo "VCron start on $vhost->vhostname : $timestamp_send\n";
+    echo "VCron start on $vhost->vhostname : $timestampsend\n";
     echo $rawresponse."\n";
-    echo "VCron stop on $vhost->vhostname : $timestamp_receive\n#################\n\n";
+    echo "VCron stop on $vhost->vhostname : $timestampreceive\n#################\n\n";
     $vhost->lastcrongap = time() - $vhost->lastcron;
-    $vhost->lastcron = $timestamp_send;
+    $vhost->lastcron = $timestampsend;
     $vhost->croncount++;
 
     $DB->update_record('local_vmoodle', $vhost);

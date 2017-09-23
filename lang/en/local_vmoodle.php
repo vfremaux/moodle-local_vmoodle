@@ -68,6 +68,10 @@ $string['badshortname'] = 'Shortname must have no spaces.';
 $string['badtemplatation'] = 'Loading database from chosen template has failed (reading, writing or removing files).';
 $string['badthishostdata'] = 'Unable to retrieve this host\'s data, from \'mnet_host\' table.';
 $string['badvhostname'] = 'Bad host form.';
+$string['behaviour'] = 'VMoodle behaviour';
+$string['clustering'] = 'Cluster settings';
+$string['configclusters'] = 'Clusters';
+$string['configclusterix'] = 'Cluster index';
 $string['cancelcommand'] = 'Cancel command';
 $string['capfilter'] = 'Capability filter';
 $string['categoryignored'] = 'The category {$a} has been ignored:';
@@ -261,12 +265,15 @@ $string['pluginuninstalled'] = 'Plugin {$a} was correctly uninstalled.';
 $string['postupgrade'] = 'Post Upgrade Transforms';
 $string['preupgrade'] = 'Pre Upgrade Transforms';
 $string['publish'] = 'Publish';
+$string['rawstrategy'] = 'Raw strategy';
+$string['rawstrategy_desc'] = 'You may use this serialized form in default settings files.';
 $string['reactivetemplate'] = 'Reactivate the plateforme';
 $string['regexp'] = 'regexp';
 $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
 $string['renewallbindings'] = 'Renew all bindings';
 $string['restorebackup'] = 'Restore backup';
+$string['restart'] = 'Restart process';
 $string['retrieveplatforms'] = 'Retrieve platforms';
 $string['rpcstatus'] = 'Undefined status.';
 $string['rpcstatus100'] = 'Test command.';
@@ -310,6 +317,7 @@ $string['successfinishedcapture'] = 'Capture completed.';
 $string['successfullplatforms'] = 'Successfull platforms:';
 $string['successstrategyservices'] = 'Default services strategy deployment done.';
 $string['systempath_desc'] = 'Absolute system path to executable';
+$string['syncvmoodleregister'] = 'Synchronize VMoodle registers';
 $string['tabpoolmanage'] = 'Pool management';
 $string['tabpoolsadmin'] = 'Pool administration';
 $string['tabpoolservices'] = 'Services strategy';
@@ -345,6 +353,8 @@ $string['vdbprefix_desc'] = 'Should not change unless very specific local situat
 $string['vdbs'] = 'Virtual dbs';
 $string['vdbtype'] = 'Database type ';
 $string['vdbtype_desc'] = 'Actually supported mysqli and postgres. Old mysql (Moodle 1.9) not supported any more.';
+$string['vlogfilepattern'] = 'VCron log file pattern';
+$string['vlogfilepattern_desc'] = 'A system path pattern for storing the log file of each vcron. It accepts a %VHOSTNAME% token and removes any protocol prefix from urls';
 $string['vhostname'] = 'Site\'s host';
 $string['virtualplatforms'] = 'Virtual hosts';
 $string['vmoodleadministration'] = 'Moodle virtual instances administration';
@@ -533,3 +543,9 @@ $string['templatetext_help'] = 'Write here the server script template with place
 <li>%DBPASS% : DB Pass</li>
 <li>%DATAROOT% : Moodledata location</li>
 ';
+
+$string['configclusters_desc'] = 'Tell how many clusters you are using for serving all VMoodle instances.';
+
+$string['configclusterix_desc'] = 'This indicates the cluster subset index the current host is running for all distributed cron tasks or vmoodle
+enabled batch jobs. The value must be locally force by configuration files (no db value as it is shared), using a
+$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] key. Take care all cluster will force a different value.';

@@ -27,13 +27,15 @@ unset($options);
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'help'             => false,
-        'engine'   => false,
-        'logroot'          => false,
+        'help'          => false,
+        'engine'        => false,
+        'fullstop'      => false,
+        'logroot'       => false,
     ),
     array(
         'h' => 'help',
         'e' => 'engine',
+        's' => 'fullstop',
         'l' => 'logroot',
     )
 );
@@ -85,7 +87,18 @@ foreach ($allhosts as $h) {
     $output = array();
     exec($workercmd, $output, $return);
     if ($return) {
-        die("Worker ended with error");
+        if (!empty($options['fullstop'])) {
+            die("Worker ended with error");
+            echo implode("\n", $output);
+        }
+        echo "Worker ended with error";
+        echo implode("\n", $output);
+        echo "\n";
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output);
+            echo "\n";
+        }
     }
 }
 

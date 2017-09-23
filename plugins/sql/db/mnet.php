@@ -38,9 +38,8 @@ $publishes = array(
     ),
 );
 
-
 $subscribes = array(
-    'dataexchange' => array(
+    'mnetadmin' => array(
         'mnetadmin_rpc_get_fields' => 'local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_get_fields',
         'mnetadmin_rpc_run_sql_command' => 'local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command',
     ),

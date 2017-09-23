@@ -66,6 +66,7 @@ Command Line Fixture Worker.
     -l, --logfile       the log file to use. No log if not defined
     -m, --logmode       'append' or 'overwrite'
     -v, --verbose       Verbose output
+    -s, --fullstop      Stops on first error
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -90,20 +91,25 @@ if (isset($log)) {
 $nodes = explode(',', $options['nodes']);
 foreach ($nodes as $nodeid) {
     $host = $DB->get_record('local_vmoodle', array('id' => $nodeid));
-    $cmd = "/usr/bin/php {$CFG->dirroot}/local/vmoodle/cli/{$options['fixture']}.php --host={$host->vhostname} ";
+    $cmd = "php {$CFG->dirroot}/local/vmoodle/cli/fixtures/{$options['fixture']}.php --host={$host->vhostname} ";
     $return = 0;
     $output = array();
     mtrace($cmd);
     exec($cmd, $output, $return);
     if ($return) {
-        die ("Worker failed\n");
+        if (!empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die ("Worker failed\n");
+        }
+        echo "Worker failed:\n";
+        echo implode("\n", $output)."\n";
     }
     if (!empty($options['verbose'])) {
-        echo implode("\n", $output);
+        echo implode("\n", $output)."\n";
     }
     if (isset($log)) {
         fputs($log, "$cmd\n#-------------------\n");
-        fputs($log, implode("\n", $output));
+        fputs($log, implode("\n", $output)."\n");
     };
     sleep(ENT_INSTALLER_SYNC_INTERHOST);
 }

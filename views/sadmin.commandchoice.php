@@ -28,18 +28,18 @@ defined('MOODLE_INTERNAL') || die();
 // Loading the libraries.
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
 
-use \local_vmoodle\Command_From;
+use \local_vmoodle\Command_Form;
 
 // Retrieving configuration files.
-$assistedcommands_conffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
+$assistedcommandsconffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
 
 // Reading categories.
 $assistedcommands_categories = array();
-foreach ($assistedcommands_conffiles as $conffile) {
+foreach ($assistedcommandsconffiles as $conffile) {
     $path = explode('/', $conffile);
-    $assistedcommands_category = $path[count($path)-2];
-    if ($assistedcommands_category[0] != '_') {
-        $assistedcommands_categories[] = $assistedcommands_category;
+    $assistedcommandscategory = $path[count($path)-2];
+    if ($assistedcommandscategory[0] != '_') {
+        $assistedcommands_categories[] = $assistedcommandscategory;
     }
 }
 
@@ -48,11 +48,11 @@ foreach ($assistedcommands_categories as $key => $category) {
 
     // Reading commands.
     try {
-        $vmoodle_category = load_vmplugin($category);
+        $vmoodlecategory = load_vmplugin($category);
 
         // Displaying a command's form.
-        print_collapsable_bloc_start($vmoodle_category->get_plugin_name(), $vmoodle_category->get_name(), null, false);
-        foreach ($vmoodle_category->get_commands() as $command) {
+        print_collapsable_bloc_start($vmoodlecategory->get_plugin_name(), $vmoodlecategory->get_name(), null, false);
+        foreach ($vmoodlecategory->get_commands() as $command) {
             $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
             $command_form->display();
         }

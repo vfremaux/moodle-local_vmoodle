@@ -20,8 +20,6 @@
  * @author          valery.fremaux (valery.fremaux@gmail.com)
  */
 
-define('VMOODLE_BOOT', true);
-
 function vmoodle_get_hostname() {
     global $CFG;
 
@@ -32,6 +30,8 @@ function vmoodle_get_hostname() {
     } else {
         $protocol = 'http';
     }
+
+    define('VMOODLE_BOOT', true);
 
     /*
      * This happens when a cli script needs to force one Vmoodle execution.
@@ -45,6 +45,9 @@ function vmoodle_get_hostname() {
         return;
     }
 
+    /*
+     * This is the standard case when each vmoodle runs on his own masgter single domain.
+     */
     $CFG->vmoodleroot = "{$protocol}://".@$_SERVER['HTTP_HOST'];
     $CFG->vmoodlename = @$_SERVER['HTTP_HOST'];
     if (empty($CFG->vmoodlename)) {
@@ -56,18 +59,19 @@ function vmoodle_get_hostname() {
         $CFG->vmoodlename = $_SERVER['SERVER_NAME'];
     }
 
+    /*
+     * When using a single domain with subpaths for instances, we need
+     * catch the first path element in host identity reference.
+     */
     if (!empty($CFG->vmoodleusesubpaths)) {
         $uri = preg_replace('#^/#', '', $_SERVER['REQUEST_URI']);
-        // echo "URI : ".$uri.'<br/>';
         if (!preg_match('#/$#', $uri)) {
             $path = dirname($uri);
         } else {
             $path = $uri;
         }
-        // echo "Dir URI : ".$path.'<br/>';
         $pathparts = explode('/', $path);
         $firstpath = array_shift($pathparts);
-        // echo "Firstdir URI : ".$firstpath.'<br/>';
         if (($firstpath != '') && ($firstpath != '/') && ($firstpath != '.')) {
             // If request uri goes into a subdir.
             if (is_link($CFG->dirroot.'/'.$firstpath)) {
