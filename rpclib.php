@@ -86,7 +86,7 @@ function invoke_local_user($user, $capability = false, $context = null) {
     // Check user mnet host single identity condition
     if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {
         $config = get_config('block_user_mnet_hosts');
-        if (!empty($config->singleaccountcheck)) {
+        if (!empty($config->singleaccountcheck) && ($user['username'] != 'admin')) {
             $params = array('username' => addslashes($user['username']), 'deleted' => 0);
             if ($localuser = $DB->get_record('user', $params)) {
                 debug_trace("USER CHECK SUCCESS : ".json_encode($user));

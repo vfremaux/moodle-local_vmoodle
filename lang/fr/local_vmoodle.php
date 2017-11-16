@@ -69,6 +69,7 @@ $string['badtemplatation'] = 'Erreur dans le chargement de la base de données d
 $string['badthishostdata'] = 'Impossible de récupérer les données de la plate-forme courante, depuis la table \'mnet_host\'.';
 $string['badvhostname'] = 'Forme de l\'hôte incorrecte...';
 $string['behaviour'] = 'Comportement';
+$string['cancelled'] = 'Opération annulée';
 $string['clustering'] = 'Réglages de clusterisation';
 $string['configclusters'] = 'Clusters';
 $string['configclusterix'] = 'Numéro de cluster';
@@ -277,6 +278,7 @@ $string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée. Erreur 404.';
 $string['rpcstatus500'] = 'Echec RPC. Error 500.';
 $string['rpcstatus501'] = 'Pas de compte local pour l\'utilisateur appellant.';
 $string['rpcstatus502'] = 'Echec de configuration.';
+$string['rpcstatus503'] = 'Erreur applicative distante.';
 $string['rpcstatus510'] = 'Droits insuffisants.';
 $string['rpcstatus511'] = 'Echec MNET.';
 $string['rpcstatus520'] = 'Impossible de récupérer l\'enregistrement SQL.';
@@ -311,6 +313,7 @@ $string['successedithost'] = 'Edition de la plate-forme terminée.';
 $string['successfinishedcapture'] = 'Capture de la plate-forme terminée.';
 $string['successfullplatforms'] = 'Succès des plates-formes :';
 $string['successstrategyservices'] = 'Déploiement de la stratégie de service(s) par défaut effectué.';
+$string['sudoer'] = 'Sudoer';
 $string['syncvmoodleregister'] = 'Synchroniser les registres VMoodle';
 $string['tabpoolmanage'] = 'Gestion des instances';
 $string['tabpoolsadmin'] = 'Super administration';
@@ -328,6 +331,7 @@ $string['unknownhost'] = 'L\'hôte que vous tentez de mettre en place n\'est pas
 $string['unknownhost'] = 'Le nom de domaine de la plate-forme ne peut être résolu. Vous pouvez forcer le passage en reexécutant la procédure, mais les fonctions réseau ne pourront probablement pas être activées correctement.';
 $string['unknownhostforced'] = 'L\'hôte que vous tentez de mettre en place n\'est pas connu sur le réseau. Vous avez demandé un déploiment en mode forcé. Les fonctions du réseau Moodle seront désactivées après déploiement et devront être configurées manuellement.';
 $string['unknownuserhost'] = 'Plate-forme hôte de l\'utilisateur inconnu';
+$string['emptyormalformedvhostname'] = 'Url vide ou malformée';
 $string['upgrade'] = 'Mettre à jour les données';
 $string['uploadscript'] = 'Uploader un script';
 $string['vdatapath'] = 'Chemin "moodledata" ';
@@ -341,7 +345,6 @@ $string['vdbprefix'] = 'Préfixe des tables ';
 $string['vdbs'] = 'Bases de données virtuelles';
 $string['vdbtype'] = 'Type de la base de données ';
 $string['vlogfilepattern'] = 'Fichier journal du VCron';
-$string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.';
 $string['vhostname'] = 'Hôte du site';
 $string['vhostname'] = 'Nom d\'hôte';
 $string['virtualplatforms'] = 'Plates-formes virtuelles';
@@ -556,5 +559,13 @@ $string['templatetext_help'] = 'Ecrivez ici le texte du script avec des marque p
 $string['configclusters_desc'] = 'Indiquez ici le nombre de clusters qui servent vos pages Moodle.';
 
 $string['configclusterix_desc'] = 'Ceci est le numéro du cluster courant pour le traitement de vos tâches de fond distribuées. Sa valeur
-doit être forcée par un fihcier de configuration physique (pas de valeur en base de données ni de cache partagé), à travers une initialisation
+doit être forcée par un fichier de configuration physique (pas de valeur en base de données ni de cache partagé), à travers une initialisation
 $CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] assurée localement. Veuillez à ce que chaque cluster impose une valeur différente.';
+
+$string['sudoer_desc'] = 'Un utilisateur linux capable d\'opérer dans le répertoire d\'installation de moodle. Cet utilisateur doit bénéficier
+d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln
+';
+
+$string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif
+accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
+';

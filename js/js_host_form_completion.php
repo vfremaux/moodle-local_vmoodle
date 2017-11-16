@@ -56,7 +56,7 @@ require_once($CFG->dirroot.'/config.php');
         }
 
         element.value = "mdl_";
-        element1.value = "vmoodle_";
+        element1.value = "vmdl_";
     }
 
     function modifyfield() {
@@ -81,10 +81,10 @@ require_once($CFG->dirroot.'/config.php');
                 var tab1 = tab[1].split(".");
 
                 if (tab1 != null && tab1.length >= 1) {
-                    element.value = "mdl_"+tab1[0];
-                    element1.value = "vmoodle_"+tab1[0];
-                    element1.value.replace('-', '_');
-                    element1.value.replace(' ', '_');
+                    element.value = "mdl_" + tab1[0];
+                    element1.value = "vmdl_" + tab1[0];
+                    element1.value = element1.value.replace('-', '_');
+                    element1.value = element1.value.replace(' ', '_');
                 }
 
                 dirroot = unescape(dirroot);
@@ -92,10 +92,12 @@ require_once($CFG->dirroot.'/config.php');
                 while (b == false) {
                     b = true;
                     for (i = 0; i < dirroot.length; i++) {
-                        if (dirroot[i] == "+") b = false;
+                        if (dirroot[i] == "+") {
+                            b = false;
+                        }
                     }
                     if (b == false) {
-                        dirroot  = dirroot.replace("+"," ");
+                        dirroot  = dirroot.replace("+", " ");
                     } else {
                         b = true;
                     }
