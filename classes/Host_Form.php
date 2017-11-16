@@ -259,7 +259,7 @@ class Host_Form extends \moodleform {
             $errors['vdbname'] = get_string('baddatabasenamecoherence', 'local_vmoodle');
         }
 
-        // Checks if database's name doesn't finish with '_'.
+        // Checks if database's name has hyphens '-'.
         if (strstr($data['vdbname'], '-') !== false) {
             $errors['vdbname'] = get_string('badnohyphensindbname', 'local_vmoodle');
         }
@@ -279,7 +279,6 @@ class Host_Form extends \moodleform {
                 && ($CFG->ostype == 'WINDOWS')
                     && (preg_match('#\\\{3,}#', $data['vdatapath']) > 0)) {
             $errors['vdatapath'] = get_string('badmoodledatapathbackslash', 'local_vmoodle');
-            return $errors;
         }
 
         // Test of values which have to be well-formed and can not be modified after.
@@ -289,6 +288,12 @@ class Host_Form extends \moodleform {
             $shortname = $data['shortname'];
             if (strstr($shortname, ' ')) {
                 $errors['shortname'] = get_string('badshortname', 'local_vmoodle');
+            }
+
+            // Check vhostname has no unresolved %%INSTANCE%% placeholder. Catched by vhostname PARAM_TYPE
+            // Check vhost name not empty.
+            if (empty($data['vhostname'])) {
+                $errors['vhostname'] = get_string('emptyormalformedvhost', 'local_vmoodle');
             }
 
             // Checks 'vhostname', if not already used.

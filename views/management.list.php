@@ -114,6 +114,9 @@ if ($vmoodles) {
         $auth = is_enabled_auth('multimnet') ? 'multimnet' : 'mnet';
         $jumpurl = new moodle_url('/auth/'.$auth.'/jump.php', array('hostwwwroot' => $vmoodle->vhostname));
 
+        if (empty($vmoodle->name)) {
+            $vmoodle->name = $mnethost->name;
+        }
         $vmoodlelnk = '<a href="'.$jumpurl.'" target="_blank" >'.$vmoodle->name.'</a>';
         if ($mnethost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
             $vmoodlelnk .= '<br/>'.$mnethost->name;

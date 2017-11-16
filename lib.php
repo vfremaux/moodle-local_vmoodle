@@ -845,7 +845,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
  * @return bool If true, fixing database from template was sucessful, otherwise false.
  */
 function vmoodle_fix_database($vmoodledata, $thisashost) {
-    global $CFG, $SITE;
+    global $CFG, $SITE, $DB;
 
     $manifest = vmoodle_get_vmanifest($vmoodledata->vtemplate);
     $hostname = mnet_get_hostname_from_uri($CFG->wwwroot);
@@ -904,7 +904,12 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
      * this is necessary when using a template from another location or deployment target as
      * the salt may have changed. We would like that all primary admins be the same techn admin.
      */
-    $localadmin = get_admin();
+    // Get primary ID of moodle master.
+    $params = array('username' => 'admin', 'mnethostid' => $CFG->mnet_localhost_id);
+    $localadmin = $DB->get_record('user', $params);
+    if (!$localadmin) {
+        throw new moodle_exception('No local admin account');
+    }
     fputs($file, "--\n-- Force physical admin with same credentials than in master.  \n--\n");
     $sql = "UPDATE {$prefix}user SET password = '{$localadmin->password}' WHERE auth = 'manual' AND username = 'admin';\n\n";
     fwrite($file, $sql);
@@ -931,7 +936,7 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
         fputs($file, "--\n-- Enable the service 'mnetadmin, sso_sp and sso_ip' with host which creates this host.  \n--\n");
 
         $sql = "INSERT INTO {$prefix}mnet_host2service VALUES (null, (SELECT id FROM {$prefix}mnet_host ";
-        $sql = "WHERE wwwroot LIKE '{$thisashost->wwwroot}'), ";
+        $sql .= "WHERE wwwroot LIKE '{$thisashost->wwwroot}'), ";
         $sql .= "(SELECT id FROM {$prefix}mnet_service WHERE name LIKE 'mnetadmin'), 1, 0);\n\n";
         fputs($file, $sql);
 
@@ -979,9 +984,7 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
     $sqlcmd = vmoodle_get_database_dump_cmd($vmoodledata);
 
     // Make final commands to execute, depending on the database type.
-    $import = $sqlcmd.$temporarysetup_path;
-
-    // Prints log messages in the page and in 'cmd.log'.
+    $import = $sqlcmd.' '.$temporarysetup_path.' 2>&1';
 
     /*
      * Ensure utf8 is correctly handled by php exec().
@@ -994,6 +997,12 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
 
     // Execute the command.
     exec($import, $output, $return);
+
+    if ($LOG = fopen($CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/cmd.log', 'a')) {
+        fputs($LOG, $import."\n");
+        fputs($LOG, implode("\n", $output)."\n");
+        fclose($LOG);
+    }
 
     // End.
     return true;

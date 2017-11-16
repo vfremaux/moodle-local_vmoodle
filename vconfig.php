@@ -35,6 +35,10 @@ $CFG->vmasterdbpersist =  false;
 $CFG->vmasterprefix    = 'mdl_';
 $CFG->vmoodledefault    = 1; // tells if the default physical config can be used as true host
 
+// Define here the childs DB access in order NOT to expose individual DB access in the local_vmoodle database.
+$CFG->vchildsdblogin = '';
+$CFG->vchildsdbpass = '';
+
 vmoodle_get_hostname();
 
 // TODO : insert customized additional code here if required

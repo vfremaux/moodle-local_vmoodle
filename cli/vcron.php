@@ -80,6 +80,7 @@ if ($vcron->strategy == ROUND_ROBIN) {
             // From this host, fire a set of crons (usually one). @see RUN_PER_TURN
             // If we reach the end of the register, we'll need to wait the next run to continue.
             set_config('cron_lasthost', $vhost->id, 'local_vmoodle');
+            $config->cron_lasthost = $vhost->id;
             echo "Round Robin : ".$vhost->vhostname."\n";
             if ($vcron->activation == 'cli') {
                 exec_vhost_cron($vhost);
@@ -98,6 +99,7 @@ if ($vcron->strategy == ROUND_ROBIN) {
     }
     // We were at last. Loop back and take first.
     set_config('cron_lasthost', $allvhosts[0]->id, 'local_vmoodle');
+    $config->cron_lasthost = $allvhosts[0]->id;
     echo "Round Robin : ".$vhost->vhostname."\n";
     if ($vcron->activation == 'cli') {
         exec_vhost_cron($allvhosts[0]);

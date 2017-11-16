@@ -22,6 +22,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/local/vmoodle/db/install.php');
+
 function xmldb_local_vmoodle_upgrade($oldversion = 0) {
     global $DB;
 
@@ -43,6 +45,10 @@ function xmldb_local_vmoodle_upgrade($oldversion = 0) {
         // Learningtimecheck savepoint reached.
         upgrade_plugin_savepoint(true, 2017090100, 'local', 'vmoodle');
     }
+
+    // Eventually fix some misnamed rpcs if any at each upgrade.
+    // So this is a global process that can be massified.
+    xmldb_local_vmoodle_late_install();
 
     return $result;
 }
