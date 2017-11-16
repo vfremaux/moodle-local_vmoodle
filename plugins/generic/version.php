@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of SyncRole plugin library.
+ * Description of Generic plugin library.
  *
  * @package     local_vmoodle
  * @category    local
@@ -23,7 +23,7 @@
  */
 
 $plugin = new stdclass;
-$plugin->version = 2015062000;
+$plugin->version = 2017092301;
 $plugin->component = 'vmoodleadminset_generic';
 $plugin->requires = 2014111001;
 $plugin->dependencies = array('local_vmoodle' => 2015062000);

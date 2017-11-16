@@ -40,7 +40,9 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
+$CLI_VMOODLE_PRECHECK = true;
+
+// Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -48,20 +50,27 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
+require_once($CFG->dirroot.'/lib/clilib.php');
+
+// Cli only functions.
 
 // Now get cli options.
-list($options, $unrecognized) = cli_get_params(array('non-interactive'   => false,
-                                                     'allow-unstable'    => false,
-                                                     'host'              => false,
-                                                     'test'              => false,
-                                                     'help'              => false),
-                                               array('h' => 'help'));
+list($options, $unrecognized) = cli_get_params(
+    array('non-interactive'   => false,
+          'allow-unstable'    => false,
+          'host'              => false,
+          'test'              => false,
+          'help'              => false),
+    array('h' => 'help',
+          'H' => 'host',
+          'u' => 'allow-unstable',
+          't' => 'test')
+);
 
 $interactive = empty($options['non-interactive']);
 
 if ($unrecognized) {
-    $unrecognized = implode("\n", $unrecognized);
+    $unrecognized = implode("\n  ", $unrecognized);
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
@@ -74,9 +83,9 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
 --non-interactive     No interactive questions or confirmations
---allow-unstable      Upgrade even if the version is not marked as stable yet,
+-u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
---host                Switches to this host virtual configuration before processing
+-H, --host                Switches to this host virtual configuration before processing
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
 
@@ -203,7 +212,9 @@ set_config('branch', $branch);
 upgrade_noncore(true);
 
 // Log in as admin - we need doanything permission when applying defaults.
-\core\session\manager::set_user(get_admin());
+if ($admin = get_admin()) {
+    \core\session\manager::set_user($admin);
+}
 
 // Apply all default settings, just in case do it twice to fill all defaults.
 admin_apply_default_settings(null, false);

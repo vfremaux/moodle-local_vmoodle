@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 use \local_vmoodle\commands\Command;
 use \local_vmoodle\commands\Command_Exception;
 use \local_vmoodle\commands\Command_Parameter;
+use \moodle_url;
 
 require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');
@@ -54,14 +55,17 @@ class Command_Plugins_Compare extends Command {
      * @throws Command_Exception.
      */
     public function __construct() {
-        global $DB, $stdplugintypes;
+        global $DB;
+
+        $pm = \core_plugin_manager::instance();
 
         // Getting command description.
         $cmdname = vmoodle_get_string('cmdcomparename', 'vmoodleadminset_plugins');
         $cmddesc = vmoodle_get_string('cmdcomparedesc', 'vmoodleadminset_plugins');
 
+        $plugintypes = $pm->get_plugin_types();
         $label = get_string('plugintypeparamcomparedesc', 'vmoodleadminset_plugins');
-        $pluginparam = new Command_Parameter('plugintype', 'enum', $label, null, $stdplugintypes);
+        $pluginparam = new Command_Parameter('plugintype', 'enum', $label, null, $plugintypes);
 
         // Creating command.
         parent :: __construct($cmdname, $cmddesc, $pluginparam);
@@ -179,7 +183,7 @@ class Command_Plugins_Compare extends Command {
      * @throws Commmand_Exception.
      */
     private function _process() {
-        global $CFG, $DB, $OUTPUT, $stdplugintypes, $PAGE;
+        global $CFG, $DB, $OUTPUT, $PAGE;
 
         $renderer = $PAGE->get_renderer('local_vmoodle');
 
@@ -196,7 +200,7 @@ class Command_Plugins_Compare extends Command {
         $host_labels = get_available_platforms();
 
         // Getting local plugin info.
-        $pm = \plugin_manager::instance();
+        $pm = \core_plugin_manager::instance();
 
         $localplugins = $pm->get_plugins();
         $localtypeplugins = $localplugins[$plugintype];
@@ -206,8 +210,9 @@ class Command_Plugins_Compare extends Command {
          */
 
         // Creating header.
+        $plugintypes = $pm->get_plugin_types();
         $this->report = '<link href="'.$CFG->wwwroot.'/local/vmoodle/plugins/plugins/theme/styles.css" rel="stylesheet" type="text/css">';
-        $this->report .= '<h3>'.get_string('compareplugins', 'vmoodleadminset_plugins', $stdplugintypes[$plugintype]).'</h3>';
+        $this->report .= '<h3>'.get_string('compareplugins', 'vmoodleadminset_plugins', $plugintypes[$plugintype]).'</h3>';
 
         // Creation form
         $params = array('what' => 'syncplugins');

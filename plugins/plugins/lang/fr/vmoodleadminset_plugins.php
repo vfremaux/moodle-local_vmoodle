@@ -33,6 +33,7 @@ $string['mnetadmin_name'] = 'Meta Administration Réseau Moodle';
 $string['mnetadmin_description'] = 'Fournit des fonctions pour exécuter des commandes d\'administration à travers le réseau MNET, telles que la synchronisation de configuration ou de roles.';
 $string['nosrcpltfrm'] = 'Pas de plate-forme source.';
 $string['nosyncpltfrm'] = 'Pas de plate-formes à synchroniser.';
+$string['notinstalled'] = 'Non installé.';
 $string['platformparamsyncdesc'] = 'Plate-forme source du rôle à copier';
 $string['plugintypeparamcomparedesc'] = 'Le type de plugins à comparer';
 $string['plugintypeparamsyncdesc'] = 'Le type de plugins à synchroniser';

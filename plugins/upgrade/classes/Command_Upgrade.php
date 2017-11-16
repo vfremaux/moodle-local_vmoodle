@@ -120,7 +120,7 @@ class Command_Upgrade extends Command {
                 $response->status = RPC_FAILURE;
                 $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
             // Recording response.
             $responses[$mnethost->wwwroot] = $response;
@@ -144,7 +144,7 @@ class Command_Upgrade extends Command {
             throw new Command_Exception('commandnotrun');
         }
 
-        // Checking host (general result isn't provide in this kind of command).
+        // Checking host (general result isn't provided in this kind of command).
         if (is_null($host) || !array_key_exists($host, $this->results)) {
             return null;
         }

@@ -26,6 +26,28 @@ function fix_mnet_tables_fixture() {
 
     echo "<pre>\n";
 
+    mtrace('Fixing vmoodle subplugins rpcs');
+    $select = ' xmlrpcpath LIKE "vmoodleadminset%" ';
+    $badvmoodlesubs = $DB->get_records_select('mnet_rpc', $select);
+    if (!empty($badvmoodlesubs)) {
+        $deleted = 0;
+        $renamed = 0;
+        foreach ($badvmoodlesubs as $sub) {
+            $sub->xmlrpcpath = str_replace('vmoodleadminset', 'local/vmoodle/plugins', $sub->xmlrpcpath);
+            $select = ' xmlrpcpath = ? AND id <> ? ';
+            if ($DB->record_exists_select('mnet_rpc', $select, array($sub->xmlrpcpath, $sub->id))) {
+                // Another record is in place for this rpc function. Delete current. Further will clean it all.
+                $DB->delete_records('mnet_rpc', array('id' => $sub->id));
+                $deleted++;
+            } else {
+                // Keep this one remapped.
+                $DB->update_record('mnet_rpc', $sub);
+                $renamed++;
+            }
+        }
+        mtrace("Fixed vmoodle subs rpcs : $deleted were deleted, $renamed where renamed");
+    }
+
     // Preclean all bindings that are not mapped to real records.
     mtrace('Fixing unattached bindings');
     $DB->execute(" DELETE FROM {mnet_service2rpc} WHERE rpcid NOT IN (SELECT id FROM {mnet_rpc}) ");
@@ -128,6 +150,7 @@ function fix_mnet_tables_fixture() {
             }
         }
         mtrace("$b bad fixed / $g good host bindings found.");
+
         mtrace('Finished');
 
         echo '</pre>';

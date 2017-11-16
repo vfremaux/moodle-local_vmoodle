@@ -36,8 +36,9 @@ $publishes = array(
         ),
     ),
 );
+
 $subscribes = array(
-    'dataexchange' => array(
+    'mnetadmin' => array(
         'mnetadmin_rpc_upgrade' => 'local/vmoodle/plugins/upgrade/rpclib.php/mnetadmin_rpc_upgrade',
     ),
 );

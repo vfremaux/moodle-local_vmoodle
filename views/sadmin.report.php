@@ -83,7 +83,8 @@ if (!empty($failed_platforms)) {
                 '<td style="text-align: left;">'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>' .
                 '<td style="width: 25%;">';
         if ($command->get_result($host, 'status') > 200 && $command->get_result($host, 'status') < 520) {
-            echo $OUTPUT->single_button(new moodle_url('view.php', array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($host))), get_string('runcmdagain', 'local_vmoodle'), 'get');
+            $params = array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($host));
+            echo $OUTPUT->single_button(new moodle_url('view.php', $params), get_string('runcmdagain', 'local_vmoodle'), 'get');
         } else {
             echo '&nbsp;';
         }

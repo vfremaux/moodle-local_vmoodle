@@ -40,12 +40,14 @@ list($options, $unrecognized) = cli_get_params(array('help' => false,
                                                      'info' => false,
                                                      'list' => false,
                                                      'fix' => false,
+                                                     'pre28' => false,
                                                      'showsql' => false,
                                                      'host' => true),
                                                array('h' => 'help',
                                                      'i' => 'info',
                                                      'l' => 'list',
                                                      'f' => 'fix',
+                                                     'o' => 'pre28',
                                                      's' => 'showsql',
                                                      'H' => 'host'));
 
@@ -68,6 +70,7 @@ Options:
 -l, --list            List problematic tables
 -f, --fix             Attempt to fix all tables (requires SUPER privilege)
 -s, --showsql         Print SQL statements for fixing of tables
+-o, --pre28 (old)     Use this if the master database (vmoodle register) is still in 2.7
 -h, --help            Print out this help
 -H, --host            the virtual host you are working for
 
@@ -96,7 +99,7 @@ if ($DB->get_dbfamily() !== 'mysql') {
 
 $engine = strtolower($DB->get_dbengine());
 if ($engine !== 'innodb' and $engine !== 'xtradb') {
-    cli_error('This script is for MySQL servers using InnoDB or XtraDB engines only.');
+    cli_error('This script is for MySQL servers using InnoDB or XtraDB engines only. We are working with engine '.$engine);
 }
 
 $generator = $DB->get_manager()->generator;
@@ -150,7 +153,7 @@ if (!empty($options['info'])) {
     $fixtables = array();
     foreach ($DB->get_tables(false) as $table) {
         $columns = $DB->get_columns($table, false);
-        $size = $generator->guess_antolope_row_size($columns);
+        $size = $generator->guess_antelope_row_size($columns);
         $format = $DB->get_row_format($table);
         if ($size <= $generator::ANTELOPE_MAX_ROW_SIZE) {
             continue;

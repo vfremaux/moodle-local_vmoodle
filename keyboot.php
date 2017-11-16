@@ -18,7 +18,7 @@
  * @package local_vmoodle
  * @category local
  *
- * this script is indented to provide a secured mechanisms to reboot the initial local MNET key
+ * this script is indented to provide a secured mechanism to reboot the initial local MNET key
  * when newly instanciated. This results in executing a primary $mnet->replace_keys(), so the new
  * instance has a valid own MNET setup. This script must be checked against security concerns as
  * not being accessible from any unkown host. The way we know our trusted master is to checkback
@@ -61,6 +61,10 @@ $remotehost = $DB->get_record_select('mnet_host', $select);
 
 if ($remotehost || $test) {
 
+    if (function_exists('debug_trace')) {
+        debug_trace("Calling Host found with the incomming key as $remotehost->wwwroot ");
+    }
+
     /*
      * $CFG->bootstrap_init is a key that has been added by master when postprocessing the deployment template
      * We check that the public key given matches the identity of the master who initiated the platform restoring.
@@ -70,6 +74,10 @@ if ($remotehost || $test) {
     $initroot = $DB->get_field('config', array('name' => 'bootstrap_init'));
 
     if ($test || ($initroot == $remotehost->wwwroot)) {
+
+        if (function_exists('debug_trace')) {
+            debug_trace("Calling Host identity verified as accepted booter.");
+        }
 
         /*
          * at this time, the local platform may not have self key, or may inherit
@@ -84,6 +92,9 @@ if ($remotehost || $test) {
 
         // Finally we disable the keyboot script locking definitively the door.
         set_config('bootstrap_init', null);
+        if (function_exists('debug_trace')) {
+            debug_trace("Bootkey window closed.");
+        }
         echo "SUCCESS";
 
     } else {

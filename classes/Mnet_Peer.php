@@ -49,6 +49,7 @@ class Mnet_Peer {
     public $keypair            = array();
     public $error              = array();
     public $bootstrapped       = false; // Set when the object is populated.
+    public $sslverification    = 0; // No ssl check.
 
     public function __construct() {
         $this->updateparams = new StdClass();
@@ -63,6 +64,7 @@ class Mnet_Peer {
      * @param string $wwwroot - address of peer whose details we want
      * @param string $pubkey - to use if we add a record to db for new peer
      * @param int $application - table id - what kind of peer are we talking to
+     * @param bool $force - force renewing key when the calling host (us) is known to the remote.
      * @return bool - indication of success or failure
      */
     public function bootstrap($wwwroot, $pubkey = null, $application, $force = false, $localname = '') {
@@ -72,7 +74,7 @@ class Mnet_Peer {
             $wwwroot = substr($wwwroot, 0, -1);
         }
 
-        if ( ! $this->set_wwwroot($wwwroot) ) {
+        if (!$this->set_wwwroot($wwwroot)) {
             $hostname = mnet_get_hostname_from_uri($wwwroot);
 
             /*
@@ -83,7 +85,7 @@ class Mnet_Peer {
 
             // Couldn't find the IP address?
             if ($ipaddress === $hostname && !preg_match('/^\d+\.\d+\.\d+.\d+$/', $hostname)) {
-                $this->errors[] = 'ErrCode 2 - '.get_string("noaddressforhost", 'mnet');
+                $this->errors[] = 'ErrCode 2 - Host has no valid IP address.';
                 return false;
             }
 
@@ -99,9 +101,11 @@ class Mnet_Peer {
              * TODO: In reality, this will be prohibitively slow... need another
              * default - maybe blank string
              */
-            $homepage = file_get_contents($wwwroot);
+            // PATCH+ : Add Skipcertverify ON and filter additional label after site name.
+            $homepage = download_file_content($wwwroot, null, null, false, 300, 20, true);
             if (!empty($homepage)) {
-                $count = preg_match("@<title>(.*)</title>@siU", $homepage, $matches);
+                $count = preg_match("@<title>(.*?)(\:?.*)</title>@siU", $homepage, $matches);
+            // PATCH-.
                 if ($count > 0) {
                     $this->name = $matches[1];
                     $this->updateparams->name = str_replace("'", "''", $matches[1]);
@@ -123,12 +127,20 @@ class Mnet_Peer {
             $this->applicationid = $this->application->id;
             $this->updateparams->applicationid = $this->application->id;
 
-            // Start bootstraping as usual through the system command.
-            $pubkeytemp = clean_param(mnet_get_public_key($this->wwwroot, $this->application), PARAM_PEM);
             if (empty($pubkey)) {
+                // Start bootstraping as usual through the system command.
+                $pubkeytemp = clean_param(mnet_get_public_key($this->wwwroot, $this->application), PARAM_PEM);
+                if (function_exists('debug_trace')) {
+                    debug_trace("bootstrap $this->wwwroot from null key");
+                }
                 // This is the key difference : force the exchange using vmoodle RPC keyswap !!
                 if (empty($pubkeytemp)) {
                     $pubkeytemp = clean_param(mnet_get_public_key($this->wwwroot, $this->application, $force), PARAM_PEM);
+                    if (empty($pubkeytemp)) {
+                        // We definitely failed.
+                        $this->errors[] = 'ErrCode 3 - Empty key received from peer.';
+                        return false;
+                    }
                 }
             } else {
                 $pubkeytemp = clean_param($pubkey, PARAM_PEM);
@@ -136,12 +148,13 @@ class Mnet_Peer {
             $this->publickeyexpires = $this->check_common_name($pubkeytemp);
 
             if ($this->publickeyexpires == false) {
+                $this->errors[] = 'ErrCode 4 - Missing expiration date.';
                 return false;
             }
             $this->updateparams->publickeyexpires = $this->publickeyexpires;
 
             $this->updateparams->publickey = $pubkeytemp;
-            $this->public_key = $pubkeytemp;
+            $this->publickey = $pubkeytemp;
 
             $this->lastconnecttime = 0;
             $this->updateparams->lastconnecttime = 0;

@@ -87,7 +87,8 @@ Command line ENT Sync worker.
     -e, --exclude       Exclude pattern filter (NOT LIKE).
     -i, --include       Include pattern filter (LIKE).
     -s, --simulate      Stops before launching and gives host list.
-    -v, --verbose      Stops before launching and gives host list.
+    -v, --verbose       Print out workeds output.
+    -s, --fullstop      Stops on first error.
 "; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
@@ -127,18 +128,12 @@ if (!empty($options['simulate'])) {
     die;
 }
 
-if (!file_exists($CFG->dirroot.'/local/vmoodle/cli/'.$options['fixture'].'.php')) {
+if (!file_exists($CFG->dirroot.'/local/vmoodle/cli/fixtures/'.$options['fixture'].'.php')) {
     die ("This fixture has no CLI script file\n");
 }
 
 // Start spreading workers, and pass the list of vhost ids. Launch workers in background.
 // Linux only implementation.
-
-if ($CFG->ostype == 'WINDOWS') {
-    $phpcmd = 'php.exe';
-} else {
-    $phpcmd = '/usr/bin/php';
-}
 
 $verboseattr = (!empty($options['verbose'])) ? '--verbose' : '';
 
@@ -149,7 +144,7 @@ foreach ($joblist as $jl) {
 
         $logattr = (!empty($options['logroot'])) ? "--logfile={$options['logroot']}/fixture_log_{$i}.log" : '';
         $hids = implode(',', $jl);
-        $workercmd = "$phpcmd \"{$CFG->dirroot}/local/vmoodle/cli/fixture_worker.php\" --nodes=\"$hids\"";
+        $workercmd = "php \"{$CFG->dirroot}/local/vmoodle/cli/fixture_worker.php\" --nodes=\"$hids\"";
         $workercmd .= " $logattr --fixture={$options['fixture']} $verboseattr";
         if (!empty($options['verbose'])) {
             mtrace("Worker start : $workercmd");
@@ -161,10 +156,15 @@ foreach ($joblist as $jl) {
         $output = array();
         exec($workercmd, $output, $return);
         if ($return) {
-            die("Worker ended with error");
+            if (!empty($options['fullstop'])) {
+                echo implode("\n", $output)."\n";
+                die("Worker ended with error");
+            }
+            echo "Worker ended with error:\n";
+            echo implode("\n", $output)."\n";
         }
-        if (!$options['distributed']) {
-            mtrace(implode("\n", $output));
+        if (!$options['distributed'] && !empty($options['verbose'])) {
+            echo implode("\n", $output)."\n";
         }
         $i++;
         sleep(JOB_INTERLEAVE);
