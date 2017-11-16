@@ -51,8 +51,44 @@ $CFG->vmasterdblogin = '';
 $CFG->vmasterdbpass = '';
 $CFG->vmasterdbpersist =  false;
 $CFG->vmasterprefix    = 'mdl_';
-$CFG->vmoodledefault    = 1; // Tells if the default physical config can be used as true host.
+$CFG->vmoodlenodefault    = 0; // If set, will block the use of the master install vmoodle.
 $CFG->vlogfilepattern  = '/var/log/%%VHOSTNAME%%.log';
+
+/*
+ * Define here the childs DB access in order NOT to expose individual DB access in the local_vmoodle database.
+ * If empty, each vmoodle needs to provide login and/or password from the database register.
+ */
+// $CFG->vchildsdblogin = '';
+// $CFG->vchildsdbpass = '';
+
+/*
+ * Use subpath will handle the virtual moodles as path extensions of a master domain, such as
+ * - http://main.domain.edu/moodle1
+ * - http://main.domain.edu/moodle2
+ * ...
+ *
+ * Subpathing is achieved with symlinks in the moodle installation directory as obtained by :
+ * ln -s . moodle1
+ *
+ * VMoodle will extract virtual instance identity from the first subpath part following the root domain
+ */
+// $CFG->vmoodleusesubpath = false;
+
+/*
+ * Forcing HTTPS proto. This is in case the Web server do not provide the environment variable
+ * HTTP_X_FORWARDED_PROTO but yet operates with an external https front protocol.
+ *
+ */
+// $CFG->vmoodle_force_https_proto = false;
+
+/*
+ * Setting forced default for master moodle or for all childs allows to include a forced setting
+ * additional configuration, located in the /local root. The file must be named :
+ * defaults_<defaultname>.php
+ *
+ */
+// $CFG->vmoodlehardmasterdefaults = 'defaultname';
+// $CFG->vmoodlehardchildsdefaults = 'defaultname';
 
 vmoodle_get_hostname();
 

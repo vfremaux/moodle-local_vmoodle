@@ -67,7 +67,7 @@ class Command_SyncLangCustomisation extends Command {
         $pluginsopts = array();
         foreach ($allplugins as $type => $typelist) {
             foreach ($typelist as $plugin => $plugininfo) {
-                $pluginsopts[$type.'/'.$plugin] = $type.' / '.$plugininfo->displayname;
+                $pluginsopts[$type.'_'.$plugin] = $type.' / '.$plugininfo->displayname;
             }
         }
 
@@ -122,7 +122,8 @@ class Command_SyncLangCustomisation extends Command {
         if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
             $response = (object) array(
                 'status' => MNET_FAILURE,
-                'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
+                'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform),
+                'errors' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
             );
 
             // If we fail, we fail for all.
@@ -142,19 +143,24 @@ class Command_SyncLangCustomisation extends Command {
         $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_local_langs');
         $rpcclient->add_param($plugins, 'struct'); // plugins.
         $rpcclient->add_param($langs, 'struct'); // languages.
-        $rpcclient->add_param(true, 'string'); // Not jsonrequired.
+        $rpcclient->add_param(true, 'string'); // Jsonrequired.
 
         // Checking result.
-        if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
+        if (!($rpcclient->send($mnethost)) || (!$response = json_decode($rpcclient->response)) || ($response->status != RPC_SUCCESS)) {
+            debug_trace('Get lang failed');
             // Creating response.
             if (!isset($response)) {
+                if (function_exists('debug_trace')) {
+                    debug_trace('null response');
+                }
                 $response = new Stdclass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                $response->errors = implode('<br/>', $rpcclient->get_errors($mnethost));
                 $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
             }
 
             $responses = array();
+
             // Sending requests.
             foreach ($hosts as $host => $name) {
                 $responses[$host] = $response;
@@ -164,8 +170,7 @@ class Command_SyncLangCustomisation extends Command {
 
             return;
         } else {
-
-            $langzipcontent = $response->zipcontent;
+            $encodedlangzipcontent = $response->zipcontent;
 
             // Set Config. Initializing responses.
             $responses = array();
@@ -187,18 +192,21 @@ class Command_SyncLangCustomisation extends Command {
             // Creating XMLRPC client.
             $rpcclient = new \local_vmoodle\XmlRpc_Client();
             $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_local_langs');
-            $rpcclient->add_param($langzipcontent, 'string');
+            $rpcclient->add_param($encodedlangzipcontent, 'string');
             $rpcclient->add_param(true, 'string');
 
             debug_trace('Launching set_local_langs on targets');
             // Set Config. Sending requests.
             foreach($mnethosts as $mnethost) {
-                debug_trace('Launching set_local_langs on '.$rpcclient->wwwroot);
+                if (function_exists('debug_trace')) {
+                    debug_trace('Launching set_local_langs on '.$mnethost->wwwroot);
+                }
                 // Sending request.
                 if (!$rpcclient->send($mnethost)) {
                     $response = new StdClass();
                     $response->status = MNET_FAILURE;
-                    $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                    $response->errors = implode('<br/>', $rpcclient->get_errors($mnethost));
+                    $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
                 } else {
                     $response = json_decode($rpcclient->response);
                 }
@@ -223,7 +231,7 @@ class Command_SyncLangCustomisation extends Command {
             throw new Command_Exception('commandnotrun');
         }
 
-        // Set Config. Checking host (general result isn't provide in this kind of command).
+        // Set Config. Checking host (general result isn't provided in this kind of command).
         if (is_null($host) || !array_key_exists($host, $this->results)) {
             return null;
         }
