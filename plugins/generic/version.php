@@ -25,6 +25,6 @@
 $plugin = new stdclass;
 $plugin->version = 2017092301;
 $plugin->component = 'vmoodleadminset_generic';
-$plugin->release = '3.2.0 (build 2017092301)';
-$plugin->requires = 2016120500;
+$plugin->release = '3.3.0 (build 2017092301)';
+$plugin->requires = 2017050500;
 $plugin->dependencies = array('local_vmoodle' => 2017090100);
