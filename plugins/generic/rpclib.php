@@ -19,6 +19,8 @@
  *
  */
 
+require_once($CFG->dirroot.'/local/vmoodle/plugins/generic/classes/Tool_CustomLang_Utils.php');
+
 if (!defined('MOODLE_INTERNAL')) {
     // It must be included from a Moodle page.
     die('Direct access to this script is forbidden.');
@@ -198,7 +200,6 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
 
     // Start checking and collecting lang files to prepare.
     $langfiles = array();
-    debug_trace(var_export($plugins));
     if (empty($plugins)) {
         // Creating response.
         $response = new stdClass;
@@ -211,21 +212,21 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         return $response;
     } else {
         if (in_array('all', $plugins)) {
-            $plugininset = array_values(VMoodle_CustomLang_Utils::list_components());
+            $plugininset = array_values(\vmoodleadminset_generic\VMoodle_CustomLang_Utils::list_components());
         }
         foreach ($plugins as $inset) {
-            $langfiles[] = VMoodle_CustomLang_Utils::get_component_filename($inset);
+            $langfiles[] = \vmoodleadminset_generic\VMoodle_CustomLang_Utils::get_component_filename($inset);
         }
     }
 
     // Start checking languages and prepare final archive catalog.
-    debug_trace(var_export($langs));
     $locations = array();
     if (empty($langs)) {
         // Creating response.
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "Empty lang set";
+
         if ($jsonrequired) {
             return json_encode($response);
         }
@@ -233,11 +234,11 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
     } else {
 
         if (in_array('all', $langs)) {
-            $langs = VMoodle_CustomLang_Utils::get_installed_langs();
+            $langs = \vmoodleadminset_generic\VMoodle_CustomLang_Utils::get_installed_langs();
         }
 
         foreach ($langs as $lang) {
-            $location = VMoodle_CustomLang_Utils::get_localpack_location($lang);
+            $location = \vmoodleadminset_generic\VMoodle_CustomLang_Utils::get_localpack_location($lang);
             if (is_dir($location)) {
                 $locations[] = $location;
             }
@@ -246,8 +247,12 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         if (empty($locations)) {
             // Creating response.
             $response = new stdClass;
-            $response->status = RPC_FAILURE;
+            $response->status = RPC_FAILURE_DATA;
             $response->error = "None of the lang is available for customisation";
+            $response->errors = "None of the lang is available for customisation";
+            if (function_exists('debug_trace')) {
+                debug_trace("No locations available for custom lang strings ");
+            }
             if ($jsonrequired) {
                 return json_encode($response);
             }
@@ -259,6 +264,9 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
     $archivehascontent = false;
     $ziparchive = new zip_archive();
     $tmparchive = $CFG->tempdir.'/vmoodle_rpc_get_customlang_'.uniqid().'.zip';
+    if (function_exists('debug_trace')) {
+        debug_trace("Creating zip archive $tmparchive");
+    }
     $ziparchive->open($tmparchive, file_archive::CREATE, null);
     foreach ($locations as $langloc) {
         foreach ($langfiles as $lfile) {
@@ -277,6 +285,7 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "No files found for customisation. Empty archive.";
+        $response->errors = "No files found for customisation. Empty archive.";
         if ($jsonrequired) {
             return json_encode($response);
         }
@@ -288,7 +297,7 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
     $response->status = RPC_SUCCESS;
 
     // Read the file and get raw zip content.
-    $response->zipcontent = implode('', file($fileh));
+    $response->zipcontent = base64_encode(implode('', file($tmparchive)));
 
     // Clean out the temporary archive.
     unlink($tmparchive);
@@ -328,8 +337,9 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "Failed writing archive";
+        $response->errors = "Failed writing archive";
     }
-    fputs($TMP, $locallangzipcontent);
+    fputs($TMP, base64_decode($locallangzipcontent));
     fclose($TMP);
 
     $zippacker = get_file_packer();
@@ -351,18 +361,94 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
 }
 
 /**
- * Receives a in message zip archive all local lang files to replace in the moodledata local lang customisation.
+ * Receives file content an file identitiy descriptor and stores an identical file in the local filesystem. Only site level
+ * files can be exchanged.
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
- * @param string $locallangzipcontent A string containing the zip fie content.
+ * @param string $component The component name.
+ * @param string $filearea the file area.
+ * @param string $itemid The origin itemid. Usually should be 0, but some other cases may arise.
+ * @param string $filename The full pathed name of the file.
+ * @param string $filecontent The encoded (base64) file content.
+ * @param boolean $jsonrequired Is json required for return ?.
  */
 function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filename, $filecontent, $jsonrequired = true) {
     global $CFG;
 
-    $return = new StdClass;
-    $return->status = RPC_SUCCESS;
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Receiving moodle file');
+    }
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+    }
+
+    $context = context_system::instance();
+
+    $filerec = new StdClass;
+    $filerec->contextid = $context->id;
+    $filerec->component = $component;
+    $filerec->filearea = $filearea;
+    $filerec->itemid = $itemid;
+    $filerec->filepath = dirname($filename).'/';
+    $filerec->filepath = str_replace('//', '/', $filerec->filepath); // fixes eventual slash doubling
+    $filerec->filename = basename($filename);
+
+    $fs = get_file_storage();
+
+    // Delete old file in the way.
+
+    if ($oldfile = $fs->get_file($filerec->contextid,
+                                 $filerec->component,
+                                 $filerec->filearea,
+                                 $filerec->itemid,
+                                 $filerec->filepath,
+                                 $filerec->filename)) {
+        if (function_exists('debug_trace')) {
+            debug_trace("Deleting old file ".print_r($filerec,true));
+        }
+        $oldfile->delete();
+    }
+
+    // Store new file.
+    if (function_exists('debug_trace')) {
+        debug_trace("Creating old file ".print_r($filerec,true));
+    }
+    $newfile = $fs->create_file_from_string($filerec, base64_decode($filecontent));
+
+    if ($newfile) {
+        $return = new StdClass;
+        $return->status = RPC_SUCCESS;
+    } else {
+        $return = new StdClass;
+        $return->status = RPC_FAILURE_DATA;
+        $return->error = "Failed to create local file";
+        $return->errors[] = "Failed to create local file";
+    }
+
+    if ($jsonrequired) {
+        return json_encode($return);
+    }
+    return $return;
+}
+
+/**
+ * Get a remote file and send it to the caller if exists.
+ * this is similar to the file download WS procedure but within a mnet trusted network and without token setup.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $component The component name.
+ * @param string $filearea the file area.
+ * @param string $itemid The origin itemid. Usually should be 0, but some other cases may arise.
+ * @param string $filename The full pathed name of the file.
+ * @param boolean $jsonrequired Is json required for return ?.
+ */
+function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filename, $jsonrequired = true) {
+    global $CFG;
 
     if (function_exists('debug_trace')) {
-        debug_trace('RPC starts : Receiving moode file');
+        debug_trace('RPC starts : Getting local moodle file');
     }
 
     if ($auth_response = invoke_local_user((array)$user)) {
@@ -384,7 +470,21 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
 
     $fs = get_file_storage();
 
-    $fs->create_file_from_string($filerec, $filecontent);
+    if ($file = $fs->get_file($filerec->contextid,
+                                 $filerec->component,
+                                 $filerec->filerarea,
+                                 $filerec->itemid,
+                                 $filerec->filepath,
+                                 $filerec->filename)) {
+        $return->filecontent = base64_encode($file->get_content());
+        $return = new StdClass;
+        $return->status = RPC_SUCCESS;
+    } else {
+        $return = new StdClass;
+        $return->status = RPC_FAILURE_DATA;
+        $return->error = "Cannot find required file";
+        $return->errors[] = "Cannot find required file";
+    }
 
     if ($jsonrequired) {
         return json_encode($return);

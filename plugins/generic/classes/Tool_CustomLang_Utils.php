@@ -38,10 +38,12 @@ class VMoodle_CustomLang_Utils extends tool_customlang_utils {
     }
 
     public static function get_component_filename($component) {
+        // Normalise name
+        $component = str_replace('/', '_', $component);
         return parent::get_component_filename($component);
     }
 
-    public static get_installed_langs() {
+    public static function get_installed_langs() {
         $langs = get_string_manager()->get_list_of_translations(true);
         return array_keys($langs);
     }

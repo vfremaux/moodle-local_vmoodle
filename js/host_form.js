@@ -8,7 +8,7 @@
 // jshint undef:false, unused:false
 function opencnxpopup(wwwroot) {
 
-    // Inputted data.
+    // Input data.
     var dbtype = document.getElementById('id_vdbtype').value;
     var dbhost = document.getElementById('id_vdbhost').value;
     var dblogin = document.getElementById('id_vdblogin').value;
@@ -83,7 +83,9 @@ function syncSchema(){
     var syncedelement3 = document.getElementById("id_vdatapath");
     var syncedelement4 = document.getElementById("id_vhostname");
 
-    syncedelement2.value = syncedelement2.value.replace(/<%%INSTANCE%%>/g, originelement.value);
+    dbescapedelement = originelement.value.replace('-', '_');
+    dbescapedelement = dbescapedelement.replace(' ', '_');
+    syncedelement2.value = syncedelement2.value.replace(/<%%INSTANCE%%>/g, dbescapedelement);
     syncedelement3.value = syncedelement3.value.replace(/<%%INSTANCE%%>/g, originelement.value);
     syncedelement4.value = syncedelement4.value.replace(/<%%INSTANCE%%>/g, originelement.value);
 }

@@ -44,6 +44,13 @@ if (!defined('RPC_SUCCESS')) {
 function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
     global $CFG, $USER;
 
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Upgrade moodle');
+    }
+
+    raise_memory_limit(MEMORY_HUGE);
+    @set_time_limit(0);
+
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonresponse) {
@@ -107,6 +114,10 @@ function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
         } else {
             return $response;
         }
+    }
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Starting upgrades');
     }
 
     ob_start();

@@ -25,7 +25,9 @@
 namespace vmoodleadminset_generic;
 
 use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Parameter;
 use \StdClass;
+use \context_system;
 
 class Command_CopyFile extends Command {
 
@@ -50,6 +52,14 @@ class Command_CopyFile extends Command {
         $cmdname = vmoodle_get_string('cmdcopyfile', 'vmoodleadminset_generic');
         $cmddesc = vmoodle_get_string('cmdcopyfile_desc', 'vmoodleadminset_generic');
 
+        $platforms = get_available_platforms();
+
+        $platforms = array_merge(array('0' => get_string('localfile', 'vmoodleadminset_generic')), $platforms);
+
+        // Creating platform parameter.
+        $label = get_string('platformparamfile_desc', 'vmoodleadminset_generic');
+        $platformparam = new Command_Parameter('platform', 'enum', $label, null, $platforms);
+
         // Get all system level files that are true files.
         $params = array('contextid' => context_system::instance()->id);
         $select = " contextid = ? AND filename <> '.' ";
@@ -58,16 +68,19 @@ class Command_CopyFile extends Command {
         $filesmennu = array();
         if (!empty($files)) {
             foreach($files as $fid => $file) {
+                if ($file->filearea == 'preview') {
+                    continue;
+                }
                 $filesmenu[$fid] = "[{$file->component}@{$file->filearea}§{$file->itemid} {$file->filepath}{$file->filename}";
             }
         }
 
         // Creating platform parameter. This is the source platform.
-        $label = get_string('filedesc', 'vmoodleadminset_generic');
+        $label = get_string('file_desc', 'vmoodleadminset_generic');
         $fileparam = new Command_Parameter('fileid', 'enum', $label, null, $filesmenu);
 
         // Creating Command.
-        parent::__construct($cmdname, $cmddesc, array($fileparam), $rpcommand);
+        parent::__construct($cmdname, $cmddesc, array($platformparam, $fileparam), $rpcommand);
     }
 
     /**
@@ -108,9 +121,69 @@ class Command_CopyFile extends Command {
         // Set Config. Getting command.
         $command = $this->is_returned();
 
+        // Get file descriptor from locally defined files.
+        // We cannot transfer or copy a file the master does not knwow about.
         $fileid = $this->get_parameter('fileid')->get_value();
         $fs = get_file_storage();
         $file = $fs->get_file_by_id($fileid);
+
+        // Resolve file source and get a remote file if remote.
+        $source = $this->get_parameter('platform')->get_value();
+
+        if ($source) {
+            // Creating peer to read plugins configuration from the designated peer.
+            $mnethost = new mnet_peer();
+            if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
+                $response = (object) array(
+                    'status' => MNET_FAILURE,
+                    'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
+                );
+
+                // If we fail, we fail for all.
+                foreach ($hosts as $host => $name) {
+                    $this->results[$host] = $response;
+                }
+                return;
+            }
+
+            debug_trace('Launching get_local_langs on source ');
+            // Creating XMLRPC client to get the remote customisation language pack.
+            $rpcclient = new \local_vmoodle\XmlRpc_Client();
+            $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_remote_file');
+            $rpcclient->add_param($file->get_component(), 'string'); // plugins.
+            $rpcclient->add_param($file->get_filearea(), 'string'); // languages.
+            $rpcclient->add_param($file->get_itemid(), 'string'); // languages.
+            $rpcclient->add_param($file->get_filepath().$file->get_filename(), 'string'); // languages.
+            $rpcclient->add_param(true, 'string'); // Not jsonrequired.
+
+            // Checking result.
+            if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
+                // Creating response.
+                if (!isset($response)) {
+                    $response = new Stdclass();
+                    $response->status = MNET_FAILURE;
+                    $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
+                    $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
+                }
+
+                $responses = array();
+                // Sending requests.
+                foreach ($hosts as $host => $name) {
+                    $responses[$host] = $response;
+                }
+
+                $this->results = $responses + $this->results;
+
+                // Don't go futher.
+                return;
+            } else {
+                // We have a remote file.
+                $filecontent = $response->filecontent;
+            }
+        } else {
+            // If file is local use the local content of the file.
+            $filecontent = $file->get_content();
+        }
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
@@ -119,8 +192,8 @@ class Command_CopyFile extends Command {
         $rpc_client->add_param($file->get_filearea(), 'string');
         $rpc_client->add_param($file->get_itemid(), 'string');
         $rpc_client->add_param($file->get_filepath().$file->get_filename(), 'string');
-        $rpc_client->add_param($file->get_content(), 'string');
-        $rpc_client->add_param($command, 'boolean');
+        $rpc_client->add_param(base64_encode($filecontent), 'string');
+        $rpc_client->add_param(true, 'boolean');
 
         // Set Config. Sending requests.
         foreach($mnet_hosts as $mnet_host) {

@@ -194,6 +194,11 @@ if ($hasadmin) {
         $desc = get_string('systempath_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configtext($key, $label, $desc, '/usr/bin/pg_dump'));
 
+        $key = 'local_vmoodle/sudoer';
+        $label = get_string('sudoer', 'local_vmoodle');
+        $desc = get_string('sudoer_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
+
         $settings->add(new admin_setting_heading('massdeployment', get_string('massdeployment', 'local_vmoodle'), ''));
 
         $encodingopts[0] = 'UTF-8';

@@ -73,6 +73,7 @@ $string['clustering'] = 'Cluster settings';
 $string['configclusters'] = 'Clusters';
 $string['configclusterix'] = 'Cluster index';
 $string['cancelcommand'] = 'Cancel command';
+$string['cancelled'] = 'Cancelled';
 $string['capfilter'] = 'Capability filter';
 $string['categoryignored'] = 'The category {$a} has been ignored:';
 $string['categorywrongname'] = 'The category\'s name is wrong.';
@@ -282,6 +283,7 @@ $string['rpcstatus404'] = 'RPC failure : target URL not found.';
 $string['rpcstatus500'] = 'RPC failure.';
 $string['rpcstatus501'] = 'No local account for calling user.';
 $string['rpcstatus502'] = 'Configuration failure.';
+$string['rpcstatus503'] = 'Remote applicative failure.';
 $string['rpcstatus510'] = 'Insuffisant rights.';
 $string['rpcstatus511'] = 'MNET failure.';
 $string['rpcstatus520'] = 'Unable to get SQL record.';
@@ -316,7 +318,7 @@ $string['successedithost'] = 'Editing the host completed.';
 $string['successfinishedcapture'] = 'Capture completed.';
 $string['successfullplatforms'] = 'Successfull platforms:';
 $string['successstrategyservices'] = 'Default services strategy deployment done.';
-$string['systempath_desc'] = 'Absolute system path to executable';
+$string['sudoer'] = 'Sudoer';
 $string['syncvmoodleregister'] = 'Synchronize VMoodle registers';
 $string['tabpoolmanage'] = 'Pool management';
 $string['tabpoolsadmin'] = 'Pool administration';
@@ -333,6 +335,7 @@ $string['uninstall'] = 'Uninstall';
 $string['unknownhost'] = 'The host you are trying to setup has no DNS resolution. You can force the way executing again the procedure but the MNET initialisation will not be processed.';
 $string['unknownhostforced'] = 'the new host you are trying to setup has no DNS resolution. You have required forcing this limitation. MNET bindings will not be performed and you will have to set them up manually.';
 $string['unknownuserhost'] = 'User host platform unknown';
+$string['emptyormalformedvhostname'] = 'Empty or malformed url';
 $string['upgrade'] = 'Upgrade databases';
 $string['uploadscript'] = 'Upload a script';
 $string['vdatapath'] = 'Path for "moodledata" ';
@@ -367,7 +370,6 @@ $string['vmoodlehost'] = 'Virtual Moodle Host name scheme';
 $string['vmoodlehost'] = 'Virtual Moodle host';
 $string['vmoodlehost_desc'] = 'Any http(s):// scheme where <%%INSTANCE%%> will be replaced by host shortname.';
 $string['vmoodleip'] = 'IP Address';
-$string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
 $string['vmoodlemanager'] = 'Virtual Moodle instances manager';
 $string['vmoodlesnapshot1'] = 'STEP 1 on 3 : Snapshot preparation done. Next step will copy the database. This operation can be long depending on the database size.';
 $string['vmoodlesnapshot2'] = 'STEP 2 on 3 : Database saved. Next step will save Moodle Data. This operation can be very long depending on the number of files added to the platform';
@@ -548,4 +550,13 @@ $string['configclusters_desc'] = 'Tell how many clusters you are using for servi
 
 $string['configclusterix_desc'] = 'This indicates the cluster subset index the current host is running for all distributed cron tasks or vmoodle
 enabled batch jobs. The value must be locally force by configuration files (no db value as it is shared), using a
-$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] key. Take care all cluster will force a different value.';
+$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] key. Take care all cluster will force a different value.
+';
+
+$string['sudoer_desc'] = 'A linux user that can perform changes in moodle installation directory. This user should be
+subject of a sudo rule like : www-data  ALL = (user) NOPASSWD:/usr/bin/ln';
+
+$string['systempath_desc'] = 'Absolute system path to executable';
+
+$string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
+
