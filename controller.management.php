@@ -42,6 +42,7 @@ Use \local_vmoodle\Mnet_Peer;
 
 // Includes the MNET library.
 require_once($CFG->dirroot.'/mnet/lib.php');
+require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 // Add needed javascript here (because addonload() is needed before).
 
@@ -117,7 +118,13 @@ if ($action == 'add') {
 /* *************************** Do ADD actions *********** */
 if ($action == 'doadd') {
 
-    if (empty($automation)) {
+    $interactive = empty($automation);
+
+    if (function_exists('debug_trace')) {
+        debug_trace('Start vnode addition');
+    }
+
+    if ($interactive) {
         $vmoodlestep = optional_param('step', 0, PARAM_INT);
 
         // Retrieve submitted data, from the add form.
@@ -126,8 +133,11 @@ if ($action == 'doadd') {
 
         // Check if form is cancelled.
         if ($platformform->is_cancelled()) {
-            redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-            die;
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode addition cancelled');
+            }
+            echo $OUTPUT->notification(get_string('cancelled', 'local_vmoodle'));
+            redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'list')));
         }
     }
 
@@ -138,358 +148,488 @@ if ($action == 'doadd') {
         $submitteddata = $SESSION->vmoodledata;
     }
 
-    if ($submitteddata) {
+    if (!$submitteddata) {
+        if (function_exists('debug_trace')) {
+            debug_trace('Vnode No submitted data. Exiting.');
+        }
 
-        if ($submitteddata->vtemplate === 0) {
+        // Rollback to form.
+        unset($SESSION->vmoodledata);
+        echo $OUTPUT->header();
+        $platformform->display();
+        echo $OUTPUT->footer();
+        die;
+    }
 
-            $sqlrequest = 'UPDATE
-                                {mnet_host}
-                           SET
-                                deleted = 0
-                           WHERE
-                                wwwroot = "'.$submitteddata->vhostname.'"';
-            $DB->execute($sqlrequest);
+    if (function_exists('debug_trace')) {
+        debug_trace('Vnode addition processing input data');
+    }
 
-            $sqlrequest = 'SELECT
-                            *
-                           FROM
-                                {local_vmoodle}
-                           WHERE
-                                vhostname = "'.$submitteddata->vhostname.'"';
-            $record = $DB->get_record_sql($sqlrequest);
+    if ($submitteddata->vtemplate === 0) {
 
-            if (empty($record)) {
-                $record = (object) array('name' => $submitteddata->name,
-                                         'shortname' => $submitteddata->shortname,
-                                         'description' => $submitteddata->description,
-                                         'vhostname' => $submitteddata->vhostname,
-                                         'vdbtype' => $submitteddata->vdbtype,
-                                         'vdbhost' => $submitteddata->vdbhost,
-                                         'vdblogin' => $submitteddata->vdblogin,
-                                         'vdbpass' => $submitteddata->vdbpass,
-                                         'vdbname' => $submitteddata->vdbname,
-                                         'vdbpersist' => $submitteddata->vdbpersist,
-                                         'vdbprefix' => $submitteddata->vdbprefix,
-                                         'vdbpersist' => $submitteddata->vdbpersist,
-                                         'vdatapath' => $submitteddata->vdatapath,
-                                         'mnet' => $submitteddata->mnet);
-                $DB->insert_record('local_vmoodle', $record);
+        $sqlrequest = 'UPDATE
+                            {mnet_host}
+                       SET
+                            deleted = 0
+                       WHERE
+                            wwwroot = "'.$submitteddata->vhostname.'"';
+        $DB->execute($sqlrequest);
+
+        $sqlrequest = 'SELECT
+                        *
+                       FROM
+                            {local_vmoodle}
+                       WHERE
+                            vhostname = "'.$submitteddata->vhostname.'"';
+        $record = $DB->get_record_sql($sqlrequest);
+
+        if (empty($record)) {
+            $record = (object) array('name' => $submitteddata->name,
+                                     'shortname' => $submitteddata->shortname,
+                                     'description' => $submitteddata->description,
+                                     'vhostname' => $submitteddata->vhostname,
+                                     'vdbtype' => $submitteddata->vdbtype,
+                                     'vdbhost' => $submitteddata->vdbhost,
+                                     'vdblogin' => $submitteddata->vdblogin,
+                                     'vdbpass' => $submitteddata->vdbpass,
+                                     'vdbname' => $submitteddata->vdbname,
+                                     'vdbpersist' => $submitteddata->vdbpersist,
+                                     'vdbprefix' => $submitteddata->vdbprefix,
+                                     'vdbpersist' => $submitteddata->vdbpersist,
+                                     'vdatapath' => $submitteddata->vdatapath,
+                                     'mnet' => $submitteddata->mnet);
+            $DB->insert_record('local_vmoodle', $record);
+        }
+
+        if (function_exists('debug_trace')) {
+            debug_trace('Vnode simple reactivation');
+        }
+
+        if ($interactive) {
+            $messageobject->message = get_string('plateformreactivate', 'local_vmoodle');
+            $messageobject->style = 'notifysuccess';
+            $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+            redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+        }
+        return 0;
+    } else {
+
+        // Checks if the chosen template still exists.
+        $templates = vmoodle_get_available_templates();
+        if (empty($templates) || !vmoodle_exist_template($submitteddata->vtemplate)) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode no template. Exiting.');
             }
 
-            if (empty($automation)) {
-                $messageobject->message = get_string('plateformreactivate', 'local_vmoodle');
-                $messageobject->style = 'notifysuccess';
+            // If the snapshot has been deleted between loading the add form and submitting it.
+            $messageobject->message = get_string('notemplates', 'local_vmoodle');
+            if ($interactive) {
                 $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
                 redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+            }
+            mtrace(get_string('notemplates', 'local_vmoodle'));
+            return -1;
+        }
+
+        // Check if the required hostname has DNS resolution.
+        $domainname = preg_replace('/https?:\/\//', '', $submitteddata->vhostname); // Remove protocol.
+        $domainname = preg_replace('/\/.*/', '', $domainname); // Remove all trailing path.
+        if (!gethostbynamel($domainname)) {
+            if (!empty($submitteddata->forcedns)) {
+                if (!$interactive) {
+                    mtrace('unknownhostforced', 'local_vmoodle');
+                }
+            } else {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Vnode unkown host non force. Exiting.');
+                }
+
+                $messageobject->message = get_string('unknownhost', 'local_vmoodle'). ' : '.$domainname;
+                $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+                if ($interactive) {
+                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                }
+                mtrace($SESSION->vmoodle_ma['confirm_message']->message);
+                return -1;
+            }
+        }
+
+        // Do we have a "self" host record ?
+        if (!$thisashost = $DB->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode self mnet host is missing. Exiting.');
+            }
+
+            // If loading this host's data has failed.
+            $messageobject->message = get_string('badthishostdata', 'local_vmoodle');
+            $messageobject->style = 'notifyproblem';
+
+            if ($interactive) {
+                $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+                redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+            }
+            mtrace(get_string('badthishostdata', 'local_vmoodle'));
+            return -1;
+        }
+
+        // Creates database from template.
+
+        if ($vmoodlestep == 0) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode STEP 0.');
+            }
+
+            if (!vmoodle_load_database_from_template($submitteddata, $CFG->dataroot.'/vmoodle')) {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Vnode could not load DB. Exiting.');
+                }
+
+                // If loading database from template has failed.
+                unset($SESSION->vmoodledata);
+                $messageobject->message = get_string('badtemplatation', 'local_vmoodle');
+                $messageobject->style = 'notifyproblem';
+
+                if ($interactive) {
+                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                }
+
+                mtrace(get_string('badtemplatation', 'local_vmoodle'));
+                return -1;
+            }
+
+            if ($interactive) {
+                echo $OUTPUT->header();
+                echo $OUTPUT->notification(get_string('vmoodledoadd1', 'local_vmoodle'), 'notifysuccess');
+                $params = array('view' => 'management', 'what' => 'doadd', 'step' => 1);
+                echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
+                echo $OUTPUT->footer();
                 die;
             }
             return 0;
-        } else {
+        }
 
-            // Checks if the chosen template still exists.
-            $templates = vmoodle_get_available_templates();
-            if (empty($templates) || !vmoodle_exist_template($submitteddata->vtemplate)) {
-                // If the snapshot has been deleted between loading the add form and submitting it.
-                $messageobject->message = get_string('notemplates', 'local_vmoodle');
-                if (empty($automation)) {
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+        // Fix remote database for Mnet operations.
+
+        /*
+         * Fixing database will rewrite and prepare the remote mnet_host table for having
+         * consistant identity of the VMoodle Master node.
+         * Additionnaly, some data from instance addition form should be forced into
+         * the SQL template, whatever the configuration of the original Moodle was.
+         *
+         * A script backup is available in vmoodle data directory as
+         *
+         * vmoodle_setup_template.temp.sql
+         *
+         * with all fixing SQL instructions processed.
+         */
+
+        if ($vmoodlestep == 1) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode STEP 1.');
+            }
+
+            if (!vmoodle_fix_database($submitteddata, $thisashost, $CFG->dataroot.'/vmoodle')) {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Fixing database error. Exiting.');
+                }
+
+                // If fixing database has failed.
+                unset($SESSION->vmoodledata);
+                $messageobject->message = get_string('couldnotfixdatabase', 'local_vmoodle');
+                $messageobject->style = 'notifyproblem';
+                $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+
+                if ($interactive) {
                     redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
                     die;
                 }
-                mtrace(get_string('notemplates', 'local_vmoodle'));
-                return -1;
+
+                mtrace($SESSION->vmoodle_ma['confirm_message']->message);
+                return -1; 
             }
 
-            // Check if the required hostname has DNS resolution.
-            $domainname = preg_replace('/https?:\/\//', '', $submitteddata->vhostname);
-            if (!gethostbynamel($domainname)) {
-                if ($submitteddata->forcedns) {
-                    print_string('unknownhostforced', 'local_vmoodle');
-                } else {
-                    $messageobject->message = get_string('unknownhost', 'local_vmoodle'). ' : '.$domainname;
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    if (empty($automation)) {
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                        die;
-                    }
-                    mtrace($SESSION->vmoodle_ma['confirm_message']->message);
-                    return -1;
+            if ($interactive) {
+                echo $OUTPUT->header();
+                echo $OUTPUT->notification(get_string('vmoodledoadd2', 'local_vmoodle'), 'notifysuccess');
+                if (debugging()) {
+                    $params = array();
+                    $params['view'] = 'management';
+                    $params['what'] = 'doadd';
+                    $params['step'] = 2;
+                    echo '<center>';
+                    $label = get_string('skip', 'local_vmoodle');
+                    echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
+                    echo '</center>';
                 }
-            }
-
-            // Do we have a "self" host record ?
-            if (!$thisashost = $DB->get_record('mnet_host', array('wwwroot' => $CFG->wwwroot))) {
-                // If loading this host's data has failed.
-                $messageobject->message = get_string('badthishostdata', 'local_vmoodle');
-
-                if (empty($automation)) {
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                    die;
-                }
-                mtrace(get_string('badthishostdata', 'local_vmoodle'));
-                return -1;
-            }
-
-            // Creates database from template.
-
-            if ($vmoodlestep == 0) {
-                if (!vmoodle_load_database_from_template($submitteddata, $CFG->dataroot.'/vmoodle')) {
-                    // If loading database from template has failed.
-                    unset($SESSION->vmoodledata);
-                    $messageobject->message = get_string('badtemplatation', 'local_vmoodle');
-                    if (empty($automation)) {
-                        $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                        die;
-                    }
-                    mtrace(get_string('badtemplatation', 'local_vmoodle'));
-                    return -1;
-                }
-
-                if (empty($automation)) {
-                    echo $OUTPUT->header();
-                    echo $OUTPUT->box(get_string('vmoodledoadd1', 'local_vmoodle'));
-                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 1);
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
-                    echo $OUTPUT->footer();
-                    die;
-                }
-                return 0;
-            }
-
-            // Fix remote database for Mnet operations.
-
-            /*
-             * Fixing database will rewrite and prepare the remote mnet_host table for having
-             * consistant identity of the VMoodle Master node.
-             * Additionnaly, some data from instance addition form should be forced into
-             * the SQL template, whatever the configuration of the original Moodle was.
-             *
-             * A script backup is available in vmoodle data directory as
-             *
-             * vmoodle_setup_template.temp.sql
-             *
-             * with all fixing SQL instructions processed.
-             */
-
-            if ($vmoodlestep == 1) {
-                if (!vmoodle_fix_database($submitteddata, $thisashost, $CFG->dataroot.'/vmoodle')) {
-                    // If fixing database has failed.
-                    unset($SESSION->vmoodledata);
-                    $messageobject->message = get_string('couldnotfixdatabase', 'local_vmoodle');
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    if (empty($automation)) {
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                        die;
-                    }
-                    mtrace($SESSION->vmoodle_ma['confirm_message']->message);
-                    return -1; 
-                }
-                if (empty($automation)) {
-                    echo $OUTPUT->header();
-                    echo $OUTPUT->box(get_string('vmoodledoadd2', 'local_vmoodle'));
-                    if (debugging()) {
-                        $params = array();
-                        $params['view'] = 'management';
-                        $params['what'] = 'doadd';
-                        $params['step'] = 2;
-                        echo '<center>';
-                        $label = get_string('skip', 'local_vmoodle');
-                        echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
-                        echo '</center>';
-                    }
-                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 2);
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
-                    echo $OUTPUT->footer();
-                    die;
-                }
-                return 0;
-            }
-
-            // Get fileset for moodledata.
-
-            if ($vmoodlestep == 2) {
-                vmoodle_dump_files_from_template($submitteddata->vtemplate, $submitteddata->vdatapath);
-                if (empty($automation)) {
-                    echo $OUTPUT->header();
-                    echo $OUTPUT->box(get_string('vmoodledoadd3', 'local_vmoodle'));
-                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 3);
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
-                    echo $OUTPUT->footer();
-                    die;
-                }
-                return 0;
-            }
-
-            // Insert proper vmoodle record.
-
-            if ($vmoodlestep == 3) {
-                // Adds the new virtual instance record, with all data if everything is done.
-                $submitteddata->timecreated = time();
-                $submitteddata->vhostname = preg_replace("/\/$/", '', $submitteddata->vhostname); // Fix possible misslashing.
-
-                if ($submitteddata->mnet == 'NEW') {
-                    $maxmnet = vmoodle_get_last_subnetwork_number();
-                    $submitteddata->mnet = $maxmnet + 1;
-                }
-
-                if (!$idnewblock = $DB->insert_record('local_vmoodle', $submitteddata)) {
-                    // If inserting data in 'local_vmoodle' table has failed.
-                    $messageobject->message = get_string('badblockinsert', 'local_vmoodle');
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    if (empty($automation)) {
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                        die;
-                    }
-                    mtrace($SESSION->vmoodle_ma['confirm_message']->message);
-                    return -1;
-                }
-                if (empty($automation)) {
-                    echo $OUTPUT->header();
-                    echo $OUTPUT->box(get_string('vmoodledoadd4', 'local_vmoodle'));
-                    $params = array('view' => 'management', 'what' => 'doadd', 'step' => 4);
-                    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
-                    echo $OUTPUT->footer();
-                    die;
-                }
-                return 0;
-            }
-
-            // Mnet bind from master side.
-            if ($vmoodlestep == 4) {
-
-                $newmnethost = new \local_vmoodle\Mnet_Peer();
-                $newmnethost->set_wwwroot($submitteddata->vhostname);
-                $newmnethost->set_name($submitteddata->name);
-
-                // If the new host is not using MNET, we discard it from us. There will be no more MNET contact with this host.
-                // vmoodle_fix_database should have disabled all mnet operations in the remote moodle.
-                if ($submitteddata->mnet == -1) {
-                    $newmnethost->updateparams->deleted = 1;
-                    $newmnethost->commit();
-                    $messageobject->message = get_string('successaddnewhostwithoutmnet', 'local_vmoodle');
-                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                    if (empty($automation)) {
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                    }
-                    return 1;
-                }
-
-                // Force renew using remote keyboot.php access.
-                $uri = $submitteddata->vhostname.'/local/vmoodle/keyboot.php';
-
-                $rq = 'pk='.urlencode($thisashost->public_key);
-                $ch = curl_init("$uri");
-                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $rq);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-
-                // Try remote key booting.
-                if (!$res = curl_exec($ch)) {
-                    // If remote keybooting has failed.
-                    $messageobject->message = get_string('couldnotkeyboot', 'local_vmoodle', 'CURL Error');
-                    if (empty($automation)) {
-                        $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                    }
-                    mtrace(get_string('couldnotkeyboot', 'local_vmoodle', 'CURL Error'));
-                    return -1;
-                }
-                if (preg_match('/ERROR/', $res)) {
-                    // If remote keybooting has failed.
-                    $messageobject->message = get_string('couldnotkeyboot', 'local_vmoodle', $res);
-                    if (empty($automation)) {
-                        $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                    }
-                    mtrace(get_string('couldnotkeyboot', 'local_vmoodle', $res));
-                    return -1;
-                }
-                curl_close($ch);
-
-                // Force new virtual host to renew our key and send his own to us.
-
-                if (!$newmnethost->bootstrap($submitteddata->vhostname, null, 'moodle', 1, $submitteddata->name)) {
-                    // If bootstraping the new host has failed.
-                    if (empty($automation)) {
-                        $SESSION->vmoodle_ma['confirm_message'] = 'bootstrap failure';
-                        if (debugging()) {
-                            echo $OUTPUT->header();
-                            echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                            echo $OUTPUT->footer();
-                        } else {
-                            $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-                            redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-                        }
-                        die;
-                    }
-                    mtrace('bootstrap failure');
-                    return -1;
-                }
-                $newmnethost->updateparams->deleted = 0; // In case already there and needs revive.
-                $newmnethost->commit();
-
-                // We need to start output here in case of exceptions.
-
-                // Service 'mnetadmin' is needed to speak with new host. Set it our side.
-                $slavehost = $DB->get_record('mnet_host', array('wwwroot' => $submitteddata->vhostname));
-
-                // Cleanup any previous records.
-                $DB->delete_records('mnet_host2service', array('hostid' => $slavehost->id));
-                $mnetadminservice = $DB->get_record('mnet_service', array('name' => 'mnetadmin'));
-                $host2service = new stdclass();
-                $host2service->hostid = $slavehost->id;
-                $host2service->serviceid = $mnetadminservice->id;
-                $host2service->publish = 0;
-                $host2service->subscribe = 1;
-                $DB->insert_record('mnet_host2service', $host2service);
-
-                $ssoservice = $DB->get_record('mnet_service', array('name' => 'sso_idp'));
-                $host2service = new stdclass();
-                $host2service->hostid = $slavehost->id;
-                $host2service->serviceid = $ssoservice->id;
-                $host2service->publish = 1;
-                $host2service->subscribe = 0;
-                $DB->insert_record('mnet_host2service', $host2service);
-
-                $ssoservice = $DB->get_record('mnet_service', array('name' => 'sso_sp'));
-                $host2service = new stdclass();
-                $host2service->hostid = $slavehost->id;
-                $host2service->serviceid = $ssoservice->id;
-                $host2service->publish = 0;
-                $host2service->subscribe = 1;
-                $DB->insert_record('mnet_host2service', $host2service);
-
-                // MNET subnetworking, unless completely isolated.
-                if ($submitteddata->mnet > 0) {
-                    vmoodle_bind_to_network($submitteddata, $newmnethost);
-                }
-            }
-
-            // Creating CRON command.
-            // Obsolete with vrcon rotator.
-
-            // Every step was SUCCESS.
-            $messageobject->message = get_string('successaddnewhost', 'local_vmoodle');
-            $messageobject->style = 'notifysuccess';
-
-            // Save confirm message before redirection.
-            unset($SESSION->vmoodledata);
-            $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
-            if (empty($automation)) {
-                redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management'))); // Finished.
+                $params = array('view' => 'management', 'what' => 'doadd', 'step' => 2);
+                echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
+                echo $OUTPUT->footer();
                 die;
             }
-            return 0; // Finished.
+            return 0;
         }
+
+        // Get fileset for moodledata.
+
+        if ($vmoodlestep == 2) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode STEP 2.');
+            }
+
+            vmoodle_dump_files_from_template($submitteddata->vtemplate, $submitteddata->vdatapath);
+            if ($interactive) {
+                echo $OUTPUT->header();
+                echo $OUTPUT->notification(get_string('vmoodledoadd3', 'local_vmoodle'), 'notifysuccess');
+                $params = array('view' => 'management', 'what' => 'doadd', 'step' => 3);
+                echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
+                echo $OUTPUT->footer();
+                die;
+            }
+            return 0;
+        }
+
+        // Insert proper vmoodle record.
+
+        if ($vmoodlestep == 3) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode STEP 3.');
+            }
+
+            // Adds the new virtual instance record, with all data if everything is done.
+            $submitteddata->timecreated = time();
+            $submitteddata->vhostname = preg_replace("/\/$/", '', $submitteddata->vhostname); // Fix possible misslashing.
+
+            if ($submitteddata->mnet == 'NEW') {
+                $maxmnet = vmoodle_get_last_subnetwork_number();
+                $submitteddata->mnet = $maxmnet + 1;
+            }
+
+            if (!$oldrec = $DB->get_record('local_vmoodle', array('vhostname' => $submitteddata->vhostname))) {
+                $DB->insert_record('local_vmoodle', $submitteddata);
+            } else {
+                $submitteddata->id = $oldrec->id;
+                $DB->update_record('local_vmoodle', $submitteddata);
+            }
+
+            // If using domain subpath, add the subpath symlink (Linux only).
+
+            if (!empty($CFG->vmoodleusesubpaths)) {
+
+                if ($CFG->ostype != 'WINDOWS') {
+                    // Take first path fragmnent.
+                    $parts = explode('/', preg_replace('#https?://#', '', $submitteddata->vhostname));
+                    array_shift($parts); // remove domain name.
+                    $vmoodlepath = array_shift($parts);
+
+                    $cmd = '';
+                    if (!empty($config->sudoer)) {
+                        $cmd = "sudo -u{$config->sudoer} ";
+                    }
+                    $cmd .= "ln -s {$CFG->dirroot} {$CFG->dirroot}/{$vmoodlepath}";
+
+                    if (!is_link($CFG->dirroot.'/'.$vmoodlepath)) {
+                        exec($cmd, $output, $return);
+                        if ($return) {
+                            // We assume the following man statement:
+                            // sudo exits with a value of 1 if there is a configuration/permission problem or if sudo cannot execute the given command.
+                            mtrace('Symlink creation failed. You may create the vmoodle virtual subdir by hand.');
+                            mtrace($cmd);
+                            mtrace(implode("\n", $output));
+                        }
+                    }
+                } else {
+                    mtrace('VMoodle Sub path cannot be used on Windows systems. Symlink not created.');
+                }
+            }
+
+            // Finish the step.
+            if ($interactive) {
+                echo $OUTPUT->header();
+                echo $OUTPUT->notification(get_string('vmoodledoadd4', 'local_vmoodle'), 'notifysuccess');
+                $params = array('view' => 'management', 'what' => 'doadd', 'step' => 4);
+                echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
+                echo $OUTPUT->footer();
+                die;
+            }
+
+            return 0;
+        }
+
+        // Mnet bind from master side.
+        if ($vmoodlestep == 4) {
+
+            if (function_exists('debug_trace')) {
+                debug_trace('Vnode STEP 4.');
+            }
+
+            $newmnethost = new \local_vmoodle\Mnet_Peer();
+            $newmnethost->set_wwwroot($submitteddata->vhostname);
+            $newmnethost->set_name($submitteddata->name);
+
+            // If the new host is not using MNET, we discard it from us. There will be no more MNET contact with this host.
+            // vmoodle_fix_database should have disabled all mnet operations in the remote moodle.
+            if ($submitteddata->mnet == -1) {
+                $newmnethost->updateparams->deleted = 1;
+                $newmnethost->commit();
+                $messageobject->message = get_string('successaddnewhostwithoutmnet', 'local_vmoodle');
+                $message->style = 'notifysuccess';
+                $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+
+                if ($interactive) {
+                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                }
+
+                mtrace('Finished without MNET.');
+                return 1;
+            }
+
+            // Force renew using remote keyboot.php access.
+            $uri = $submitteddata->vhostname.'/local/vmoodle/keyboot.php';
+
+            $rq = 'pk='.urlencode($thisashost->public_key);
+            $ch = curl_init("$uri");
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $rq);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+            // Try remote key booting.
+            if (!$res = curl_exec($ch)) {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Vnode remote key booting failure. CURL Error. Exiting.');
+                }
+
+                // If remote keybooting has failed.
+                $messageobject->message = get_string('couldnotkeyboot', 'local_vmoodle', 'CURL Error');
+                $messageobject->style = 'notifyproblem';
+
+                if ($interactive) {
+                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                }
+
+                mtrace(get_string('couldnotkeyboot', 'local_vmoodle', 'CURL Error'));
+                return -1;
+            }
+
+            if (preg_match('/ERROR/', $res)) {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Vnode remote key booting failure. Other. Exiting.');
+                }
+
+                // If remote keybooting has failed.
+                $messageobject->message = get_string('couldnotkeyboot', 'local_vmoodle', $res);
+                $messageobject->style = 'notifyproblem';
+
+                if ($interactive) {
+                    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+                    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                }
+
+                mtrace(get_string('couldnotkeyboot', 'local_vmoodle', $res));
+                return -1;
+            }
+            curl_close($ch);
+
+            // Force new virtual host to renew our key and send his own to us.
+
+            if (!$newmnethost->bootstrap($submitteddata->vhostname, null, 'moodle', 1, $submitteddata->name)) {
+                // If bootstraping the new host has failed.
+                $messageobject->message = 'bootstrap failure :<br/> '.implode("\n", $newmnethost->errors);
+                $messageobject->style = 'notifyproblem';
+                $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+
+                if ($interactive) {
+                    if (debugging()) {
+                        echo $OUTPUT->header();
+                        echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                        echo $OUTPUT->footer();
+                        die;
+                    } else {
+                        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+                    }
+                }
+
+                mtrace('bootstrap failure');
+                return -1;
+            }
+            $newmnethost->updateparams->deleted = 0; // In case already there and needs revive.
+            $newmnethost->commit();
+
+            // We need to start output here in case of exceptions.
+
+            // Service 'mnetadmin' is needed to speak with new host. Set it our side.
+            $slavehost = $DB->get_record('mnet_host', array('wwwroot' => $submitteddata->vhostname));
+
+            // Cleanup any previous records.
+            $DB->delete_records('mnet_host2service', array('hostid' => $slavehost->id));
+            $mnetadminservice = $DB->get_record('mnet_service', array('name' => 'mnetadmin'));
+            $host2service = new stdclass();
+            $host2service->hostid = $slavehost->id;
+            $host2service->serviceid = $mnetadminservice->id;
+            $host2service->publish = 0;
+            $host2service->subscribe = 1;
+            $DB->insert_record('mnet_host2service', $host2service);
+
+            $ssoservice = $DB->get_record('mnet_service', array('name' => 'sso_idp'));
+            $host2service = new stdclass();
+            $host2service->hostid = $slavehost->id;
+            $host2service->serviceid = $ssoservice->id;
+            $host2service->publish = 1;
+            $host2service->subscribe = 0;
+            $DB->insert_record('mnet_host2service', $host2service);
+
+            $ssoservice = $DB->get_record('mnet_service', array('name' => 'sso_sp'));
+            $host2service = new stdclass();
+            $host2service->hostid = $slavehost->id;
+            $host2service->serviceid = $ssoservice->id;
+            $host2service->publish = 0;
+            $host2service->subscribe = 1;
+            $DB->insert_record('mnet_host2service', $host2service);
+
+            // MNET subnetworking, unless completely isolated.
+            if ($submitteddata->mnet > 0) {
+
+                if (function_exists('debug_trace')) {
+                    debug_trace('Vnode mnet bindings.');
+                }
+
+                vmoodle_bind_to_network($submitteddata, $newmnethost);
+            }
+        }
+
+        // Every step was SUCCESS.
+        $messageobject->message = get_string('successaddnewhost', 'local_vmoodle');
+        $messageobject->style = 'notifysuccess';
+
+        // Save confirm message before redirection.
+        unset($SESSION->vmoodledata);
+        $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+        if ($interactive) {
+            redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management'))); // Finished.
+        }
+
+        mtrace('Finished.');
+        return 0; // Finished.
     }
 }
+
 /* *************************** Make the EDIT form *********** */
 if ($action == 'edit') {
 
@@ -560,6 +700,9 @@ if ($action == 'doedit') {
                 }
                 die;
             }
+
+            // Commit the updated key in DB.
+            $editedhost->commit();
 
             // Retrieves last subnetwork members.
             if ($olddata->mnet > 0) {
@@ -705,11 +848,13 @@ if ($action == 'doedit') {
 if ($action == 'enable') {
     $vmoodleid = required_param('id', PARAM_INT);
     $DB->set_field('local_vmoodle', 'enabled', 1, array('id' => $vmoodleid));
+    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
 }
 /* *************************** Disables a vmoodle *********** */
 if ($action == 'disable') {
     $vmoodleid = required_param('id', PARAM_INT);
     $DB->set_field('local_vmoodle', 'enabled', 0, array('id' => $vmoodleid));
+    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
 }
 /* *************************** Snapshots a Vmoodle in the templates *********** */
 if ($action == 'snapshot') {
@@ -757,7 +902,7 @@ if ($action == 'snapshot') {
         }
         if (empty($automation)) {
             echo $OUTPUT->header();
-            echo $OUTPUT->box(get_string('vmoodlesnapshot1', 'local_vmoodle'));
+            echo $OUTPUT->notification(get_string('vmoodlesnapshot1', 'local_vmoodle'), 'notifysuccess');
             $params = array('view' => 'management', 'what' => 'snapshot', 'step' => 1, 'wwwroot' => $wwwroot);
             echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
             echo $OUTPUT->footer();
@@ -790,7 +935,7 @@ if ($action == 'snapshot') {
             }
             if (empty($automation)) {
                 echo $OUTPUT->header();
-                echo $OUTPUT->box(get_string('vmoodlesnapshot2', 'local_vmoodle'));
+                echo $OUTPUT->notification(get_string('vmoodlesnapshot2', 'local_vmoodle'), 'notifysuccess');
                 $params = array('view' => 'management', 'what' => 'snapshot', 'step' => 2, 'wwwroot' => $wwwroot);
                 echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', $params));
                 echo $OUTPUT->footer();
@@ -823,7 +968,7 @@ if ($action == 'snapshot') {
             // Save confirm message before redirection.
             $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
             echo $OUTPUT->header();
-            echo $OUTPUT->box(get_string('vmoodlesnapshot3', 'local_vmoodle'));
+            echo $OUTPUT->notification(get_string('vmoodlesnapshot3', 'local_vmoodle'), 'notifysuccess');
             echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
             echo $OUTPUT->footer();
             die;
@@ -900,7 +1045,7 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
                         $deletedpeer->set_wwwroot($vmoodlehost->wwwroot);
                         // RPC error.
                         if (!$rpcclient->send($deletedpeer)) {
-                            echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($deletedpeer)));
+                            echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($deletedpeer)), 'notifyproblem');
                             if (debugging()) {
                                 echo '<pre>';var_dump($rpcclient);echo '</pre>';
                             }
@@ -913,6 +1058,7 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
             } else {
                 // If trying to delete an already deleted host.
                 $messageobject->message = get_string('badhostalreadydeleted', 'local_vmoodle');
+                $messageobject->style = 'notifysuccess';
             }
         } else {
             // If local_vmoodles and host are not synchronized.
@@ -935,8 +1081,13 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
     }
 
     if ($action == 'fulldelete') {
-        debug_trace('Full deleting vmoodle host');
+        if (function_exists('debug_trace')) {
+            debug_trace('Full deleting vmoodle host');
+        }
         vmoodle_destroy($vmoodle);
+    }
+    if (empty($automation)) {
+        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
     }
 }
 /* ******************** Just rough destroy without care (for bulk cleaning) *********** */
@@ -956,6 +1107,9 @@ if ($action == 'destroy') {
         }
         vmoodle_destroy($submitteddata);
     }
+    if (empty($automation)) {
+        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    }
 }
 /* ******************** Run an interactive cronlike trigger forcing key renew on all vmoodle *********** */
 if ($action == 'renewall') {
@@ -963,7 +1117,11 @@ if ($action == 'renewall') {
     // Self renew.
     echo $OUTPUT->header();
     echo '<pre>';
-    $renewuri = new moodle_url('/admin/cron.php', array('forcerenew' => 1));
+    $params = array('forcerenew' => 1);
+    if ($CFG->cronremotepassword) {
+        $params['password'] = $CFG->cronremotepassword;
+    }
+    $renewuri = new moodle_url('/admin/cron.php', $params);
     echo "Running on : $renewuri\n";
 
     echo "#############################\n";
@@ -995,6 +1153,9 @@ if ($action == 'renewall') {
     echo '<pre>';
     foreach ($vmoodles as $vmoodle) {
         $renewuri = $vmoodle->vhostname.'/admin/cron.php?forcerenew=1';
+        if ($CFG->cronremotepassword) {
+            $renewuri .= '&password='.$CFG->cronremotepassword;
+        }
         echo "Running on : $renewuri\n";
 
         echo "#############################\n";
@@ -1013,10 +1174,13 @@ if ($action == 'renewall') {
         echo $raw."\n\n";
     }
     echo '</pre>';
-    echo '<center>';
-    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
-    echo '</center>';
-    echo $OUTPUT->footer();
+
+    if (empty($automation)) {
+        echo '<center>';
+        echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+        echo '</center>';
+        echo $OUTPUT->footer();
+    }
     die;
 }
 /* ******************** Generates physical configs *********** */
@@ -1085,6 +1249,9 @@ if ($action == 'enableinstances') {
         ";
         $DB->execute($sql);
     }
+    if (empty($automation)) {
+        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    }
 }
 
 /* ******************** Disable instances *********** */
@@ -1104,6 +1271,9 @@ if ($action == 'disableinstances') {
         ";
         $DB->execute($sql);
     }
+    if (empty($automation)) {
+        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    }
 }
 
 /* ******************** Destroy instances *********** */
@@ -1122,6 +1292,24 @@ if ($action == 'deleteinstances') {
             }
         }
     }
+    if (empty($automation)) {
+        redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    }
+}
+
+/* ******************** Sync vmoodle register to all active nodes *********** */
+
+if ($action == 'syncregister') {
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('syncvmoodleregister', 'local_vmoodle'));
+    echo '<pre>';
+    vmoodle_sync_register();
+    echo '</pre>';
+    echo '<center>';
+    echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    echo '</center>';
+    echo $OUTPUT->footer();
+    die;
 }
 
 // Return to initial 'max_execution_time' value, in every case.

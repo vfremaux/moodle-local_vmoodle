@@ -37,11 +37,16 @@ list($options, $unrecognized) = cli_get_params(
           'list' => false,
           'host' => false,
           'collation' => false,
-          'available' => false),
+          'available' => false,
+          'debug' => false),
     array('h' => 'help',
           'l' => 'list',
           'H' => 'host',
-          'a' => 'available'));
+          'c' => 'collation',
+          'a' => 'available',
+          'd' => 'debug',
+     )
+);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
@@ -55,11 +60,12 @@ It is strongly recommended to stop the web server before the conversion.
 This script may be executed before the main upgrade - 1.9.x data for example.
 
 Options:
---collation=COLLATION Convert MySQL tables to different collation
--l, --list            Show table and column information
--H, --host            Target host for operation
--a, --available       Show list of available collations
--h, --help            Print out this help
+    --collation=COLLATION Convert MySQL tables to different collation
+    -h, --help            Print out this help
+    -l, --list            Show table and column information
+    -H, --host            Target host for operation
+    -a, --available       Show list of available collations
+    -d, --debug           Turns on debug
 
 Example:
 \$ sudo -u www-data /usr/bin/php admin/cli/mysql_collation.php --collation=utf8_general_ci --host=http://mysubhost.mymoodle.com
@@ -76,8 +82,13 @@ if (!empty($options['host'])) {
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
+}
+
 if ($DB->get_dbfamily() !== 'mysql') {
-    cli_error('This function is designed for MySQL databases only!');
+    echo "This function is designed for MySQL databases only!\n";
+    exit(1);
 }
 
 if (!empty($options['collation'])) {
@@ -85,7 +96,8 @@ if (!empty($options['collation'])) {
     $collation = clean_param($options['collation'], PARAM_ALPHANUMEXT);
     $collation = strtolower($collation);
     if (!isset($collations[$collation])) {
-        cli_error("Error: collation '$collation' is not available on this server!");
+        echo "Error: collation '$collation' is not available on this server!\n";
+        exit(1);
     }
 
     $collationinfo = explode('_', $collation);
@@ -97,7 +109,8 @@ if (!empty($options['collation'])) {
     if (strpos($collation, 'utf8mb4') === 0) {
         // Do we have the right engine?
         if ($engine !== 'innodb' && $engine !== 'xtradb') {
-            cli_error("Error: '$collation' requires InnoDB or XtraDB set as the engine.");
+            echo "Error: '$collation' requires InnoDB or XtraDB set as the engine.\n";
+            exit(1);
         }
         // Are we using Barracuda?
         if ($DB->get_row_format() != 'Barracuda') {
@@ -105,8 +118,9 @@ if (!empty($options['collation'])) {
             try {
                 $DB->execute("SET GLOBAL innodb_file_format=Barracuda");
             } catch (dml_exception $e) {
-                cli_error("Error: '$collation' requires the file format to be set to Barracuda.
-                        An attempt was made to change the format, but it failed. Please try doing this manually.");
+                echo "Error: '$collation' requires the file format to be set to Barracuda.
+                        An attempt was made to change the format, but it failed. Please try doing this manually.\n";
+                exit(1);
             }
             echo "GLOBAL SETTING: innodb_file_format changed to Barracuda\n";
         }
@@ -115,8 +129,9 @@ if (!empty($options['collation'])) {
             try {
                 $DB->execute("SET GLOBAL innodb_file_per_table=1");
             } catch (dml_exception $e) {
-                cli_error("Error: '$collation' requires the setting 'innodb_file_per_table' be set to 'ON'.
-                        An attempt was made to change the format, but it failed. Please try doing this manually.");
+                echo "Error: '$collation' requires the setting 'innodb_file_per_table' be set to 'ON'.
+                        An attempt was made to change the format, but it failed. Please try doing this manually.\n";
+                 exit(1);
             }
             echo "GLOBAL SETTING: innodb_file_per_table changed to 1\n";
         }
@@ -125,8 +140,9 @@ if (!empty($options['collation'])) {
             try {
                 $DB->execute("SET GLOBAL innodb_large_prefix=1");
             } catch (dml_exception $e) {
-                cli_error("Error: '$collation' requires the setting 'innodb_large_prefix' be set to 'ON'.
-                        An attempt was made to change the format, but it failed. Please try doing this manually.");
+                echo "Error: '$collation' requires the setting 'innodb_large_prefix' be set to 'ON'.
+                        An attempt was made to change the format, but it failed. Please try doing this manually.\n";
+                exit(1);
             }
             echo "GLOBAL SETTING: innodb_large_prefix changed to 1\n";
         }
@@ -134,11 +150,13 @@ if (!empty($options['collation'])) {
 
     $sql = "SHOW VARIABLES LIKE 'collation_database'";
     if (!$dbcollation = $DB->get_record_sql($sql)) {
-        cli_error("Error: Could not access collation information on the database.");
+        echo "Error: Could not access collation information on the database.\n";
+        exit(1);
     }
     $sql = "SHOW VARIABLES LIKE 'character_set_database'";
     if (!$dbcharset = $DB->get_record_sql($sql)) {
-        cli_error("Error: Could not access character set information on the database.");
+        echo "Error: Could not access character set information on the database.\n";
+        exit(1);
     }
     if ($dbcollation->value !== $collation || $dbcharset->value !== $charset) {
         // Try to convert the DB.
@@ -147,17 +165,20 @@ if (!empty($options['collation'])) {
         try {
             $DB->change_database_structure($sql);
         } catch (exception $e) {
-            cli_error("Error: Tried to alter the database with no success. Please try manually changing the database
-                    to the new collation and character set and then run this script again.");
+            echo "Error: Tried to alter the database with no success. Please try manually changing the database
+                    to the new collation and character set and then run this script again.\n";
+            exit(1);
         }
         echo "DATABASE CONVERTED\n";
     }
 
     echo "Converting tables and columns to '$collation' for $CFG->wwwroot:\n";
+
     $prefix = $DB->get_prefix();
     $prefix = str_replace('_', '\\_', $prefix);
     $sql = "SHOW TABLE STATUS WHERE Name LIKE BINARY '$prefix%'";
     $rs = $DB->get_recordset_sql($sql);
+
     $converted = 0;
     $skipped   = 0;
     $errors    = 0;
@@ -224,7 +245,7 @@ if (!empty($options['collation'])) {
     }
     $rs->close();
     echo "Converted: $converted, skipped: $skipped, errors: $errors\n";
-    exit(0); // success
+    exit(0); // Success
 
 } else if (!empty($options['list'])) {
     echo "List of tables for $CFG->wwwroot:\n";
@@ -260,7 +281,7 @@ if (!empty($options['collation'])) {
     foreach ($counts as $collation => $count) {
         echo "$collation: $count\n";
     }
-    exit(0); // success
+    exit(0); // Success.
 
 } else if (!empty($options['available'])) {
     echo "List of available MySQL collations for $CFG->wwwroot:\n";
@@ -268,11 +289,11 @@ if (!empty($options['collation'])) {
     foreach ($collations as $collation) {
         echo " $collation\n";
     }
-    die;
+    exit(0);
 
 } else {
     echo $help;
-    die;
+    exit(0);
 }
 
 

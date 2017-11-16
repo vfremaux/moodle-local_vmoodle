@@ -20,8 +20,6 @@
  * @author          valery.fremaux (valery.fremaux@gmail.com)
  */
 
-define('VMOODLE_BOOT', true);
-
 function vmoodle_get_hostname() {
     global $CFG;
 
@@ -32,6 +30,8 @@ function vmoodle_get_hostname() {
     } else {
         $protocol = 'http';
     }
+
+    define('VMOODLE_BOOT', true);
 
     /*
      * This happens when a cli script needs to force one Vmoodle execution.
@@ -45,6 +45,9 @@ function vmoodle_get_hostname() {
         return;
     }
 
+    /*
+     * This is the standard case when each vmoodle runs on his own masgter single domain.
+     */
     $CFG->vmoodleroot = "{$protocol}://".@$_SERVER['HTTP_HOST'];
     $CFG->vmoodlename = @$_SERVER['HTTP_HOST'];
     if (empty($CFG->vmoodlename)) {
@@ -56,25 +59,31 @@ function vmoodle_get_hostname() {
         $CFG->vmoodlename = $_SERVER['SERVER_NAME'];
     }
 
+    /*
+     * When using a single domain with subpaths for instances, we need
+     * catch the first path element in host identity reference.
+     */
     if (!empty($CFG->vmoodleusesubpaths)) {
-        $uri = preg_replace('#^/#', '', $_SERVER['REQUEST_URI']);
-        // echo "URI : ".$uri.'<br/>';
-        if (!preg_match('#/$#', $uri)) {
-            $path = dirname($uri);
-        } else {
-            $path = $uri;
-        }
-        // echo "Dir URI : ".$path.'<br/>';
-        $pathparts = explode('/', $path);
-        $firstpath = array_shift($pathparts);
-        // echo "Firstdir URI : ".$firstpath.'<br/>';
-        if (($firstpath != '') && ($firstpath != '/') && ($firstpath != '.')) {
-            // If request uri goes into a subdir.
-            if (is_link($CFG->dirroot.'/'.$firstpath)) {
-                // Symbolic links in dirroot are characteristic to submoodledirs.
-                $CFG->vmoodleroot .= '/'.$firstpath;
-                $CFG->vmoodlename .= '/'.$firstpath;
+        if (preg_match('#^/#', $CFG->dirroot)) {
+            // We are on a linux, (but not having full $CFG to know it).
+            $uri = preg_replace('#^/#', '', $_SERVER['REQUEST_URI']);
+            if (!preg_match('#/$#', $uri)) {
+                $path = dirname($uri);
+            } else {
+                $path = $uri;
             }
+            $pathparts = explode('/', $path);
+            $firstpath = array_shift($pathparts);
+            if (($firstpath != '') && ($firstpath != '/') && ($firstpath != '.')) {
+                // If request uri goes into a subdir.
+                if (is_link($CFG->dirroot.'/'.$firstpath)) {
+                    // Symbolic links in dirroot are characteristic to submoodledirs.
+                    $CFG->vmoodleroot .= '/'.$firstpath;
+                    $CFG->vmoodlename .= '/'.$firstpath;
+                }
+            }
+        } else {
+            echo "VMoodle sub paths are not supported on Windows systems. Change configuration. \n";
         }
         // echo "Baseroot : ".$CFG->vmoodleroot.'<br/>';
     }
@@ -252,8 +261,24 @@ function vmoodle_feed_config($vmoodle) {
     $CFG->dbtype    = $vmoodle->vdbtype;
     $CFG->dbhost    = $vmoodle->vdbhost;
     $CFG->dbname    = $vmoodle->vdbname;
-    $CFG->dbuser    = $vmoodle->vdblogin;
-    $CFG->dbpass    = $vmoodle->vdbpass;
+
+    // Security enhancement.
+    /*
+     * When using config forced logins and passwords for childs, the database
+     * register corresponding attributes can be cleared.
+     */
+    if (empty($CFG->vchildsdblogin)) {
+        $CFG->dbuser = $vmoodle->vdblogin;
+    } else {
+        $CFG->dbuser = $CFG->vchildsdblogin;
+    }
+
+    if (empty($CFG->vchildsdbpass)) {
+        $CFG->dbpass = $vmoodle->vdbpass;
+    } else {
+        $CFG->dbpass = $CFG->vchildsdbpass;
+    }
+
     $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
     $CFG->prefix    = $vmoodle->vdbprefix;
 

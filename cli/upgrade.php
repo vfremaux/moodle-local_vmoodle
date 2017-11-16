@@ -40,7 +40,9 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
+$CLI_VMOODLE_PRECHECK = true;
+
+// Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -48,7 +50,9 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
+require_once($CFG->dirroot.'/lib/clilib.php');
+
+// Cli only functions.
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
@@ -58,7 +62,9 @@ list($options, $unrecognized) = cli_get_params(
           'test'              => false,
           'help'              => false),
     array('h' => 'help',
-          'H' => 'host')
+          'H' => 'host',
+          'u' => 'allow-unstable',
+          't' => 'test')
 );
 
 $interactive = empty($options['non-interactive']);
@@ -77,9 +83,9 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
 --non-interactive     No interactive questions or confirmations
---allow-unstable      Upgrade even if the version is not marked as stable yet,
+-u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
---host                Switches to this host virtual configuration before processing
+-H, --host                Switches to this host virtual configuration before processing
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
 

@@ -68,6 +68,11 @@ $string['badshortname'] = 'Le nom raccourci ne doit pas comporter d\'espaces...'
 $string['badtemplatation'] = 'Erreur dans le chargement de la base de données depuis le template choisi (lecture écriture ou suppression de fichiers).';
 $string['badthishostdata'] = 'Impossible de récupérer les données de la plate-forme courante, depuis la table \'mnet_host\'.';
 $string['badvhostname'] = 'Forme de l\'hôte incorrecte...';
+$string['behaviour'] = 'Comportement';
+$string['cancelled'] = 'Opération annulée';
+$string['clustering'] = 'Réglages de clusterisation';
+$string['configclusters'] = 'Clusters';
+$string['configclusterix'] = 'Numéro de cluster';
 $string['cancelcommand'] = 'Annuler la commande';
 $string['capfilter'] = 'Filtre de capacités';
 $string['categoryignored'] = 'La catégorie {$a} a été ignorée :';
@@ -257,19 +262,23 @@ $string['pluginuninstalled'] = 'Le plugin {$a} a été correctement désinstall�
 $string['postupgrade'] = 'Tâches post-mise à jour';
 $string['preupgrade'] = 'Tâches pré-mise à jour';
 $string['publish'] = 'Publication';
+$string['rawstrategy'] = 'Stratégie (valeur brute)';
+$string['rawstrategy_desc'] = 'Vous pouvez utiliser cette forme dans des fichiers de réglages par défauts ou directement en base de données.';
 $string['reactivetemplate'] = 'Réactiver la plateforme';
 $string['regexp'] = 'exp reg';
 $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
+$string['restart'] = 'Redémarrer la procédure';
 $string['restorebackup'] = 'Restaurer des bases de sauvegarde';
 $string['retrieveplatforms'] = 'Récupérer les plates-formes';
 $string['rpcstatus100'] = 'Commande en mode test.';
 $string['rpcstatus200'] = 'Commande exécutée avec succès.';
-$string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée';
-$string['rpcstatus500'] = 'Echec RPC.';
+$string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée. Erreur 404.';
+$string['rpcstatus500'] = 'Echec RPC. Error 500.';
 $string['rpcstatus501'] = 'Pas de compte local pour l\'utilisateur appellant.';
 $string['rpcstatus502'] = 'Echec de configuration.';
+$string['rpcstatus503'] = 'Erreur applicative distante.';
 $string['rpcstatus510'] = 'Droits insuffisants.';
 $string['rpcstatus511'] = 'Echec MNET.';
 $string['rpcstatus520'] = 'Impossible de récupérer l\'enregistrement SQL.';
@@ -304,6 +313,8 @@ $string['successedithost'] = 'Edition de la plate-forme terminée.';
 $string['successfinishedcapture'] = 'Capture de la plate-forme terminée.';
 $string['successfullplatforms'] = 'Succès des plates-formes :';
 $string['successstrategyservices'] = 'Déploiement de la stratégie de service(s) par défaut effectué.';
+$string['sudoer'] = 'Sudoer';
+$string['syncvmoodleregister'] = 'Synchroniser les registres VMoodle';
 $string['tabpoolmanage'] = 'Gestion des instances';
 $string['tabpoolsadmin'] = 'Super administration';
 $string['tabpoolservices'] = 'Stratégie de services';
@@ -320,6 +331,7 @@ $string['unknownhost'] = 'L\'hôte que vous tentez de mettre en place n\'est pas
 $string['unknownhost'] = 'Le nom de domaine de la plate-forme ne peut être résolu. Vous pouvez forcer le passage en reexécutant la procédure, mais les fonctions réseau ne pourront probablement pas être activées correctement.';
 $string['unknownhostforced'] = 'L\'hôte que vous tentez de mettre en place n\'est pas connu sur le réseau. Vous avez demandé un déploiment en mode forcé. Les fonctions du réseau Moodle seront désactivées après déploiement et devront être configurées manuellement.';
 $string['unknownuserhost'] = 'Plate-forme hôte de l\'utilisateur inconnu';
+$string['emptyormalformedvhostname'] = 'Url vide ou malformée';
 $string['upgrade'] = 'Mettre à jour les données';
 $string['uploadscript'] = 'Uploader un script';
 $string['vdatapath'] = 'Chemin "moodledata" ';
@@ -332,6 +344,7 @@ $string['vdbpersist'] = 'Persistance des connexions ';
 $string['vdbprefix'] = 'Préfixe des tables ';
 $string['vdbs'] = 'Bases de données virtuelles';
 $string['vdbtype'] = 'Type de la base de données ';
+$string['vlogfilepattern'] = 'Fichier journal du VCron';
 $string['vhostname'] = 'Hôte du site';
 $string['vhostname'] = 'Nom d\'hôte';
 $string['virtualplatforms'] = 'Plates-formes virtuelles';
@@ -541,4 +554,18 @@ $string['templatetext_help'] = 'Ecrivez ici le texte du script avec des marque p
 <li>%DBUSER% : Utilisateur de la base de données</li>
 <li>%DBPASS% : Mot de passe de la base de données</li>
 <li>%DATAROOT% : Position du moodledata</li>
+';
+
+$string['configclusters_desc'] = 'Indiquez ici le nombre de clusters qui servent vos pages Moodle.';
+
+$string['configclusterix_desc'] = 'Ceci est le numéro du cluster courant pour le traitement de vos tâches de fond distribuées. Sa valeur
+doit être forcée par un fichier de configuration physique (pas de valeur en base de données ni de cache partagé), à travers une initialisation
+$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] assurée localement. Veuillez à ce que chaque cluster impose une valeur différente.';
+
+$string['sudoer_desc'] = 'Un utilisateur linux capable d\'opérer dans le répertoire d\'installation de moodle. Cet utilisateur doit bénéficier
+d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln
+';
+
+$string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif
+accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
 ';

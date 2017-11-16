@@ -22,7 +22,33 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/local/vmoodle/db/install.php');
+
 function xmldb_local_vmoodle_upgrade($oldversion = 0) {
+    global $DB;
+
     $result = true;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2017090100) {
+
+        // Add completion for mandatory items only.
+
+        $table = new xmldb_table('local_vmoodle');
+        $field = new xmldb_field('metadata', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'croncount');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Learningtimecheck savepoint reached.
+        upgrade_plugin_savepoint(true, 2017090100, 'local', 'vmoodle');
+    }
+
+    // Eventually fix some misnamed rpcs if any at each upgrade.
+    // So this is a global process that can be massified.
+    xmldb_local_vmoodle_late_install();
+
     return $result;
 }

@@ -103,14 +103,14 @@ config.php of Moodle.
 
 /// VMOODLE Hack
 $CFG->mainhostprefix = 'http://someprefixthatmatchs';
-$CFG->user_mnet_hosts_admin_override = true;
+
 // this fragment will trap the CLI scripts trying to work for a virtual node, and
 // needing booting a first elementary configuration based on main config 
 if (isset($CLI_VMOODLE_PRECHECK) && $CLI_VMOODLE_PRECHECK == true) {
     $CLI_VMOODLE_PRECHECK = false;
     return;
 }
-include $CFG->dirroot.'/blocks/vmoodle/vconfig.php';
+include $CFG->dirroot.'/local/vmoodle/vconfig.php';
 /// /VMOODLE Hack
 
 must be located BEFORE the call to lib/setup.php include and AFTER the static configuration. 

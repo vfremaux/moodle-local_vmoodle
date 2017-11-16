@@ -74,4 +74,6 @@ echo('Config check : playing for '.$CFG->wwwroot."\n");
 
 purge_all_caches();
 
+echo "Done.\n";
+
 exit(0);

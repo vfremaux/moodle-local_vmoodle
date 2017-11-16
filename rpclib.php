@@ -83,6 +83,19 @@ function invoke_local_user($user, $capability = false, $context = null) {
         return(json_encode($response));
     }
 
+    // Check user mnet host single identity condition
+    if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {
+        $config = get_config('block_user_mnet_hosts');
+        if (!empty($config->singleaccountcheck) && ($user['username'] != 'admin')) {
+            $params = array('username' => addslashes($user['username']), 'deleted' => 0);
+            if ($localuser = $DB->get_record('user', $params)) {
+                debug_trace("USER CHECK SUCCESS : ".json_encode($user));
+                $USER = $localuser;
+                return '';
+            }
+        }
+    }
+
     // Get local identity.
     if (!$remotehost = $DB->get_record('mnet_host', array('wwwroot' => $user['remotehostroot']))) {
         debug_trace("USER CHECK FAILED 3 (unregistered host) : ".json_encode($user));
@@ -93,6 +106,15 @@ function invoke_local_user($user, $capability = false, $context = null) {
     }
 
     $userhost = $DB->get_record('mnet_host', array('wwwroot' => $user['remoteuserhostroot']));
+
+    /*
+     * special case : incoming user is Primary Moodle admin. Let go as super administrator and endorse local admin 
+     * for operations. this is a super privilege to do anything.
+     */
+    if (($user['username'] == 'admin') && ($userhost->wwwroot == $CFG->mainwwwroot)) {
+        $USER = get_admin();
+        return '';
+    }
 
     if (!$localuser = $DB->get_record('user', array('username' => addslashes($user['username']), 'mnethostid' => $userhost->id))) {
         debug_trace("USER CHECK FAILED 4 (account) : ".json_encode($user));
@@ -105,7 +127,7 @@ function invoke_local_user($user, $capability = false, $context = null) {
 
     $USER = $localuser;
 
-    // Checking capabilities
+    // Checking capabilities.
     if ($capability) {
         if (is_null($context)) {
             $context = context_system::instance();
