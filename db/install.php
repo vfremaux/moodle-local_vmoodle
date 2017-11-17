@@ -14,14 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * We must capture the old block_vmoodle table records and remove the old table
@@ -35,7 +34,7 @@ function xmldb_local_vmoodle_install() {
     $table = new xmldb_table('block_vmoodle');
     if ($dbman->table_exists($table)) {
         $sql = "
-            INSERT INTO 
+            INSERT INTO
                 {local_vmoodle}
             SELECT
                 *
@@ -51,19 +50,30 @@ function xmldb_local_vmoodle_install() {
     set_config('late_install', 1, 'local_vmoodle');
 }
 
+/**
+ * this function is called when viewing the vmoodle register to 
+ * fix some mispositionned rpc registration (Moodle bug in upgradelib.php)
+ */
 function xmldb_local_vmoodle_late_install() {
     global $USER, $DB;
 
-    // cleanup all old mnetrpc functions related to blocks
+    // Cleanup all old mnetrpc functions related to blocks.
     $oldfunctions = $DB->get_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ');
     if ($oldfunctions) {
         $DB->delete_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ', array());
-        foreach ($oldfunction as $f) {
+        foreach ($oldfunctions as $f) {
             $DB->delete_records('mnet_service2rpc', array('rpcid' => $f->id));
         }
     }
 
-    //MDL-
+    $oldfunctions = $DB->get_records_select('mnet_remote_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ');
+    if ($oldfunctions) {
+        $DB->delete_records_select('mnet_remote_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ', array());
+        foreach ($oldfunctions as $f) {
+            $DB->delete_records('mnet_remote_service2rpc', array('rpcid' => $f->id));
+        }
+    }
+
     // We need to replace the word "vmoodleadminset/" with real subplugin path "local/vmoodle/plugins/".
     $rpcs = $DB->get_records('mnet_remote_rpc', array('plugintype' => 'vmoodleadminset'));
 
@@ -75,12 +85,12 @@ function xmldb_local_vmoodle_late_install() {
     }
 
     // We need to replace the word "vmoodleadminset/" with real subplugin path "local/vmoodle/plugins/".
-    $rpcs = $DB->get_records('mnet_rpc',array('plugintype' => 'vmoodleadminset'));
-    
+    $rpcs = $DB->get_records('mnet_rpc', array('plugintype' => 'vmoodleadminset'));
+
     if (!empty($rpcs)) {
         foreach ($rpcs as $rpc) {
             $rpc->xmlrpcpath = str_replace('vmoodleadminset/', 'local/vmoodle/plugins/', $rpc->xmlrpcpath);
-            $DB->update_record('mnet_rpc',$rpc);
+            $DB->update_record('mnet_rpc', $rpc);
         }
     }
 

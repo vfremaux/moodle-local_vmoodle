@@ -15,14 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A fixture worker will play a script after 
+ * A fixture worker will play a script
+ *
+ * @package     local_vmoodle
+ * @category    local
+ * @copyright   2016 Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define('CLI_SCRIPT', true);
 define('ENT_INSTALLER_SYNC_INTERHOST', 1);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
-require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions
+require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
 
 // Now get cli options.
 
@@ -46,23 +51,24 @@ list($options, $unrecognized) = cli_get_params(
 );
 
 if ($unrecognized) {
-    $unrecognized = implode("\n  ", $unrecognized);
+    $unrecognized = implode("\n", $unrecognized);
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
 
 if ($options['help'] || empty($options['nodes'])) {
-    $help =
-        "Command Line Fixture Worker.
+    $help = "
+Command Line Fixture Worker.
 
-        Options:
-        -h, --help          Print out this help
-        -f, --fixture       The fixture to run.
-        -n, --nodes         Node ids to work with.
-        -l, --logfile       the log file to use. No log if not defined
-        -m, --logmode       'append' or 'overwrite'
-        -v, --verbose       Verbose output
+    Options:
+    -h, --help          Print out this help
+    -f, --fixture       The fixture to run.
+    -n, --nodes         Node ids to work with.
+    -l, --logfile       the log file to use. No log if not defined
+    -m, --logmode       'append' or 'overwrite'
+    -v, --verbose       Verbose output
+    -s, --fullstop      Stops on first error
 
-        "; //TODO: localize - to be translated later when everything is finished
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -73,36 +79,43 @@ if (empty($options['logmode'])) {
 }
 
 if (!empty($options['logfile'])) {
-    $LOG = fopen($options['logfile'], $options['logmode']);
+    $log = fopen($options['logfile'], $options['logmode']);
 }
 
 // Fire sequential synchronisation.
 mtrace("Starting worker");
-if (isset($LOG)) {
-    fputs($LOG, "Starting worker\n");
+if (isset($log)) {
+    fputs($log, "Starting worker\n");
 };
 
 $nodes = explode(',', $options['nodes']);
 foreach ($nodes as $nodeid) {
     $host = $DB->get_record('local_vmoodle', array('id' => $nodeid));
-    $cmd = "/usr/bin/php {$CFG->dirroot}/local/vmoodle/cli/{$options['fixture']}.php --host={$host->vhostname} ";
+    $cmd = "php {$CFG->dirroot}/local/vmoodle/cli/fixtures/{$options['fixture']}.php --host={$host->vhostname} ";
     $return = 0;
     $output = array();
     mtrace($cmd);
     exec($cmd, $output, $return);
     if ($return) {
-        die ("Worker failed\n");
+        if (!empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die ("Worker failed\n");
+        }
+        echo "Worker failed:\n";
+        echo implode("\n", $output)."\n";
     }
     if (!empty($options['verbose'])) {
-        echo implode("\n", $output);
+        echo implode("\n", $output)."\n";
     }
-    if (isset($LOG)) {
-        fputs($LOG, "$cmd\n#-------------------\n");
-        fputs($LOG, implode("\n", $output));
+    if (isset($log)) {
+        fputs($log, "$cmd\n#-------------------\n");
+        fputs($log, implode("\n", $output)."\n");
     };
     sleep(ENT_INSTALLER_SYNC_INTERHOST);
 }
 
-if (isset($LOG)) fclose($LOG);
+if (isset($log)) {
+    fclose($log);
+}
 
 return 0;

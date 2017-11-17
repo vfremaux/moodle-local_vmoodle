@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Displays default services strategy.
  *
@@ -24,8 +22,8 @@ defined('MOODLE_INTERNAL') || die();
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the library.
 require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
 
 $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
@@ -39,7 +37,12 @@ if ($services = unserialize(@$config->services_strategy)) {
 }
 
 echo $OUTPUT->box_start();
-
 $services_form->display();
+
+echo $OUTPUT->heading(get_string('rawstrategy', 'local_vmoodle'));
+echo $OUTPUT->box(get_string('rawstrategy_desc', 'local_vmoodle'));
+echo '<pre>';
+echo @$config->services_strategy;
+echo '</pre>';
 
 echo $OUTPUT->box_end();

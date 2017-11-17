@@ -1,13 +1,27 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// Capabilities
+// Capabilities.
 
 $string['vmoodle:execute'] = 'Exécuter des méta-commandes';
 $string['vmoodle:managevmoodles'] = 'Gérer les satellites moodle';
 $string['vmoodle:myaddinstance'] = 'Peut ajouter une instance aux pages My';
 $string['vmoodle:addinstance'] = 'Peut ajouter une instance';
 
-// Local Strings
+// Local Strings.
 
 $string['addall'] = 'Tout ajouter';
 $string['addformdbgroup'] = 'Base de données ';
@@ -54,6 +68,11 @@ $string['badshortname'] = 'Le nom raccourci ne doit pas comporter d\'espaces...'
 $string['badtemplatation'] = 'Erreur dans le chargement de la base de données depuis le template choisi (lecture écriture ou suppression de fichiers).';
 $string['badthishostdata'] = 'Impossible de récupérer les données de la plate-forme courante, depuis la table \'mnet_host\'.';
 $string['badvhostname'] = 'Forme de l\'hôte incorrecte...';
+$string['behaviour'] = 'Comportement';
+$string['cancelled'] = 'Opération annulée';
+$string['clustering'] = 'Réglages de clusterisation';
+$string['configclusters'] = 'Clusters';
+$string['configclusterix'] = 'Numéro de cluster';
 $string['cancelcommand'] = 'Annuler la commande';
 $string['capfilter'] = 'Filtre de capacités';
 $string['categoryignored'] = 'La catégorie {$a} a été ignorée :';
@@ -243,19 +262,23 @@ $string['pluginuninstalled'] = 'Le plugin {$a} a été correctement désinstall�
 $string['postupgrade'] = 'Tâches post-mise à jour';
 $string['preupgrade'] = 'Tâches pré-mise à jour';
 $string['publish'] = 'Publication';
+$string['rawstrategy'] = 'Stratégie (valeur brute)';
+$string['rawstrategy_desc'] = 'Vous pouvez utiliser cette forme dans des fichiers de réglages par défauts ou directement en base de données.';
 $string['reactivetemplate'] = 'Réactiver la plateforme';
 $string['regexp'] = 'exp reg';
 $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
+$string['restart'] = 'Redémarrer la procédure';
 $string['restorebackup'] = 'Restaurer des bases de sauvegarde';
 $string['retrieveplatforms'] = 'Récupérer les plates-formes';
 $string['rpcstatus100'] = 'Commande en mode test.';
 $string['rpcstatus200'] = 'Commande exécutée avec succès.';
-$string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée';
-$string['rpcstatus500'] = 'Echec RPC.';
+$string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée. Erreur 404.';
+$string['rpcstatus500'] = 'Echec RPC. Error 500.';
 $string['rpcstatus501'] = 'Pas de compte local pour l\'utilisateur appellant.';
 $string['rpcstatus502'] = 'Echec de configuration.';
+$string['rpcstatus503'] = 'Erreur applicative distante.';
 $string['rpcstatus510'] = 'Droits insuffisants.';
 $string['rpcstatus511'] = 'Echec MNET.';
 $string['rpcstatus520'] = 'Impossible de récupérer l\'enregistrement SQL.';
@@ -290,6 +313,8 @@ $string['successedithost'] = 'Edition de la plate-forme terminée.';
 $string['successfinishedcapture'] = 'Capture de la plate-forme terminée.';
 $string['successfullplatforms'] = 'Succès des plates-formes :';
 $string['successstrategyservices'] = 'Déploiement de la stratégie de service(s) par défaut effectué.';
+$string['sudoer'] = 'Sudoer';
+$string['syncvmoodleregister'] = 'Synchroniser les registres VMoodle';
 $string['tabpoolmanage'] = 'Gestion des instances';
 $string['tabpoolsadmin'] = 'Super administration';
 $string['tabpoolservices'] = 'Stratégie de services';
@@ -306,6 +331,7 @@ $string['unknownhost'] = 'L\'hôte que vous tentez de mettre en place n\'est pas
 $string['unknownhost'] = 'Le nom de domaine de la plate-forme ne peut être résolu. Vous pouvez forcer le passage en reexécutant la procédure, mais les fonctions réseau ne pourront probablement pas être activées correctement.';
 $string['unknownhostforced'] = 'L\'hôte que vous tentez de mettre en place n\'est pas connu sur le réseau. Vous avez demandé un déploiment en mode forcé. Les fonctions du réseau Moodle seront désactivées après déploiement et devront être configurées manuellement.';
 $string['unknownuserhost'] = 'Plate-forme hôte de l\'utilisateur inconnu';
+$string['emptyormalformedvhostname'] = 'Url vide ou malformée';
 $string['upgrade'] = 'Mettre à jour les données';
 $string['uploadscript'] = 'Uploader un script';
 $string['vdatapath'] = 'Chemin "moodledata" ';
@@ -318,6 +344,7 @@ $string['vdbpersist'] = 'Persistance des connexions ';
 $string['vdbprefix'] = 'Préfixe des tables ';
 $string['vdbs'] = 'Bases de données virtuelles';
 $string['vdbtype'] = 'Type de la base de données ';
+$string['vlogfilepattern'] = 'Fichier journal du VCron';
 $string['vhostname'] = 'Hôte du site';
 $string['vhostname'] = 'Nom d\'hôte';
 $string['virtualplatforms'] = 'Plates-formes virtuelles';
@@ -368,9 +395,8 @@ $string['description_help'] = '
 <p>Ce texte est recopié comme descriptif du nouveau site créé. Il
 peut être modifié par la suite.</p>
 ';
- 
 
-$string['vhostname_help']= '
+$string['vhostname_help'] = '
 <p><b>Hôte apparent de l\'instance</b></p>
 
 <p>Ce champ permet de définir le nom Web apparent du nouveau site.
@@ -388,7 +414,7 @@ conduisant au même DocumentRoot.</p>
     ServerAdmin admin@foo.org
     ServerName default.mondomaine.org
     ServerAlias *.mondomaine.org
-	VirtualDocumentRoot "chemin_vers_défaut/vmoodle_defaut"
+    VirtualDocumentRoot "chemin_vers_défaut/vmoodle_defaut"
     ErrorLog logs/vmoodle-error_log
     CustomLog logs/vmoodle-access_log common
 &lt;/VirtualHost&gt;
@@ -405,7 +431,7 @@ de données sur laquelle doit fonctionner l\'instance. Cet hôte doit avoir
 une base de données installée et opérationnelle, et doit être accessible
 à partir du serveur où le module de virtualisation est opéré.</p>';
 
-$string['vdbtype_help']='
+$string['vdbtype_help'] = '
 <p><b>Type de la base de données d\'instance</b></p>
 
 <p>Il est actuellement possible de déployer des instances sur les
@@ -414,7 +440,7 @@ bases MySQL et PostgreSQL. Le déployement peut également être hétérogène
 sont pour l\'instant pas prises en charge.</p>
 ';
 
-$string['vdbname_help']='
+$string['vdbname_help'] = '
 <p><b>Nom de la base de données d\'instance</b></p>
 
 <p>Permet de définir le nom de la base de données accueillant le
@@ -423,14 +449,14 @@ par la suite. Il est en principe construit automatiquement à partir du
 nom court du nouveau site.</p>
 ';
 
-$string['vdbpersist_help']='
+$string['vdbpersist_help'] = '
 <p><b>Persistance des connexions à la base</b></p>
 
 <p>Ce paramètre permet de définir si l\'instance doit utiliser des
 connexions persistantes. Ce paramètre peut être modifié par la suite.</p>
 ';
 
-$string['vdatapath_help']='
+$string['vdatapath_help'] = '
 <p><b>Système de fichiers d\'instance</b></p>
 
 <p>Tous les fichiers utilisateurs sont enregistrés dans un volume de
@@ -446,15 +472,15 @@ répertoires soit insciptible par votre serveur.</p>
 <p>Ce chemin NE PEUT PLUS ETRE MODIFIE APRES CREATION DE L\'INSTANCE.</p>
 ';
 
-$string['mnet_help']='
+$string['mnet_help'] = '
 <p><b>Activation du réseau Moodle</b></p>
 
-<p>Il est possible de choisir diverses stratégies d\'intégration réseau de la nouvelle plate-forme créée.</p> 
+<p>Il est possible de choisir diverses stratégies d\'intégration réseau de la nouvelle plate-forme créée.</p>
 <p>Dans tous les cas, les stratégies réseau des plates-formes pourront toujours être modifiées par l\'administrateur local de chaque Moodle virtuel</p>
 
 <h4>Premier cas : Pas de réseau Moodle</h4>
 
-<p>La plate-forme créée est désactivée au niveau réseau. Elle ne peut communiquer avec aucune autre plate-forme, ni même avec la plate-forme 
+<p>La plate-forme créée est désactivée au niveau réseau. Elle ne peut communiquer avec aucune autre plate-forme, ni même avec la plate-forme
 maître de réseau. Elle ne pourra donc pas être administrée par celle-ci.</p>
 
 <h4>Deuxième cas : Plate-forme autonome</h4>
@@ -469,10 +495,9 @@ maître de réseau. Elle ne pourra donc pas être administrée par celle-ci.</p>
 
 <p>En choisissant cette option, la plate-forme créée initie un nouveau sous-réseau qui sera publié comme choix possible pour les prochaines
 matérialisations. Elle est initiée réseau avec le maître et active les services de SSO et de meta-administration avec celle-ci</p>
+';
 
-';   
-   
-$string['services_help']='
+$string['services_help'] = '
 <p><b>Stratégie de services</b></p>
 
 <p>Ce réglage permet de définir la stratégie de services à appliquer
@@ -485,9 +510,9 @@ la nouvelle plate-forme et tous les autres hôtes du sous-réseau.</p>
 dans l\'onglet "Stratégie de services". Elle permet un réglage grossier des
 services entre pairs, mais devra probablement être affinée par l\'administrateur
 pour répondre aux besoins de l\'architecture.</p>
-';   
+';
 
-$string['vtemplate_help']='
+$string['vtemplate_help'] = '
 <p><b>Template de chargement</b></p>
 
 <p>Lorsqu\'un moodle est instancié virtuellement, la partie
@@ -500,19 +525,19 @@ configurations disponibles.</p>
 <p>Les configurations préréglées des instances doivent être formées
 de deux répertoires :</p>
 <ul>
-	<li>Le premier contient deux scripts SQL appelés :
-	"moodle_master.&lt;base&gt;.sql" et
-	"moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; peut être soit
-	"mysql" ou "postgres", selon la plate-forme qui a servi de modèle au
-	template. Le premier script permet de charger la base avec un modèle de
-	donnée type, issu de l\'export d\'une plate-forme modèle. Le deuxième
-	fichier permet d\'exécuter des requêtes SQL contextualisées utilisant
-	quelques paramètres spécifiques récoltés dans le formulaire de création
-	de l\'instance.</li>
-	<li>Le deuxième contient une copie d\'un répertoire moodledata
-	préconstitué. Ce répertoire peut contenir n\'importe quel jeu de
-	fichiers issus de l\'utilisation de la plate forme qui a servi de modèle
-	au template.</li>
+    <li>Le premier contient deux scripts SQL appelés :
+    "moodle_master.&lt;base&gt;.sql" et
+    "moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; peut être soit
+    "mysqli" ou "postgres", selon la plate-forme qui a servi de modèle au
+    template. Le premier script permet de charger la base avec un modèle de
+    donnée type, issu de l\'export d\'une plate-forme modèle. Le deuxième
+    fichier permet d\'exécuter des requêtes SQL contextualisées utilisant
+    quelques paramètres spécifiques récoltés dans le formulaire de création
+    de l\'instance.</li>
+    <li>Le deuxième contient une copie d\'un répertoire moodledata
+    préconstitué. Ce répertoire peut contenir n\'importe quel jeu de
+    fichiers issus de l\'utilisation de la plate forme qui a servi de modèle
+    au template.</li>
 </ul>
 <p>Afin d\'effectuer une correction de tous les chemins absolus qui
 pourraient être inscrits par la plate-forme modèle, le template demande
@@ -522,13 +547,25 @@ indication permet à l\'algorithme de déploiement de corriger les
 éventuels chemins absolus de la nouvelle instance.</p>
 ';
 
-$string['templatetext_help'] = 'Ecrivez ici le texte du script avec des marque places : 
+$string['templatetext_help'] = 'Ecrivez ici le texte du script avec des marque places :
 
 <li>%WWWROOT% : url du site virtuel</li>
 <li>%DBHOST% : Hôte de la base de données</li>
 <li>%DBUSER% : Utilisateur de la base de données</li>
 <li>%DBPASS% : Mot de passe de la base de données</li>
 <li>%DATAROOT% : Position du moodledata</li>
-
 ';
 
+$string['configclusters_desc'] = 'Indiquez ici le nombre de clusters qui servent vos pages Moodle.';
+
+$string['configclusterix_desc'] = 'Ceci est le numéro du cluster courant pour le traitement de vos tâches de fond distribuées. Sa valeur
+doit être forcée par un fichier de configuration physique (pas de valeur en base de données ni de cache partagé), à travers une initialisation
+$CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] assurée localement. Veuillez à ce que chaque cluster impose une valeur différente.';
+
+$string['sudoer_desc'] = 'Un utilisateur linux capable d\'opérer dans le répertoire d\'installation de moodle. Cet utilisateur doit bénéficier
+d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln
+';
+
+$string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif
+accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
+';

@@ -1,7 +1,20 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * English traduction of role commands category.
- * 
  * @package local_vmoodle
  * @category local
  * @author Valery Fremaux (valery.fremaux@gmail.com)
@@ -21,6 +34,7 @@ $string['mnetadmin_name'] = 'MNET Meta Administration';
 $string['mnetadmin_description'] = 'Provides functions to perform network scoped administration operations, such as role or configuration settigns synchronisation.';
 $string['nosrcpltfrm'] = 'No source platform.';
 $string['nosyncpltfrm'] = 'Any platforms to synchronize.';
+$string['notinstalled'] = 'Not installed.';
 $string['platformparamsyncdesc'] = 'Source platform of the role to copy';
 $string['pluginname'] = 'Plugins management related commands';
 $string['pluginparamdesc'] = 'Plugin';
@@ -33,6 +47,7 @@ $string['tableparamdesc'] = 'Authorisation table';
 $string['syncwithitself'] = 'Synchronizing "{$a->platform}" platform with itself.';
 $string['enable'] = 'Enable';
 $string['disable'] = 'Disable';
+$string['confirmpluginvisibilitysync'] = 'Confirm';
 
 $string['plugincompare_help'] = '
 <h2>Plugin comparison</h2>

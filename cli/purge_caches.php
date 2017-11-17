@@ -25,7 +25,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -33,18 +33,21 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php');         // cli only functions
+require_once($CFG->dirroot.'/lib/clilib.php'); // Cli only functions.
 
-list($options, $unrecognized) = cli_get_params(array('help' => false, 'host' => true), array('h' => 'help', 'H' => 'host'));
+list($options, $unrecognized) = cli_get_params(array('help' => false,
+                                                     'host' => true),
+                                               array('h' => 'help',
+                                                     'H' => 'host'));
 
 if ($unrecognized) {
-    $unrecognized = implode("\n  ", $unrecognized);
+    $unrecognized = implode("\n", $unrecognized);
     cli_error("Not recognized options ".$unrecognized);
 }
 
 if ($options['help']) {
-    $help =
-"Invalidates all Moodle internal caches
+    $help = "
+Invalidates all Moodle internal caches
 
 Options:
 -h, --help            Print out this help
@@ -60,7 +63,7 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
@@ -70,5 +73,7 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global m
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
 purge_all_caches();
+
+echo "Done.\n";
 
 exit(0);
