@@ -1,12 +1,37 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Describes meta-administration multiple upgrade command.
+ *
+ * @package local_vmoodle
+ * @category local
+ * @author Valery Fremaux (valery.Fremaux@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
 namespace vmoodleadminset_upgrade;
-Use \local_vmoodle\commands\Command;
-Use \local_vmoodle\commands\Command_Exception;
-Use \local_vmoodle\commands\Command_Parameter;
-Use \StdClass;
 
-require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
+defined('MOODLE_INTERNAL') || die;
+
+use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Exception;
+use \local_vmoodle\commands\Command_Parameter;
+use \StdClass;
+
+require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 
 if (!defined('RPC_SUCCESS')) {
     define('RPC_TEST', 100);
@@ -14,7 +39,7 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE', 500);
     define('RPC_FAILURE_USER', 501);
     define('RPC_FAILURE_CONFIG', 502);
-    define('RPC_FAILURE_DATA', 503); 
+    define('RPC_FAILURE_DATA', 503);
     define('RPC_FAILURE_CAPABILITY', 510);
     define('RPC_FAILURE_RECORD', 520);
     define('RPC_FAILURE_RUN', 521);
@@ -29,22 +54,17 @@ if (!defined('MNET_FAILURE')) {
 
 /**
  * Describes a platform update command.
- * 
- * @package local_vmoodle
- * @category local
- * @author Bruce Bujon (bruce.bujon@gmail.com)
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 class Command_Upgrade extends Command {
 
     /**
      * The cURL timeout
      */
-    const curl_timeout = 30;
+    const CURL_TIMEOUT = 30;
 
     /**
      * Constructor.
-     * @throws                Command_Exception.
+     * @throws Command_Exception.
      */
     public function __construct() {
 
@@ -57,7 +77,7 @@ class Command_Upgrade extends Command {
     }
 
     public function run($hosts) {
-        global $CFG, $USER, $DB;
+        global $CFG;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -76,57 +96,36 @@ class Command_Upgrade extends Command {
         $responses = array();
 
         // Creating peers.
-        $mnet_hosts = array();
-        foreach ($hosts as $host => $name) {
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
+        $mnethosts = array();
+        foreach (array_keys($hosts) as $host) {
+            $mnethost = new \mnet_peer();
+            if ($mnethost->bootstrap($host, null, 'moodle')) {
+                $mnethosts[] = $mnethost;
             } else {
-                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
+                $label = get_string('couldnotcreateclient', 'local_vmoodle', $host);
+                $responses[$host] = (object) array('status' => RPC_FAILURE, 'error' => $label);
             }
         }
 
         // Creating XMLRPC client.
-        $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/upgrade/rpclib.php/mnetadmin_rpc_upgrade');
+        $rpcclient = new \local_vmoodle\XmlRpc_Client();
+        $rpcclient->set_method('local/vmoodle/plugins/upgrade/rpclib.php/mnetadmin_rpc_upgrade');
 
-        // Sending requests
-        foreach ($mnet_hosts as $mnet_host) {
+        // Sending requests.
+        foreach ($mnethosts as $mnethost) {
 
-            /**
-            * just for testing
-            if ($mnet_host->wwwroot == $CFG->wwwroot){
-                require_once $CFG->dirroot.'/local/vmoodle/plugins/upgrade/rpclib.php';
-                if (!($user_mnet_host = $DB->get_record('mnet_host', array('id' => $USER->mnethostid))))
-                    throw new Command_Exception('unknownuserhost');
-                $user = array(
-                            'username' => $USER->username,
-                            'remoteuserhostroot' => $user_mnet_host->wwwroot,
-                            'remotehostroot' => $CFG->wwwroot
-                        );
-                $response = mnetadmin_rpc_upgrade($user, true);
-                $responses[$mnet_host->wwwroot] = $response;
-                continue;
-            }
-            */
-            
-            // Sending request
-            if (!$rpc_client->send($mnet_host)) {
+            // Sending request.
+            if (!$rpcclient->send($mnethost)) {
                 $response = new StdClass();
                 $response->status = RPC_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    // echo '<pre>';
-                    // var_dump($rpc_client);
-                    // echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
             } else {
-                $response = json_decode($rpc_client->response);
+                $response = json_decode($rpcclient->response);
             }
             // Recording response.
-            $responses[$mnet_host->wwwroot] = $response;
+            $responses[$mnethost->wwwroot] = $response;
         }
-        
+
         // Saving results.
         $this->results = $responses + $this->results;
     }
@@ -138,14 +137,14 @@ class Command_Upgrade extends Command {
      * @return mixed The result or null if result does not exist.
      * @throws Command_Exception.
      */
-    public function getResult($host=null, $key = null) {
+    public function get_result($host = null, $key = null) {
 
         // Checking if command has been runned.
-        if (!$this->isRunned()) {
+        if (!$this->has_run()) {
             throw new Command_Exception('commandnotrun');
         }
 
-        // Checking host (general result isn't provide in this kind of command).
+        // Checking host (general result isn't provided in this kind of command).
         if (is_null($host) || !array_key_exists($host, $this->results)) {
             return null;
         }
@@ -154,7 +153,7 @@ class Command_Upgrade extends Command {
         // Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return '';

@@ -1,4 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ */
+namespace local_vmoodle;
+
+defined('MOODLE_INTERNAL') || die();
 
 // Moodle form's library.
 
@@ -10,21 +34,14 @@ if (file_exists($CFG->libdir.'/pear/HTML/QuickForm/elementgrid.php')) {
     require_once('__other/elementgrid.php');
 }
 
-/**
- * Define form for editing default services strategy
- * @package local_vmoodle
- * @category local
- * @author Moheissen Fabien (fabien.moheissen@gmail.com)
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
- */
-class ServicesStrategy_Form extends moodleform {
+class ServicesStrategy_Form extends \moodleform {
 
     /**
      * Constructor.
      */
     public function __construct() {
         // Calling parent's constructor.
-        parent::__construct(new moodle_url('/local/vmoodle/view.php', array('view' => 'services', 'what' => 'redefineservices')));
+        parent::__construct(new \moodle_url('/local/vmoodle/view.php', array('view' => 'services', 'what' => 'redefineservices')));
     }
 
     /**
@@ -37,12 +54,12 @@ class ServicesStrategy_Form extends moodleform {
         $mform =& $this->_form;
 
         // Master services.
-        $defaultservices    =    $DB->get_records('mnet_service', array('offer' => 1), 'name');
+        $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
 
-        // get version info to get real names
-        $self_mnet_peer = new mnet_peer();
-        $self_mnet_peer->set_id($CFG->mnet_localhost_id);
-        $myservices = mnet_get_service_info($self_mnet_peer);
+        // Get version info to get real names.
+        $selfmnetpeer = new \mnet_peer();
+        $selfmnetpeer->set_id($CFG->mnet_localhost_id);
+        $myservices = mnet_get_service_info($selfmnetpeer);
 
         if (!empty($defaultservices)) {
             // Services fieldset.
@@ -67,13 +84,15 @@ class ServicesStrategy_Form extends moodleform {
 
                 $description = $defaultservice->description;
                 if (empty($description)) {
-                    $version = current($myservices[$defaultservice->name]);
-                    $langmodule =
-                        ($version['plugintype'] == 'mod'
-                            ? ''
-                            : ($version['plugintype'] . '_'))
-                        . $version['pluginname']; // TODO there should be a moodle-wide way to do this
-                    $description = get_string($defaultservice->name.'_name', $langmodule);
+                    if (!empty($myservices[$defaultservice->name])) {
+                        $version = current($myservices[$defaultservice->name]);
+                        // TODO there should be a moodle-wide way to do this.
+                        $versionprf = $version['plugintype'] . '_';
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versionprf).$version['pluginname'];
+                        $description = get_string($defaultservice->name.'_name', $langmodule);
+                    } else {
+                        $description = '[['.$defaultservice->name.'_name]]';
+                    }
                 }
 
                 $mform->setDefault('main_'.$defaultservice->name.'_description', $description);
@@ -103,15 +122,16 @@ class ServicesStrategy_Form extends moodleform {
 
                 $description = $defaultservice->description;
                 if (empty($description)) {
-                    $version = current($myservices[$defaultservice->name]);
-                    $langmodule =
-                        ($version['plugintype'] == 'mod'
-                            ? ''
-                            : ($version['plugintype'] . '_'))
-                        . $version['pluginname']; // TODO there should be a moodle-wide way to do this
-                    $description = get_string($defaultservice->name.'_name', $langmodule);
+                    if (!empty($myservices[$defaultservice->name])) {
+                        $version = current($myservices[$defaultservice->name]);
+                        $versionprf = $version['plugintype'] . '_';
+                        $langmodule = ($version['plugintype'] == 'mod' ? '' : $versionprf).$version['pluginname'];
+                        $description = get_string($defaultservice->name.'_name', $langmodule);
+                    } else {
+                        $description = '[['.$defaultservice->name.'_name]]';
+                    }
                 }
-                
+
                 $mform->setDefault('peer_'.$defaultservice->name.'_description', $description);
                 $mform->setDefault('peer_'.$defaultservice->name.'_id',    $defaultservice->id);
                 $mform->setType('peer_'.$defaultservice->name.'_id', PARAM_INT);
@@ -123,12 +143,12 @@ class ServicesStrategy_Form extends moodleform {
 
         } else {
             // Confirmation message.
-            $message_object = new stdclass();
-            $message_object->message = get_string('badservicesnumber', 'local_vmoodle');
-            $message_object->style = 'notifyproblem';
+            $messageobject = new \stdclass();
+            $messageobject->message = get_string('badservicesnumber', 'local_vmoodle');
+            $messageobject->style = 'notifyproblem';
 
             // Save confirm message before redirection.
-            $SESSION->vmoodle_ma['confirm_message'] = $message_object;
+            $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
             new moodle_url('/local/vmoodle/view.php', array('view' => 'management'));
         }
     }

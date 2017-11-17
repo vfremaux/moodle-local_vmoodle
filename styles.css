@@ -1,9 +1,9 @@
 
-.bvmc * H2{
+.bvmc * H2 {
     color:#000080;
 }
 
-.vmoodle-hidden{
+.vmoodle-hidden {
     display:none;
     visibility:hidden;
 }
@@ -14,7 +14,10 @@
     visibility:hidden;
 }
 
-.content.hidden
-{
+.content.hidden {
     display:none;
+}
+
+.vmoodle-tools-row * {
+    display: inline;
 }

@@ -22,6 +22,7 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Print title (heading).
 echo $OUTPUT->heading(get_string('editvmoodle', 'local_vmoodle'));
@@ -29,11 +30,11 @@ echo $OUTPUT->heading(get_string('editvmoodle', 'local_vmoodle'));
 echo $OUTPUT->box_start();
 
 // Displays the form with data (and errors).
-if (!isset($platform_form)) {
+if (!isset($platformform)) {
     $datas = (isset($SESSION->vmoodle_mg['dataform']) ? $SESSION->vmoodle_mg['dataform'] : null);
-    $platform_form = new \local_vmoodle\Host_Form('edit', $datas);
+    $platformform = new \local_vmoodle\Host_Form('edit', $datas);
 }
 
-$platform_form->display();
+$platformform->display();
 
 echo $OUTPUT->box_end();

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,8 +31,8 @@
  */
 
 // Force OPcache reset if used, we do not want any stale caches
-// when detecting if upgrade necessary or when running upgrade.
-if (function_exists('opcache_reset') and !isset($_SERVER['REMOTE_ADDR'])) {
+// When detecting if upgrade necessary or when running upgrade.
+if (function_exists('opcache_reset') && !isset($_SERVER['REMOTE_ADDR'])) {
     opcache_reset();
 }
 
@@ -41,7 +40,9 @@ global $CLI_VMOODLE_PRECHECK;
 
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true;
+
+// Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
@@ -49,20 +50,21 @@ if (!isset($CFG->dirroot)) {
     die ('$CFG->dirroot must be explicitely defined in moodle config.php for this script to be used');
 }
 
-require_once($CFG->dirroot.'/lib/clilib.php');         // cli only functions
+require_once($CFG->dirroot.'/lib/clilib.php');
 
-// now get cli options
+// Cli only functions.
+
+// Now get cli options.
 list($options, $unrecognized) = cli_get_params(
-    array(
-        'non-interactive'   => false,
-        'allow-unstable'    => false,
-        'host'              => false,
-        'test'              => false,
-        'help'              => false
-    ),
-    array(
-        'h' => 'help'
-    )
+    array('non-interactive'   => false,
+          'allow-unstable'    => false,
+          'host'              => false,
+          'test'              => false,
+          'help'              => false),
+    array('h' => 'help',
+          'H' => 'host',
+          'u' => 'allow-unstable',
+          't' => 'test')
 );
 
 $interactive = empty($options['non-interactive']);
@@ -73,23 +75,23 @@ if ($unrecognized) {
 }
 
 if ($options['help']) {
-    $help =
-"Command line Moodle upgrade.
+    $help = "
+Command line Moodle upgrade.
 Please note you must execute this script with the same uid as apache!
 
 Site defaults may be changed via local/defaults.php.
 
 Options:
 --non-interactive     No interactive questions or confirmations
---allow-unstable      Upgrade even if the version is not marked as stable yet,
+-u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
---host                Switches to this host virtual configuration before processing
+-H, --host                Switches to this host virtual configuration before processing
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
 
 Example:
-\$sudo -u www-data /usr/bin/php admin/cli/upgrade.php --host=http://my.virtual.moodle.org
-"; //TODO: localize - to be translated later when everything is finished
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade.php --host=http://my.virtual.moodle.org
+"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -97,17 +99,17 @@ Example:
 
 if (!empty($options['host'])) {
     // Arms the vmoodle switching.
-    echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
+    echo('Arming for '.$options['host']."\n"); // Mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
 }
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
-echo('Config check : playing for '.$CFG->wwwroot."\n");
+echo 'Config check : playing for '.$CFG->wwwroot."\n";
 
 if (!empty($options['test'])) {
-    echo("Upgrade test mode : Using configuration: \n");
+    echo "Upgrade test mode : Using configuration: \n";
     echo "wwwroot : $CFG->wwwroot\n";
     echo "dirroot : $CFG->dirroot\n";
     echo "dataroot : $CFG->dataroot\n";
@@ -117,16 +119,16 @@ if (!empty($options['test'])) {
     die;
 }
 
-require_once($CFG->libdir.'/adminlib.php');       // various admin-only functions
-require_once($CFG->libdir.'/upgradelib.php');     // general upgrade/install related functions
+require_once($CFG->libdir.'/adminlib.php');       // Various admin-only functions.
+require_once($CFG->libdir.'/upgradelib.php');     // General upgrade/install related functions.
 require_once($CFG->libdir.'/environmentlib.php');
 
 if (empty($CFG->version)) {
     cli_error(get_string('missingconfigversion', 'debug'));
 }
 
-require("$CFG->dirroot/version.php");       // defines $version, $release, $branch and $maturity
-$CFG->target_release = $release;            // used during installation and upgrades
+require("$CFG->dirroot/version.php");       // Defines version, release, branch and maturity.
+$CFG->target_release = $release;            // Used during installation and upgrades.
 
 if ($version < $CFG->version) {
     cli_error(get_string('downgradedcore', 'error'));
@@ -140,9 +142,9 @@ if (!moodle_needs_upgrading()) {
 }
 
 // Test environment first.
-list($envstatus, $environment_results) = check_moodle_environment(normalize_version($release), ENV_SELECT_RELEASE);
+list($envstatus, $environmentresults) = check_moodle_environment(normalize_version($release), ENV_SELECT_RELEASE);
 if (!$envstatus) {
-    $errors = environment_get_errors($environment_results);
+    $errors = environment_get_errors($environmentresults);
     cli_heading(get_string('environment', 'admin'));
     foreach ($errors as $error) {
         list($info, $report) = $error;
@@ -165,9 +167,9 @@ if ($interactive) {
     echo cli_heading(get_string('databasechecking', '', $a)) . PHP_EOL;
 }
 
-// make sure we are upgrading to a stable release or display a warning
+// Make sure we are upgrading to a stable release or display a warning.
 if (isset($maturity)) {
-    if (($maturity < MATURITY_STABLE) and !$options['allow-unstable']) {
+    if (($maturity < MATURITY_STABLE) && !$options['allow-unstable']) {
         $maturitylevel = get_string('maturity'.$maturity, 'admin');
 
         if ($interactive) {
@@ -193,26 +195,30 @@ if ($interactive) {
 }
 
 if ($version > $CFG->version) {
-    // We purge all of MUC's caches here.
-    // Caches are disabled for upgrade by CACHE_DISABLE_ALL so we must set the first arg to true.
-    // This ensures a real config object is loaded and the stores will be purged.
-    // This is the only way we can purge custom caches such as memcache or APC.
-    // Note: all other calls to caches will still used the disabled API.
+    /*
+     * We purge all of MUC's caches here.
+     * Caches are disabled for upgrade by CACHE_DISABLE_ALL so we must set the first arg to true.
+     * This ensures a real config object is loaded and the stores will be purged.
+     * This is the only way we can purge custom caches such as memcache or APC.
+     * Note: all other calls to caches will still used the disabled API.
+     */
     cache_helper::purge_all(true);
     upgrade_core($version, true);
 }
 set_config('release', $release);
 set_config('branch', $branch);
 
-// unconditionally upgrade
+// Unconditionally upgrade.
 upgrade_noncore(true);
 
-// log in as admin - we need doanything permission when applying defaults
-\core\session\manager::set_user(get_admin());
+// Log in as admin - we need doanything permission when applying defaults.
+if ($admin = get_admin()) {
+    \core\session\manager::set_user($admin);
+}
 
-// apply all default settings, just in case do it twice to fill all defaults
-admin_apply_default_settings(NULL, false);
-admin_apply_default_settings(NULL, false);
+// Apply all default settings, just in case do it twice to fill all defaults.
+admin_apply_default_settings(null, false);
+admin_apply_default_settings(null, false);
 
 echo get_string('cliupgradefinished', 'admin')."\n";
-exit(0); // 0 means success
+exit(0); // 0 means success.

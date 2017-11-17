@@ -5,6 +5,15 @@ Implements a packaged virtualization control feature for large "Moodle Arrays"
 
 Important requirements for VMoodling :
 
+Version 2015062000 summary
+=============================
+
+This is a key change in architecture. Main part of the VMoodle mechanism is
+transfered to the local/vmoodle component, as local component set is naturally
+core enabled for subplugins. 
+
+The original bloc is mostly conserved for quick access to VMoodles configurations
+
 Version 2014071301 summary
 =============================
 
@@ -22,15 +31,20 @@ version 2013020801 summary
 - impove Command error and success report
 - integrates mahara patches for MNET stability.
 
+version 2016052402 summary
+=============================
+
+- Essentially shifts to local 
+
 Summary of prerequisites
 ################################################################
 
-0. Alter the <moodle>/lib/classes/component.php in lone 48 to let subplugins be used in blocks. (add 'block' to the list).
-
-1. Installing vmoodle block in codebase
-2. Installing the master moodle as usual browsing to Administration -> notifications
-3. Installing the config.php hook to vconfig.php
-4. Configuring the VMoodle common parameters
+1. Installing vmoodle local component in codebase
+2. Installing accessory vmoodle block in codebase
+3. Installing the accessory VMoodle report in codebase
+4. Installing the master moodle as usual browsing to Administration -> notifications
+5. Installing the config.php hook to vconfig.php
+6. Configuring the VMoodle common parameters
 
 Post install procedure
 ----------------------------------------------------------------
@@ -42,126 +56,7 @@ Post install procedure
 
 0 Old patches information (vs. 1.9)
 
-0.1 Add possibility to blocks to handle subplugins and install them:
-####################################################################
-
-The vmoodle block construction is using subplugins, that are plugins 
-handled inside the vmoodle block scope.
-
-for Moodle 2.2
---------------
-
-Conversely to version 1.9, now subplugins are handled as "standard architecture feature" for
-any plugin. 
-
-Since 2.4
----------
-
-An architecture flexibility regression caused the subplugin system for blocks to fail. We 
-now need an extra patch to get it finding plugin subcomponent path properly again. 
-
-This patch will alter 2 plugin related functions in /lib/moodlelib.php
-
-around L§8030
-
-/**
- * Lists all plugin types
- * @param bool $fullpaths false means relative paths from dirroot
- * @return array Array of strings - name=>location
- */
-function get_plugin_types($fullpaths=true) {
-    global $CFG;
-
-    static $info     = null;
-    static $fullinfo = null;
-
-    if (!$info) {
-        $info = array('qtype'         => 'question/type',
-                      'mod'           => 'mod',
-                      'auth'          => 'auth',
-                      'enrol'         => 'enrol',
-                      'message'       => 'message/output',
-                      'block'         => 'blocks',
-                      'filter'        => 'filter',
-                      'editor'        => 'lib/editor',
-                      'format'        => 'course/format',
-                      'profilefield'  => 'user/profile/field',
-                      'report'        => 'report',
-                      'coursereport'  => 'course/report', // must be after system reports
-                      'gradeexport'   => 'grade/export',
-                      'gradeimport'   => 'grade/import',
-                      'gradereport'   => 'grade/report',
-                      'gradingform'   => 'grade/grading/form',
-                      'mnetservice'   => 'mnet/service',
-                      'webservice'    => 'webservice',
-                      'repository'    => 'repository',
-                      'portfolio'     => 'portfolio',
-                      'qbehaviour'    => 'question/behaviour',
-                      'qformat'       => 'question/format',
-                      'plagiarism'    => 'plagiarism',
-                      'tool'          => $CFG->admin.'/tool',
-                      'cachestore'    => 'cache/stores',
-                      'cachelock'     => 'cache/locks',
-                      'theme'         => 'theme',  // this is a bit hacky, themes may be in $CFG->themedir too
-        );
-
-// PATCH : Allow subplugins in blocks
-        $subpluginowners = array_merge(array_values(get_plugin_list('mod')),
-                array_values(get_plugin_list('editor')), array_values(get_plugin_list('block')));
-// /PATCH 
-        foreach ($subpluginowners as $ownerdir) {
-
-around L§8106
-
-/**
- * Simplified version of get_list_of_plugins()
- * @param string $plugintype type of plugin
- * @return array name=>fulllocation pairs of plugins of given type
- */
-function get_plugin_list($plugintype) {
-    global $CFG;
-
-    $ignored = array('CVS', '_vti_cnf', 'simpletest', 'db', 'yui', 'tests');
-    if ($plugintype == 'auth') {
-        // Historically we have had an auth plugin called 'db', so allow a special case.
-        $key = array_search('db', $ignored);
-        if ($key !== false) {
-            unset($ignored[$key]);
-        }
-    }
-
-    if ($plugintype === '') {
-        $plugintype = 'mod';
-    }
-
-    $fulldirs = array();
-
-    if ($plugintype === 'mod') {
-        // mod is an exception because we have to call this function from get_plugin_types()
-        $fulldirs[] = $CFG->dirroot.'/mod';
-// PATCH : Allow subplugins in blocks
-    } else if ($plugintype === 'block') {
-        // block is an exception because we have to call this function from get_plugin_types()
-        $fulldirs[] = $CFG->dirroot . '/blocks';
-// /PATCH
-    } else if ($plugintype === 'editor') {
-
-
-Since moodle 2.6
-----------------
-
-Subplugin handling has been fluidified, with a very light change in a core library. 
-You'll just have to add the 'block' item in the subplugin capable plugins : lib/classes/component.php at line 48.
-
-    protected static $supportsubplugins = array('mod', 'editor', 'tool', 'local', 'block');
-
-
-0.2 Add possibility for blocks to handle xmlrpc the same way Moodle modules do:
-###############################################################################
-
-Moodle 2.2 supports now generic Mnet service declaration in all plugins.
-
-0.3 Patch for automated key rotations and consolidation in VMoodled networks:
+0.1 Patch for automated key rotations and consolidation in VMoodled networks:
 #############################################################################
 
 This patch allows a "well known trusted peer" to force asynchronous renewal of his
@@ -170,7 +65,7 @@ own key. It is still needed in Moodle 2.x versions
 Location : mnet/lib.php
 Changes : start of mnet_get_public_key() (including signature)
 
-Patch content : 
+Patch content :
 
 // PATCH : VMoodle Mnet automated key renewal -- adding force mode
 function mnet_get_public_key($uri, $application=null, $force=0) {
@@ -181,10 +76,10 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
     // check this first
     // cache location of key must be bypassed when we need an automated renew.
     if (!$force){
-	    $key = mnet_set_public_key($uri);
-	    if ($key != false) {
-	        return $key;
-	    }
+        $key = mnet_set_public_key($uri);
+        if ($key != false) {
+            return $key;
+        }
     }
 // /PATCH
 
@@ -195,7 +90,6 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
 //! PATCH : Mnet automated key renewal
     $rq = xmlrpc_encode_request('system/keyswap', array($CFG->wwwroot, $mnet->public_key, $application->name, $force), array("encoding" => "utf-8"));
 // /PATCH
-
 
 1. Master configuration changes : Installing the config.php hook to vconfig.php
 ###############################################################################
@@ -208,7 +102,15 @@ vconfig.php file in blocks/vmoodle and then install the hook point in the standa
 config.php of Moodle.
 
 /// VMOODLE Hack
-include $CFG->dirroot.'/blocks/vmoodle/vconfig.php';
+$CFG->mainhostprefix = 'http://someprefixthatmatchs';
+
+// this fragment will trap the CLI scripts trying to work for a virtual node, and
+// needing booting a first elementary configuration based on main config 
+if (isset($CLI_VMOODLE_PRECHECK) && $CLI_VMOODLE_PRECHECK == true) {
+    $CLI_VMOODLE_PRECHECK = false;
+    return;
+}
+include $CFG->dirroot.'/local/vmoodle/vconfig.php';
 /// /VMOODLE Hack
 
 must be located BEFORE the call to lib/setup.php include and AFTER the static configuration. 
@@ -225,14 +127,14 @@ this kind of generic binding.
     ServerAdmin webmaster@eisti.fr
     ServerName %mastermoodlehost%
     ServerAlias *.%mastermoodledomain%
-	VirtualDocumentRoot "D:/wwwroot/%moodledir%"
+    VirtualDocumentRoot "D:/wwwroot/%moodledir%"
     ErrorLog logs/vmoodle_common-error_log
     CustomLog logs/vmoodle_common-access_log common
 </VirtualHost>
 
-For example : 
+For example :
 
-the master moodle site could be : 
+the master moodle site could be :
 
 %mastermoodlehost% = moodle.mydomain.edu
 %moodledomain% = mydomain.edu
@@ -274,3 +176,13 @@ On large implementations running heavy moodle cron jobs or a lot
 of VMoodles, it can be a good idea to make cron run on a spare little 
 server that can run the codebase and has access to the database pool.
 
+Using admin scripts in a VMoodle Configuration
+##############################################
+
+As standard scripts do not know anything of virtualisation, and command line scripts
+cannot rely on SERVER_NAME or other HTTP environment variables, most of the admin/cli 
+scripts have been adapted for a VMoodle environment and reside in blocks/vmoodle/cli
+directory.
+
+Use them adding an additional --host options with the current wwwroot of the instance
+you want to address.

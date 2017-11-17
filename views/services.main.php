@@ -22,8 +22,8 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the library.
 require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
 
 $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
@@ -31,13 +31,18 @@ $defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name')
 $config = get_config('local_vmoodle');
 
 // Displays the form.
-$services_form = new ServicesStrategy_Form();
-if ($services = unserialize($config->services_strategy)) {
+$services_form = new \local_vmoodle\ServicesStrategy_Form();
+if ($services = unserialize(@$config->services_strategy)) {
     $services_form->set_data($services);
 }
 
 echo $OUTPUT->box_start();
-
 $services_form->display();
+
+echo $OUTPUT->heading(get_string('rawstrategy', 'local_vmoodle'));
+echo $OUTPUT->box(get_string('rawstrategy_desc', 'local_vmoodle'));
+echo '<pre>';
+echo @$config->services_strategy;
+echo '</pre>';
 
 echo $OUTPUT->box_end();

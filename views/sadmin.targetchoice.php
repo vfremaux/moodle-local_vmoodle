@@ -17,22 +17,25 @@
 /**
  * The second step of wizard.
  * Displays available platforms.
- * 
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Loading librairies.
 require($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
-Use \local_vmoodle\Target_Filter_Form;
-Use \local_vmoodle\Target_Form;
+
+use \local_vmoodle\Target_Filter_Form;
+use \local_vmoodle\Target_Form;
+use \local_vmoodle\Command_Form;
 
 // Getting retrieve platform command.
 if (!isset($rpcommand) && isset($SESSION->vmoodle_sa['command'])) {
     $command = unserialize($SESSION->vmoodle_sa['command']);
-    $rpcommand = $command->getRPCommand();
+    $rpcommand = $command->get_rpc_command();
 } else {
     return -1;
 }

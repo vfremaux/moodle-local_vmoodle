@@ -22,7 +22,7 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-$PAGE->requires->js('/local/vmoodle/js/sadmin.js');
+defined('MOODLE_INTERNAL') || die();
 
 // Declaring parameters.
 if (isset($SESSION->vmoodle_sa['wizardnow'])) {
@@ -46,7 +46,7 @@ switch ($wizardnow) {
         break;
 
     case 'report':
-        $result = include 'sadmin.report.php';
+        $result = include($CFG->dirroot.'/local/vmoodle/views/sadmin.report.php');
         break;
 
     default:
@@ -55,6 +55,9 @@ switch ($wizardnow) {
 
 // If an error happens.
 if ($result == -1) {
+    unset($SESSION->vmoodle_sa['command']);
+    $buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin'));
+    echo $OUTPUT->singlebutton($buttonurl, get_string('restart', 'local_vmoodle'));
     echo $OUTPUT->footer();
     exit(0);
 }

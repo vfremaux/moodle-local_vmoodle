@@ -22,9 +22,9 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the library.
-Use \local_vmoodle\Host_Form;
+use \local_vmoodle\Host_Form;
 
 $config = get_config('local_vmoodle');
 
@@ -35,11 +35,11 @@ echo $OUTPUT->box_start();
 
 // Displays the form.
 if (isset($SESSION->vmoodle_mg['dataform'])) {
-    $platform_form = new \local_vmoodle\Host_Form('add', $SESSION->vmoodle_mg['dataform']);
+    $platformform = new \local_vmoodle\Host_Form('add', $SESSION->vmoodle_mg['dataform']);
 } else {
-    $platform_form = new \local_vmoodle\Host_Form('add', null);
+    $platformform = new \local_vmoodle\Host_Form('add', null);
 
-    if ($CFG->local_vmoodle_automatedschema) {
+    if (!empty($config->automatedschema)) {
         if ($config->mnet == 'NEW') {
             $lastsubnetwork = $DB->get_field('local_vmoodle', 'MAX(mnet)', array());
             $formdata->mnet = $lastsubnetwork + 1;
@@ -48,9 +48,9 @@ if (isset($SESSION->vmoodle_mg['dataform'])) {
         }
 
         $formdata->services = $config->services;
-        $platform_form->set_data($formdata);
+        $platformform->set_data($formdata);
     }
 }
 
-$platform_form->display();
+$platformform->display();
 echo $OUTPUT->box_end();

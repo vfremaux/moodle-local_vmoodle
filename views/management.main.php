@@ -22,33 +22,30 @@
  * @author Moheissen Fabien (fabien.moheissen@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
 // Declaring the page parameter.
-$page = optional_param('page', 'list', PARAM_TEXT);
+$action = optional_param('what', 'list', PARAM_TEXT);
 
 // Templates test, for ADD page.
 $templates = vmoodle_get_available_templates();
-if ($page == 'add' && empty($templates)) {
-    $page = 'list';
+if (($action == 'add' && empty($templates)) || empty($action)) {
+    $action = 'list';
 }
 
 // Selecting the page.
-switch($page) {
-    case 'list': {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.list.php');
-    }
-    break;
-    case 'add' : {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.add.php');
-    }
-    break;
-    case 'edit' : {
-        $result = include($CFG->dirroot.'/local/vmoodle/management.edit.php');
-    }
-    break;
-    default: {
+switch ($action) {
+    case 'list':
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.list.php');
+        break;
+    case 'add':
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.add.php');
+        break;
+    case 'edit':
+        $result = include($CFG->dirroot.'/local/vmoodle/views/management.edit.php');
+        break;
+    default:
         $result = -1;
-    }
 }
 
 // If an error happens.

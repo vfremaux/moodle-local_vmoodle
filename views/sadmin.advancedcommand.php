@@ -23,10 +23,13 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+defined('MOODLE_INTERNAL') || die();
 
-// Loading the libraries.
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Form.php');
 require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Upload_Form.php');
+
+use \local_vmoodle\AdvancedCommand_Form;
+use \local_vmoodle\AdvancedCommand_Upload_Form;
 
 // Display forms.
 if (!isset($advancedcommand_form)) {
