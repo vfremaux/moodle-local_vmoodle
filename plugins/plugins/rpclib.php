@@ -52,12 +52,12 @@ define('VMOODLE_PLUGIN_DISABLE', 0);
  * @param string $role The role to read capabilities.
  * @param mixed $capabilities The capabilities to read (optional / may be string or array).
  */
-function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = true) {
+function mnetadmin_rpc_get_plugins_info($user, $plugintype, $jsonrequired = true) {
     global $CFG, $USER, $DB;
 
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user, 'local/vmoodle:execute')) {
-        if ($json_response) {
+        if ($jsonrequired) {
             return $auth_response;
         } else {
             return json_decode($auth_response);
@@ -72,7 +72,7 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
     $response->status = RPC_SUCCESS;
 
     // Getting role.
-    $pm = plugin_manager::instance();
+    $pm = core_plugin_manager::instance();
 
     $allplugins = $pm->get_plugins();
 
@@ -80,7 +80,7 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
         $response->status = RPC_FAILURE_RECORD;
         $response->errors[] = "Non existant plugin type $plugintype.";
         $response->error = "Non existant plugin type $plugintype.";
-        if ($json_response) {
+        if ($jsonrequired) {
             return json_encode($response);
         } else {
             return $response;
@@ -88,12 +88,14 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
     }
 
     // Setting result value.
-    $response->value = (array)$allplugins[$plugintype];
+    $plugins = (array)$allplugins[$plugintype];
+    // $response->value = (array)$allplugins[$plugintype];
+    $response->value = array();
 
     $actionclass = $plugintype.'_remote_control';
 
     // Get activation status.
-    foreach ($response->value as $pluginname => $foobar) {
+    foreach ($plugins as $pluginname => $foobar) {
 
         // Ignore non implemented.
         if (!class_exists($actionclass)) {
@@ -102,11 +104,11 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
         }
 
         $control = new $actionclass($pluginname);
-        $response->value[$pluginname]->enabled = $control->is_enabled();
+        $response->value[$pluginname] = $control->is_enabled();
     }
 
     // Returning response.
-    if ($json_response) {
+    if ($jsonrequired) {
         return json_encode($response);
     } else {
         return $response;
@@ -118,7 +120,7 @@ function mnetadmin_rpc_get_plugins_info($user, $plugintype, $json_response = tru
  * @param string $user The calling user.
  * @param string $plugininfos a structure with info for each plugin to setup.
  */
-function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = true) {
+function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jsonrequired = true) {
     global $CFG, $USER, $DB;
 
     // Creating response.
@@ -129,40 +131,68 @@ function mnetadmin_rpc_set_plugins_states($user, $plugininfos, $json_response = 
 
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user, 'local/vmoodle:execute')) {
-        if ($json_response) {
+        if ($jsonrequired) {
             // We could not have a credential.
             return $auth_response;
-        } else {
-            return json_decode($auth_response);
         }
+        return json_decode($auth_response);
+    }
+
+    $actionclass = $plugintype.'_remote_control';
+
+    // Non implemented.
+    if (!class_exists($actionclass)) {
+        $response->status = RPC_FAILURE;
+        $response->errors[] = "mnetadmin_rpc_set_plugins_states : State control class not implmeented for type: $plugintype";
+        $response->error = "mnetadmin_rpc_set_plugins_states : State control class not implmeented for type: $plugintype";
+        if (function_exists('debug_trace')) {
+            debug_trace("mnetadmin_rpc_set_plugins_states: failing running remote action on $actionclass. Class not found");
+        }
+        if ($jsonrequired) {
+            // We could not have a credential.
+            return $auth_response;
+        }
+        return json_decode($auth_response);
     }
 
     // Getting plugin enable/disable method.
     if (!empty($plugininfos)) {
-        foreach ($plugininfos as $plugin => $infos) {
-            $actionclass = $infos['type'].'_remote_control';
 
-            // Ignore non implemented.
-            if (!class_exists($actionclass)) {
-                debug_trace("failing running remote action on $actionclass. Class not found");
-                continue;
+        foreach ($plugininfos as $plugin => $state) {
+
+            if ($state == 1) {
+                $action = 'enable';
+            } else {
+                $action = 'disable';
             }
 
-            $control = new $actionclass($infos['type'], $plugin);
-            $action = $infos['action'];
+            if (function_exists('debug_trace')) {
+                debug_trace("Setting state: $plugin with action $action using $actionclass");
+            }
+
+            $control = new $actionclass($plugin);
+
             $return = $control->action($action);
             if ($return !== 0) {
-                $response->status = RPC_FAILURE;
-                $response->errors[] = $return;
+                $response->status = RPC_FAILURE_RECORD;
+                $response->errors[] = "Failed action $action on $plugin ";
+                $response->error = "Failed action $action on $plugin ";
             }
-            $response->value = 'done.';
+        }
+
+        cache_helper::invalidate_by_definition('core', 'plugin_manager');
+        cache_helper::invalidate_by_definition('core', 'config');
+
+    } else {
+        if (function_exists('debug_trace')) {
+            debug_trace("Empty plugininfo structure submitted");
         }
     }
 
     $response->error = implode(', ', $response->errors);
 
     // Returning response.
-    if ($json_response) {
+    if ($jsonrequired) {
         return json_encode($response);
     } else {
         return $response;

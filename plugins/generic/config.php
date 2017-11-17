@@ -34,13 +34,13 @@ use \vmoodleadminset_sql\Command_Sql;
 function vmoodle_config_get_plugins_params() {
     global $CFG, $DB;
 
-    $sql = '
+    $sql = "
         SELECT DISTINCT
             id,
             CONCAT(plugin,'/',name)
         FROM
             {config_plugins}
-    ';
+    ";
     $paramslist = $DB->get_records_sql_menu($sql);
     $paramlist = array_combine(array_values($paramslist), array_values($paramslist));
     return $paramlist;
@@ -49,13 +49,13 @@ function vmoodle_config_get_plugins_params() {
 function vmoodle_config_get_params() {
     global $CFG, $DB;
 
-    $sql = '
+    $sql = "
         SELECT DISTINCT
             id,
             name
         FROM
             {config}
-    ';
+    ";
     $paramslist = $DB->get_records_sql_menu($sql);
     $paramlist = array_combine(array_values($paramslist), array_values($paramslist));
     return $paramlist;
@@ -83,16 +83,16 @@ $sql = 'UPDATE {config} SET value = [[?source1]] WHERE name = \'maintenance_enab
 $sql .= ' UPDATE {config} SET value = [[?source2]] WHERE name = \'maintenance_message\'';
 
 $cmd = new Command_MultiSql(
-    'Vmoodle Maintenance',
-    'Setting on/off the maintenance mode',
+    vmoodle_get_string('cmdmaintenance', 'vmoodleadminset_generic'),
+    vmoodle_get_string('cmdmaintenance_desc', 'vmoodleadminset_generic'),
     $sql,
     array($param1,$param2));
 
 $category->add_command($cmd);
 
 $cmd = new Command_PurgeCaches(
-    'Vmoodle Purge Caches',
-    'Purge remote caches'
+    vmoodle_get_string('cmdpurgecaches', 'vmoodleadminset_generic'),
+    vmoodle_get_string('cmdpurgecaches_desc', 'vmoodleadminset_generic')
 );
 
 $category->add_command($cmd);
@@ -108,15 +108,15 @@ $param1 = new Command_Parameter(
 
 $param2 = new Command_Parameter(
     'value',
-    'text',
+    'ltext',
     'Config Value',
     null,
     null);
 
 $cmd = new Command_SetConfig(
-    'Vmoodle Config Value',
-    'Distributing a configuration value',
-    array($param1,$param2));
+    vmoodle_get_string('cmdconfigvalue', 'vmoodleadminset_generic'),
+    vmoodle_get_string('cmdconfigvalue_desc', 'vmoodleadminset_generic'),
+    array($param1, $param2));
 
 $category->add_command($cmd);
 
@@ -130,15 +130,21 @@ $param1 = new Command_Parameter(
 
 $param2 = new Command_Parameter(
     'value',
-    'text',
+    'ltext',
     'Config Value',
     null,
     null);
 
 $cmd = new Command_SetPluginConfig(
-    'Vmoodle Plugin Config Value',
-    'Distributing a configuration value in Config Plugin',
-    array($param1,$param2));
+    vmoodle_get_string('cmdpluginconfigvalue', 'vmoodleadminset_generic'),
+    vmoodle_get_string('cmdpluginconfigvalue_desc', 'vmoodleadminset_generic'),
+    array($param1, $param2));
+$category->add_command($cmd);
+
+$cmd = new Command_CopyFile();
+$category->add_command($cmd);
+
+$cmd = new Command_SyncLangCustomisation();
 $category->add_command($cmd);
 
 return $category;

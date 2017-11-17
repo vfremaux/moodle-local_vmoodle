@@ -34,6 +34,7 @@ $string['mnetadmin_name'] = 'MNET Meta Administration';
 $string['mnetadmin_description'] = 'Provides functions to perform network scoped administration operations, such as role or configuration settigns synchronisation.';
 $string['nosrcpltfrm'] = 'No source platform.';
 $string['nosyncpltfrm'] = 'Any platforms to synchronize.';
+$string['notinstalled'] = 'Not installed.';
 $string['platformparamsyncdesc'] = 'Source platform of the role to copy';
 $string['pluginname'] = 'Plugins management related commands';
 $string['pluginparamdesc'] = 'Plugin';
@@ -46,6 +47,7 @@ $string['tableparamdesc'] = 'Authorisation table';
 $string['syncwithitself'] = 'Synchronizing "{$a->platform}" platform with itself.';
 $string['enable'] = 'Enable';
 $string['disable'] = 'Disable';
+$string['confirmpluginvisibilitysync'] = 'Confirm';
 
 $string['plugincompare_help'] = '
 <h2>Plugin comparison</h2>

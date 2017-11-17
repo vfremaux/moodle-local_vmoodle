@@ -27,8 +27,8 @@ class Command_Role_Capability_Sync extends Command {
         global $DB;
 
         // Getting command description.
-        $cmd_name = vmoodle_get_string('cmdsynccapabilityname', 'vmoodleadminset_roles');
-        $cmd_desc = vmoodle_get_string('cmdsynccapabilitydesc', 'vmoodleadminset_roles');
+        $cmdname = vmoodle_get_string('cmdsynccapabilityname', 'vmoodleadminset_roles');
+        $cmddesc = vmoodle_get_string('cmdsynccapabilitydesc', 'vmoodleadminset_roles');
 
         // Creating platform parameter.
         $label = get_string('platformparamsyncdesc', 'vmoodleadminset_roles');

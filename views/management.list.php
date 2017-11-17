@@ -113,7 +113,14 @@ if ($vmoodles) {
 
         $auth = is_enabled_auth('multimnet') ? 'multimnet' : 'mnet';
         $jumpurl = new moodle_url('/auth/'.$auth.'/jump.php', array('hostwwwroot' => $vmoodle->vhostname));
+
+        if (empty($vmoodle->name)) {
+            $vmoodle->name = $mnethost->name;
+        }
         $vmoodlelnk = '<a href="'.$jumpurl.'" target="_blank" >'.$vmoodle->name.'</a>';
+        if ($mnethost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
+            $vmoodlelnk .= '<br/>'.$mnethost->name;
+        }
 
         $hostlnk = "<a href=\"{$vmoodle->vhostname}\" target=\"_blank\">{$vmoodle->vhostname}</a>";
         $crongapstr = "<span style=\"color:red\">$vmoodle->lastcrongap s.</span>";
@@ -182,6 +189,11 @@ echo '</div>';
 echo '<div class="vmoodle-tool">';
 $params = array('view' => 'management', 'what' => 'renewall');
 $label = get_string('renewallbindings', 'local_vmoodle');
+echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
+echo '</div>';
+echo '<div class="vmoodle-tool">';
+$params = array('view' => 'management', 'what' => 'syncregister');
+$label = get_string('syncvmoodleregister', 'local_vmoodle');
 echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
 echo '</div>';
 echo '<div class="vmoodle-tool">';

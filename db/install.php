@@ -50,6 +50,10 @@ function xmldb_local_vmoodle_install() {
     set_config('late_install', 1, 'local_vmoodle');
 }
 
+/**
+ * this function is called when viewing the vmoodle register to 
+ * fix some mispositionned rpc registration (Moodle bug in upgradelib.php)
+ */
 function xmldb_local_vmoodle_late_install() {
     global $USER, $DB;
 
@@ -59,6 +63,14 @@ function xmldb_local_vmoodle_late_install() {
         $DB->delete_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ', array());
         foreach ($oldfunctions as $f) {
             $DB->delete_records('mnet_service2rpc', array('rpcid' => $f->id));
+        }
+    }
+
+    $oldfunctions = $DB->get_records_select('mnet_remote_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ');
+    if ($oldfunctions) {
+        $DB->delete_records_select('mnet_remote_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ', array());
+        foreach ($oldfunctions as $f) {
+            $DB->delete_records('mnet_remote_service2rpc', array('rpcid' => $f->id));
         }
     }
 

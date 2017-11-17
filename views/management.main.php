@@ -29,7 +29,7 @@ $action = optional_param('what', 'list', PARAM_TEXT);
 
 // Templates test, for ADD page.
 $templates = vmoodle_get_available_templates();
-if ($action == 'add' && empty($templates)) {
+if (($action == 'add' && empty($templates)) || empty($action)) {
     $action = 'list';
 }
 
