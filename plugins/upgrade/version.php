@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of Update plugin library.
- * 
+ * Version details.
+ *
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
-$plugin = new Stdclass();
-$plugin->version = 2014071300;
+$plugin->version = 2017070501;
 $plugin->component = 'vmoodleadminset_upgrade';
 $plugin->requires = 2013111800;
+$plugin->release = '2.8 (Build 2017070501)';
 $plugin->dependencies = array('local_vmoodle' => 2014020400);

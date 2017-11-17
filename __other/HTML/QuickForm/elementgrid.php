@@ -70,11 +70,10 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @param string name for the element
      * @param string label for the element
      */
-    function HTML_QuickForm_ElementGrid($name = null, $label = null/*, $columnNames = null,
+    function __construct($name = null, $label = null/*, $columnNames = null,
                                          $rowNames = null, $rows = null, $attributes = null*/,
-                                         $options = null)
-    {
-        parent::HTML_QuickForm_element($name, $label);
+                                         $options = null) {
+        parent::__construct($name, $label);
         $this->updateAttributes(array('class' => 'elementGrid'));
         //$this->setRows($rows);
         //$this->setColumnNames($columnNames);
@@ -89,8 +88,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param string name
      */
-    function setName($name)
-    {
+    function setName($name) {
         $this->_name = $name;
     }
 
@@ -99,8 +97,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @return string name
      */
-    function getName()
-    {
+    function getName() {
         return $this->_name;
     }
 
@@ -109,8 +106,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param array array of column names (strings)
      */
-    function setColumnNames($columnNames)
-    {
+    function setColumnNames($columnNames) {
         $this->_columnNames = $columnNames;
     }
 
@@ -119,8 +115,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param string name of the column
      */
-    function addColumnName($columnName)
-    {
+    function addColumnName($columnName) {
         $this->_columnNames[] = $columnName;
     }
 
@@ -129,8 +124,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param array array of row names (strings)
      */
-    function setRowNames($rowNames)
-    {
+    function setRowNames($rowNames) {
         $this->_rowNames = $rowNames;
     }
 
@@ -139,8 +133,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param array array of HTML_QuickForm elements
      */
-    function setRows(&$rows)
-    {
+    function setRows(&$rows) {
         foreach (array_keys($rows) as $key) {
             $this->addRow($rows[$key]);
         }
@@ -152,8 +145,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @param array array of HTML_QuickForm elements
      * @param string name of the row
      */
-    function addRow(&$row, $rowName = null)
-    {
+    function addRow(&$row, $rowName = null) {
         $key = sizeof($this->_rows);
         $this->_rows[$key] = $row;
 
@@ -176,16 +168,14 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      *
      * @param string name of the row
      */
-    function addRowName($rowName)
-    {
+    function addRowName($rowName) {
         $this->_rowNames[] = $rowName;
     }
 
     /**
      * Freezes all elements in the grid
      */
-    function freeze()
-    {
+    function freeze() {
         parent::freeze();
         foreach (array_keys($this->_rows) as $key) {
             foreach (array_keys($this->_rows[$key]) as $key2) {
@@ -202,50 +192,9 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @access      public
      * @return      string
      */
-    function toHtml()
-    {
-    	/*
-        require_once 'HTML/Table.php';
-        $table = new HTML_Table(null, 0, true);
-        $table->updateAttributes($this->getAttributes());
-
-        $tbody =& $table->getBody();
-        $tbody->setAutoGrow(true);
-        $tbody->setAutoFill('');
-
-        $thead =& $table->getHeader();
-        $thead->setAutoGrow(true);
-        $thead->setAutoFill('');
-
-        $col = 0;
-        if ($this->_columnNames) {
-            foreach ($this->_columnNames as $key => $value) {
-                ++$col;
-                $thead->setHeaderContents(0, $col, $value);
-            }
-            $thead->updateRowAttributes(0, array('class' => 'elementGridColumnLabel'), true);
-        }
-
-        $row = 0;
-        foreach (array_keys($this->_rows) as $key) {
-            $col = 0;
-            $tbody->setHeaderContents($row, $col, isset($this->_rowNames[$key]) ? $this->_rowNames[$key] : '');
-            foreach (array_keys($this->_rows[$key]) as $key2) {
-                ++$col;
-                $tbody->setCellContents($row, $col, $this->_rows[$key][$key2]->toHTML());
-            }
-            ++$row;
-        }
-
-        $tbody->updateColAttributes(0, array('class' => 'elementGridRowLabel'));
-        return $table->toHTML();
-        */
-
-        /*include_once('HTML/QuickForm/Renderer/Default.php');
-        $renderer =& new HTML_QuickForm_Renderer_Default();
-        $renderer->setElementTemplate('{element}');
-        $this->accept($renderer);
-        return $renderer->toHtml();*/
+    function toHtml() {
+        assert(1);
+        // Let moodle front class do the job.
     }
 
     /**
@@ -257,23 +206,22 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @access    public
      * @return    bool    true
      */
-    function onQuickFormEvent($event, $arg, &$caller)
-    {
+    function onQuickFormEvent($event, $arg, &$caller) {
         switch ($event) {
-        case 'updateValue':
-            //store form for use in addRow
-            $this->_form =& $caller;
+            case 'updateValue': {
+                //store form for use in addRow
+                $this->_form =& $caller;
 
-            foreach (array_keys($this->_rows) as $key) {
-                foreach (array_keys($this->_rows[$key]) as $key2) {
-                    $this->_rows[$key][$key2]->onQuickFormEvent('updateValue', null, $caller);
+                foreach (array_keys($this->_rows) as $key) {
+                    foreach (array_keys($this->_rows[$key]) as $key2) {
+                        $this->_rows[$key][$key2]->onQuickFormEvent('updateValue', null, $caller);
+                    }
                 }
+                break;
             }
-            break;
 
-        default:
-            parent::onQuickFormEvent($event, $arg, $caller);
-            break;
+            default:
+                parent::onQuickFormEvent($event, $arg, $caller);
         }
         return true;
     }
@@ -286,8 +234,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @access public
      * @return mixed
      */
-    function exportValue(&$submitValues, $assoc = false)
-    {
+    function exportValue(&$submitValues, $assoc = false) {
         if ($this->_options['actAsGroup']) {
             return parent::exportValue($submitValues, $assoc);
         }
@@ -317,8 +264,7 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
      * @access    public
      * @return    mixed
      */
-    function getValue()
-    {
+    function getValue() {
         $values = array();
         foreach (array_keys($this->_rows) as $key) {
             foreach (array_keys($this->_rows[$key]) as $key2) {
@@ -330,4 +276,3 @@ class HTML_QuickForm_ElementGrid extends HTML_QuickForm_element {
 }
 
 require_once 'HTML/QuickForm.php';
-

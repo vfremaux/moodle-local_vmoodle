@@ -14,10 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace vmoodleadminset_generic;
-Use \local_vmoodle\commands\Command;
-Use \StdClass;
-
 /**
  * Describes meta-administration plugin's command for Maintenance setup.
  * 
@@ -26,6 +22,11 @@ Use \StdClass;
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_generic;
+
+use \local_vmoodle\commands\Command;
+use \StdClass;
+
 class Command_SetConfig extends Command {
 
     /**
@@ -43,7 +44,7 @@ class Command_SetConfig extends Command {
      * @throws Command_Exception
      */
     public function __construct($name, $description, $parameters = null, $rpcommand = null) {
-        global $vmcommands_constants;
+        global $vmcommandconstants;
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, $rpcommand);
@@ -53,7 +54,7 @@ class Command_SetConfig extends Command {
         }
 
         foreach ($parameters as $param) {
-            if (!in_array($param->getName(), array('key', 'value'))) {
+            if (!in_array($param->get_name(), array('key', 'value'))) {
                 throw new Command_SetConfig_Exception('unexpectedparam');
             }
         }
@@ -67,20 +68,20 @@ class Command_SetConfig extends Command {
     public function run($hosts) {
         global $CFG, $USER;
 
-        // Adding constants.
+        // Set Config. Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
 
-        // Checking host.
+        // Set Config. Checking host.
         if (!is_array($hosts)) {
             $hosts = array($hosts => 'Unnamed host');
         }
 
-        // Checking capabilities.
+        // Set Config. Checking capabilities.
         if (!has_capability('local/vmoodle:execute', \context_system::instance())) {
             throw new Command_SetConfig_Exception('insuffisantcapabilities');
         }
 
-        // Initializing responses.
+        // Set Config. Initializing responses.
         $responses = array();
 
         // Creating peers.
@@ -94,29 +95,24 @@ class Command_SetConfig extends Command {
             }
         }
 
-        // Getting command.
-        $command = $this->isReturned();
+        // Set Config. Getting command.
+        $command = $this->is_returned();
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
         $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_set_config');
-        $rpc_client->add_param($this->getParameter('key')->getValue(), 'string');
-        $rpc_client->add_param($this->getParameter('value')->getValue(), 'string');
+        $rpc_client->add_param($this->get_parameter('key')->get_value(), 'string');
+        $rpc_client->add_param($this->get_parameter('value')->get_value(), 'string');
         $rpc_client->add_param(null, 'string');
         $rpc_client->add_param($command, 'boolean');
 
-        // Sending requests.
+        // Set Config. Sending requests.
         foreach($mnet_hosts as $mnet_host) {
             // Sending request.
             if (!$rpc_client->send($mnet_host)) {
                 $response = new StdClass();
                 $response->status = MNET_FAILURE;
-                $response->errors[] = implode('<br/>', $rpc_client->getErrors($mnet_host));
-                if (debugging()) {
-                    echo '<pre>';
-                    var_dump($rpc_client);
-                    echo '</pre>';
-                }
+                $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
             } else {
                 $response = json_decode($rpc_client->response);
             }
@@ -124,7 +120,7 @@ class Command_SetConfig extends Command {
             $responses[$mnet_host->wwwroot] = $response;
         }
 
-        // Saving results.
+        // Set Config. Saving results.
         $this->results = $responses + $this->results;
     }
 
@@ -134,22 +130,22 @@ class Command_SetConfig extends Command {
      * @param string $key The information to retrieve (ie status, error / optional).
      * @throws Command_Sql_Exception
      */
-    public function getResult($host = null, $key = null) {
+    public function get_result($host = null, $key = null) {
         // Checking if command has been runned.
         if (is_null($this->results)) {
             throw new Command_Exception('commandnotrun');
         }
 
-        // Checking host (general result isn't provide in this kind of command).
+        // Set Config. Checking host (general result isn't provide in this kind of command).
         if (is_null($host) || !array_key_exists($host, $this->results)) {
             return null;
         }
         $result = $this->results[$host];
 
-        // Checking key.
+        // Set Config. Checking key.
         if (is_null($key)) {
             return $result;
-        } elseif (property_exists($result, $key)) {
+        } else if (property_exists($result, $key)) {
             return $result->$key;
         } else {
             return null;
@@ -160,7 +156,7 @@ class Command_SetConfig extends Command {
      * Get if the command's result is returned.
      * @return bool True if the command's result should be returned, false otherwise.
      */
-    public function isReturned() {
+    public function is_returned() {
         return $this->returned;
     }
 
@@ -168,7 +164,7 @@ class Command_SetConfig extends Command {
      * Set if the command's result is returned.
      * @param bool $returned True if the command's result should be returned, false otherwise.
      */
-    public function setReturned($returned) {
+    public function set_returned($returned) {
         $this->returned = $returned;
     }
 }

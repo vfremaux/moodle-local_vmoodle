@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * This file catches an action and do the corresponding usecase.
  * Called by 'view.php'.
@@ -27,14 +25,16 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @usecase redefineservices
  */
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
 
 // Confirmation message.
-$message_object = new stdclass();
-$message_object->message = '';
-$message_object->style = 'notifyproblem';
+$messageobject = new stdclass();
+$messageobject->message = '';
+$messageobject->style = 'notifyproblem';
 
-/**************************** Define or redefine default services strategy ************/
+/* *************************** Define or redefine default services strategy *********** */
 if ($action == 'redefineservices') {
 
     // Processing.
@@ -42,21 +42,32 @@ if ($action == 'redefineservices') {
     if (!empty($defaultservices)) {
 
         // Retrieve submitted data, from the services strategy form.
-        $services_form = new ServicesStrategy_Form();
-        $submitteddata = $services_form->get_data();
+        $servicesform = new \local_vmoodle\ServicesStrategy_Form();
+        $submitteddata = $servicesform->get_data();
+
+        $storedconfig = new Stdclass();
+        foreach ($submitteddata as $key => $value) {
+            if ($key == 'submitbutton') {
+                continue;
+            }
+            if (preg_match('/_description$/', $key)) {
+                continue;
+            }
+            $storedconfig->$key = $value;
+        }
 
         // Saves default services strategy.
-        set_config('local_vmoodle_services_strategy', serialize($submitteddata));
+        set_config('services_strategy', serialize($storedconfig), 'local_vmoodle');
 
         // Every step was SUCCESS.
-        $message_object->message = get_string('successstrategyservices', 'local_vmoodle');
-        $message_object->style = 'notifysuccess';
+        $messageobject->message = get_string('successstrategyservices', 'local_vmoodle');
+        $messageobject->style = 'notifysuccess';
     } else {
-        $message_object->message = get_string('badservicesnumber', 'local_vmoodle');
+        $messageobject->message = get_string('badservicesnumber', 'local_vmoodle');
     }
 
     // Save confirm message before redirection.
-    $SESSION->vmoodle_ma['confirm_message'] = $message_object;
-    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+    $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
+    redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'services')));
     return -1;
 }
