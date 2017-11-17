@@ -131,7 +131,7 @@ class Command_Role_Sync extends Command {
         unset($response);
 
         // Removing not set capabilities for the role.
-        foreach ($rolecapabilities as $rolecapabilityname => $role_capability) {
+        foreach ($rolecapabilities as $rolecapabilityname => $rolecapability) {
             if (is_null($rolecapability)) {
                 unset($rolecapabilities[$rolecapabilityname]);
             }
@@ -143,9 +143,9 @@ class Command_Role_Sync extends Command {
         // Creating peers.
         $mnethosts = array();
         foreach ($hosts as $host => $name) {
-            $mnethost = new mnet_peer();
+            $mnethost = new \mnet_peer();
             if ($mnethost->bootstrap($host, null, 'moodle')) {
-                $mnethosts[] = $mnet_host;
+                $mnethosts[] = $mnethost;
             } else {
                 $responses[$host] = (object) array(
                                         'status' => MNET_FAILURE,

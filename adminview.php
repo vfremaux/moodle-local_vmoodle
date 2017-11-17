@@ -24,22 +24,21 @@
  * @category local
  */
 // Adding requirements.
-require_once('../../config.php');
+require('../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 require_once($CFG->dirroot.'/local/vmoodle/debuglib.php');
 require_once($CFG->dirroot.'/mnet/lib.php');
 
 // Loading jQuery.
 $PAGE->requires->jquery();
-
-// Loading javascript files.
 $PAGE->requires->js('/local/vmoodle/js/strings.php');
-$PAGE->requires->js ('/local/vmoodle/js/target_choice.js');
+$PAGE->requires->js('/local/vmoodle/js/target_choice.js');
 
-$PAGE->requires->css ('/local/vmoodle/theme/styles.php');
+$PAGE->requires->css('/local/vmoodle/theme/styles.php');
 
 
 // Declaring parameters.
+
 $view = optional_param('view', 'management', PARAM_TEXT);
 $action = optional_param('what', '', PARAM_TEXT);
 

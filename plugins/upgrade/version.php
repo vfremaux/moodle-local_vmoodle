@@ -21,8 +21,8 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
-$plugin = new Stdclass();
-$plugin->version = 2014071300;
+$plugin->version = 2017070501;
 $plugin->component = 'vmoodleadminset_upgrade';
 $plugin->requires = 2013111800;
+$plugin->release = '2.9 (Build 2017070501)';
 $plugin->dependencies = array('local_vmoodle' => 2014020400);

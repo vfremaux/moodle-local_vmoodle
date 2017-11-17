@@ -31,6 +31,8 @@ function vmoodle_get_hostname() {
         $protocol = 'http';
     }
 
+    define('VMOODLE_BOOT', true);
+
     /*
      * This happens when a cli script needs to force one Vmoodle execution.
      * This will force vmoodle switch using a hard defined constant.
@@ -38,10 +40,14 @@ function vmoodle_get_hostname() {
     if (defined('CLI_VMOODLE_OVERRIDE')) {
         $CFG->vmoodleroot = CLI_VMOODLE_OVERRIDE;
         $CFG->vmoodlename = preg_replace('/https?:\/\//', '', CLI_VMOODLE_OVERRIDE);
-        echo 'resolving name to : '.$CFG->vmoodlename."\n";
+        $parts = explode('.', $CFG->vmoodlename);
+        $CFG->vhost = array_shift($parts);
         return;
     }
 
+    /*
+     * This is the standard case when each vmoodle runs on his own masgter single domain.
+     */
     $CFG->vmoodleroot = "{$protocol}://".@$_SERVER['HTTP_HOST'];
     $CFG->vmoodlename = @$_SERVER['HTTP_HOST'];
     if (empty($CFG->vmoodlename)) {
@@ -52,6 +58,35 @@ function vmoodle_get_hostname() {
         }
         $CFG->vmoodlename = $_SERVER['SERVER_NAME'];
     }
+
+    /*
+     * When using a single domain with subpaths for instances, we need
+     * catch the first path element in host identity reference.
+     */
+    if (!empty($CFG->vmoodleusesubpaths)) {
+        if (preg_match('#^/#', $CFG->dirroot)) {
+            // We are on a linux, (but not having full $CFG to know it).
+            $uri = preg_replace('#^/#', '', $_SERVER['REQUEST_URI']);
+            if (!preg_match('#/$#', $uri)) {
+                $path = dirname($uri);
+            } else {
+                $path = $uri;
+            }
+            $pathparts = explode('/', $path);
+            $firstpath = array_shift($pathparts);
+            if (($firstpath != '') && ($firstpath != '/') && ($firstpath != '.')) {
+                // If request uri goes into a subdir.
+                if (is_link($CFG->dirroot.'/'.$firstpath)) {
+                    // Symbolic links in dirroot are characteristic to submoodledirs.
+                    $CFG->vmoodleroot .= '/'.$firstpath;
+                    $CFG->vmoodlename .= '/'.$firstpath;
+                }
+            }
+        } else {
+            echo "VMoodle sub paths are not supported on Windows systems. Change configuration. \n";
+        }
+        // echo "Baseroot : ".$CFG->vmoodleroot.'<br/>';
+    }
 }
 
 /**
@@ -60,6 +95,10 @@ function vmoodle_get_hostname() {
  */
 function vmoodle_boot_configuration() {
     global $CFG;
+
+    if (empty($CFG->dirroot)) {
+        die('VMoodle installs need $CFG->dirroot be defined explicitely in config.php.'."\n");
+    }
 
     /*
      * vconfig provides an bypassed configuration using vmoodle host definition
@@ -134,7 +173,35 @@ function vmoodle_boot_configuration() {
         } else {
             die("VMoodling : Unsupported Database for VMoodleMaster");
         }
-    } else if ($CFG->vmoodledefault) {
+
+        // Apply child default config if any.
+        /**
+         * Note that hard config cannot be anymore overriden by administration.
+         *
+         * Setup will additionnaly apply a local/defaults.php file if exists.
+         */
+        if (!empty($CFG->vmoodlehardchildsdefaults)) {
+            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardchildsdefaults.'.php';
+            if (file_exists($default)) {
+                include($default);
+            }
+        }
+
+    } else if (empty($CFG->vmoodlenodefault)) {
+
+        // Apply master config hard defaults if any.
+        /**
+         * Note that hard config cannot be anymore overriden by administration.
+         *
+         * Setup will additionnaly apply a local/defaults.php file if exists.
+         */
+        if (!empty($CFG->vmoodlehardmasterdefaults)) {
+            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardmasterdefaults.'.php';
+            if (file_exists($default)) {
+                include($default);
+            }
+        }
+
         // Do nothing, just bypass.
         assert(true);
     } else {
@@ -194,8 +261,24 @@ function vmoodle_feed_config($vmoodle) {
     $CFG->dbtype    = $vmoodle->vdbtype;
     $CFG->dbhost    = $vmoodle->vdbhost;
     $CFG->dbname    = $vmoodle->vdbname;
-    $CFG->dbuser    = $vmoodle->vdblogin;
-    $CFG->dbpass    = $vmoodle->vdbpass;
+
+    // Security enhancement.
+    /*
+     * When using config forced logins and passwords for childs, the database
+     * register corresponding attributes can be cleared.
+     */
+    if (empty($CFG->vchildsdblogin)) {
+        $CFG->dbuser = $vmoodle->vdblogin;
+    } else {
+        $CFG->dbuser = $CFG->vchildsdblogin;
+    }
+
+    if (empty($CFG->vchildsdbpass)) {
+        $CFG->dbpass = $vmoodle->vdbpass;
+    } else {
+        $CFG->dbpass = $CFG->vchildsdbpass;
+    }
+
     $CFG->dboptions['dbpersist'] = $vmoodle->vdbpersist;
     $CFG->prefix    = $vmoodle->vdbprefix;
 
