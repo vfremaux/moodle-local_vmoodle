@@ -91,7 +91,7 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
     $rq = xmlrpc_encode_request('system/keyswap', array($CFG->wwwroot, $mnet->public_key, $application->name, $force), array("encoding" => "utf-8"));
 // /PATCH
 
-Master configuration changes : Installing the config.php hook to vconfig.php
+1. Master configuration changes : Installing the config.php hook to vconfig.php
 ###############################################################################
 
 Main config.php file must be changed in order to plug virtualization hooking.

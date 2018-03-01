@@ -102,7 +102,6 @@ $PAGE->set_headingmenu('');
 
 $url = new moodle_url('/local/vmoodle/view.php');
 $PAGE->set_url($url,array('view' => $view, 'what' => $action));
-$PAGE->requires->js('/local/vmoodle/js/sadmin.js');
 
 // Capturing action.
 
