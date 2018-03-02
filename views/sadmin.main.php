@@ -24,6 +24,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+$PAGE->requires->js_call_amd('local_vmoodle/vmoodle', 'init');
+
 // Declaring parameters.
 if (isset($SESSION->vmoodle_sa['wizardnow'])) {
     $wizardnow = $SESSION->vmoodle_sa['wizardnow'];

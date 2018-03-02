@@ -29,20 +29,30 @@ $string['cmdlangsynccustomisation'] = 'Exchange laguange customisations';
 $string['cmdlangsynccustomisation_desc'] = 'Sync and exchange language customisation files between intances';
 $string['cmdmaintenance'] = 'Maintenance mode';
 $string['cmdmaintenance_desc'] = 'Set/unset maintenance mode of a subset of inxtances';
+$string['cmdplugin'] = 'Copy a plugin full configuration';
+$string['cmdplugin_desc'] = 'Copies the local configuration of a plugin to the selected hosts';
 $string['cmdpluginconfigvalue'] = 'Plugin Config Value';
 $string['cmdpluginconfigvalue_desc'] = 'Distributing a configuration value in Config Plugin';
 $string['cmdpurgecaches'] = 'Purge caches';
 $string['cmdpurgecaches_desc'] = 'Purge caches of a subset of instances';
+$string['configkey'] = 'Config key';
+$string['configvalue'] = 'Config value';
 $string['core'] = 'core subsystems';
-$string['dataexchange_description'] = 'Opens functions to exchange static text values on a system to system basis';
 $string['dataexchange_name'] = 'Generic data exchange';
 $string['file_desc'] = 'System file';
 $string['langparamdesc'] = 'Language(s)';
 $string['localfile'] = 'Local file';
-$string['mnetadmin_description'] = 'When published, you allow the local platform to be remotely administrated by the peer moodle.<br/><br/>When subscribing, you will access to remote administration of the peer moodle.<br/><br/>';
+$string['maintenancemessage'] = 'Maintenance message';
+$string['maintenancemode'] = 'Maintenance mode';
 $string['mnetadmin_name'] = 'Meta-administration service';
-$string['platformparamlangsyncdesc'] = 'Instance to get lang files from';
 $string['platformparamfile_desc'] = 'Instance to get file from';
+$string['platformparamlangsyncdesc'] = 'Instance to get lang files from';
 $string['platformparamsyncdesc'] = 'Source platform of the lang customisations to copy from';
 $string['pluginname'] = 'Generic features';
 $string['pluginparamdesc'] = 'Plugin(s)';
+$string['plugin'] = 'Plugin';
+
+$string['mnetadmin_description'] = 'When published, you allow the local platform to be remotely administrated by the
+peer moodle.<br/><br/>When subscribing, you will access to remote administration of the peer moodle.<br/><br/>';
+
+$string['dataexchange_description'] = 'Opens functions to exchange static text values on a system to system basis';
