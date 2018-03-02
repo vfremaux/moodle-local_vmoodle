@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die;
 /**
  * Exception about Command_Sql.
  */
-class Command_Sql_Exception extends Exception {
+class Command_Sql_Exception extends \Exception {
 
     /**
      * Constructor with localized message.

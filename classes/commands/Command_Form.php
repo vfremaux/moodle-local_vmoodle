@@ -119,51 +119,77 @@ class Command_Form extends \moodleform {
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
                 switch ($parameter->get_type()) {
+
+                    // Checkbox.
                     case 'boolean': {
-                        $mform->addElement('checkbox', $parameter->get_name(), $parameter->get_description());
+                        $attrs = $parameter->get_attributes();
+                        $mform->addElement('checkbox', $parameter->get_name(), $parameter->get_description(), null, $attrs);
                         break;
                     }
 
+                    // Simple selector.
                     case 'enum': {
                         $label = $parameter->get_name();
                         $desc = $parameter->get_description();
                         $options = $parameter->get_choices();
-                        $mform->addElement('select', $label, $desc, $options);
+                        $attrs = $parameter->get_attributes();
+                        $mform->addElement('select', $label, $desc, $options, $attrs);
                         break;
                     }
 
+                    // Searchable selector.
+                    case 'senum': {
+                        $label = $parameter->get_name();
+                        $desc = $parameter->get_description();
+                        $options = $parameter->get_choices();
+                        $attrs = $parameter->get_attributes();
+                        $mform->addElement('searchableselector', $label, $desc, $options, $attrs);
+                        break;
+                    }
+
+                    // Multiple selector.
                     case 'menum': {
                         $label = $parameter->get_name();
                         $desc = $parameter->get_description();
                         $options = $parameter->get_choices();
-                        $select = & $mform->addElement('select', $label, $desc, $options);
+                        $select = & $mform->addElement('select', $label, $desc, $options, $attrs);
+                        $attrs = $parameter->get_attributes();
                         $select->setMultiple(true);
                         break;
                     }
 
+                    // Expanded height multiple selector.
                     case 'mhenum': {
                         $label = $parameter->get_name();
                         $desc = $parameter->get_description();
                         $options = $parameter->get_choices();
-                        $attrs = array('size' => 12);
+                        $attrs = $parameter->get_attributes();
+                        $attrs['size'] = @$attrs['size'] || 12;
                         $select = & $mform->addElement('select', $label, $desc, $options, $attrs);
                         $select->setMultiple(true);
                         break;
                     }
 
+                    // Text line.
                     case 'text': {
-                        $mform->addElement('text', $parameter->get_name(), $parameter->get_description());
+                        $attrs = $parameter->get_attributes();
+                        $mform->addElement('text', $parameter->get_name(), $parameter->get_description(), $attrs);
                         $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
                     }
 
+                    // Textarea.
                     case 'ltext': {
-                        $attrs = 'wrap="virtual" rows="20" cols="50"';
+                        $attrs = $parameter->get_attributes();
+                        $attrs['wrap'] = 'virtual';
+                        $attrs['rows'] = @$attrs['rows'] || 20;
+                        $attrs['coll'] = @$attrs['cols'] || 50;
                         $mform->addElement('textarea', $parameter->get_name(), $parameter->get_description(), $attrs);
                         $mform->setType($parameter->get_name(), PARAM_TEXT);
                         break;
                     }
 
+                    // Preset by internal means.
                     case 'internal': {
                         continue 2;
                     }

@@ -30,36 +30,57 @@ require_once($CFG->dirroot.'/local/vmoodle/classes/commands/Command_Form.php');
 
 use \local_vmoodle\Command_Form;
 
+$renderer = $PAGE->get_renderer('local_vmoodle');
+
 // Retrieving configuration files.
 $assistedcommandsconffiles = glob($CFG->dirroot.'/local/vmoodle/plugins/*/config.php');
 
 // Reading categories.
-$assistedcommands_categories = array();
+$assistedcommandscategories = array();
 foreach ($assistedcommandsconffiles as $conffile) {
     $path = explode('/', $conffile);
-    $assistedcommandscategory = $path[count($path)-2];
+    $assistedcommandscategory = $path[count($path) - 2];
     if ($assistedcommandscategory[0] != '_') {
-        $assistedcommands_categories[] = $assistedcommandscategory;
+        // Hidden categories folder starts with "_". May be useless now.
+        $assistedcommandscategories[] = $assistedcommandscategory;
     }
 }
 
 // Displaying commands categories.
-foreach ($assistedcommands_categories as $key => $category) {
+foreach ($assistedcommandscategories as $key => $category) {
 
     // Reading commands.
     try {
         $vmoodlecategory = load_vmplugin($category);
 
         // Displaying a command's form.
-        print_collapsable_bloc_start($vmoodlecategory->get_plugin_name(), $vmoodlecategory->get_name(), null, false);
+        $content = '';
         foreach ($vmoodlecategory->get_commands() as $command) {
             $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
+            ob_start();
             $command_form->display();
+            $content .= ob_get_clean();
         }
-        print_collapsable_block_end();
+        echo $renderer->collapsable_block($vmoodlecategory->get_plugin_name(), $vmoodlecategory->get_name(), $content, $classes = '', false);
     } catch (Exception $vce) {
-        print_collapsable_block_end();
         echo $OUTPUT->notification($vce->getMessage());
+    }
+}
+
+// Displaying commands categories.
+// TODO : fin a way to sort categories.
+if (@$sortedcommandscategories) {
+    foreach (array_values($sortedcommandscategories) as $categoryplugin) {
+
+        // Reading commands.
+        $content = '';
+        foreach ($vmoodlecategory->get_commands() as $command) {
+            $command_form = new Command_Form($command, Command_Form::MODE_COMMAND_CHOICE);
+            ob_start();
+            $command_form->display();
+            $content .= ob_get_clean();
+        }
+        echo $renderer->collapsable_block($vmoodlecategory->get_plugin_name(), $vmoodlecategory->get_name(), $content, $classes = '', false);
     }
 }
 

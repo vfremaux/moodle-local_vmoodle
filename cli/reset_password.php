@@ -74,7 +74,11 @@ if (!empty($options['host'])) {
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
 
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
+if (!defined('MOODLE_INTERNAL')) {
+    // If we are still in precheck, this means this is NOT a VMoodle install and full setup has already run.
+    // Otherwise we only have a tiny config at this location, sso run full config again forcing playing host if required.
+    require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
+}
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
 

@@ -47,14 +47,19 @@ class Command_Sql extends Command {
      * if commands has place holders, they are converted into Moodle SQL named variables
      */
     private $values;
-    
+
+    /**
+     * Some SQL changes may need caches being refreshed.
+     */
+    private $needspurgecaches;
+
     /**
      * Constructor.
-     * @param    $name                string                Command's name.
-     * @param    $description        string                Command's description.
-     * @param    $sql                string                SQL command.
-     * @param    $parameters            mixed                Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
-     * @param    $rpcommand            Command            Retrieve platforms command (optional / could be null or Command object).
+     * @param string $name Command's name.
+     * @param string $description Command's description.
+     * @param string $sql SQL command.
+     * @param mixed $parameters Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
+     * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws    Command_Exception
      */
     public function __construct($name, $description, $sql, $parameters = null, $rpcommand = null) {
@@ -68,7 +73,7 @@ class Command_Sql extends Command {
             throw new Command_Sql_Exception('sqlemtpycommand', $this->name);
         } else {
             // Looking for parameters
-            preg_match_all(Command::PLACEHOLDER, $sql, $sql_vars);
+            preg_match_all(self::PLACEHOLDER, $sql, $sql_vars);
 
             // Checking parameters to show.
             foreach ($sql_vars[2] as $key => $sql_var) {
@@ -85,9 +90,16 @@ class Command_Sql extends Command {
     }
 
     /**
+     * Allow some command constructs to purgecache after SQL operation.
+     */
+    public function set_purgecaches($purgecaches) {
+        $this->needspurgecaches = $purgecaches;
+    }
+
+    /**
      * Execute the command.
-     * @param    $host        mixed            The hosts where run the command (may be wwwroot or an array).
-     * @throws                Command_Sql_Exception
+     * @param mixed $host The hosts where run the command (may be wwwroot or an array).
+     * @throws Command_Sql_Exception
      */
     public function run($hosts) {
         global $CFG;
@@ -132,6 +144,7 @@ class Command_Sql extends Command {
         $rpcclient->add_param($this->_get_generated_command(), 'string');
         $rpcclient->add_param($this->values, 'array');
         $rpcclient->add_param($return, 'boolean');
+        $rpcclient->add_param($this->needspurgecaches, 'int');
 
         // Sending requests.
         foreach ($mnethosts as $mnethost) {
@@ -211,7 +224,7 @@ class Command_Sql extends Command {
      * @return string   The final SQL command to execute.
      */
     private function _get_generated_command() {
-        return preg_replace_callback(self::placeholder, array($this, '_replace_parameters_values'), $this->get_sql());
+        return preg_replace_callback(self::PLACEHOLDER, array($this, '_replace_parameters_values'), $this->get_sql());
     }
 
     /**
