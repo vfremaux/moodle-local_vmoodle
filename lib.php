@@ -1383,16 +1383,16 @@ function vmoodle_print_status($vmoodle, $return = false) {
     global $OUTPUT;
 
     if (!vmoodle_check_installed($vmoodle)) {
-        $vmoodlestate = '<img src="'.$OUTPUT->pix_url('broken', 'local_vmoodle').'"/>';
+        $vmoodlestate = '<img src="'.$OUTPUT->image_url('broken', 'local_vmoodle').'"/>';
     } else if ($vmoodle->enabled) {
         $params = array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id);
         $disableurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $pix = '<img src="'.$OUTPUT->pix_url('enabled', 'local_vmoodle').'" />';
+        $pix = '<img src="'.$OUTPUT->image_url('enabled', 'local_vmoodle').'" />';
         $vmoodlestate = '<a href="'.$disableurl.'" title="'.get_string('disable').'">'.$pix.'</a>';
     } else {
         $params = array('view' => 'management', 'what' => 'enable', 'id' => $vmoodle->id);
         $enableurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $pix = '<img src="'.$OUTPUT->pix_url('disabled', 'local_vmoodle').'" />';
+        $pix = '<img src="'.$OUTPUT->image_url('disabled', 'local_vmoodle').'" />';
         $vmoodlestate = '<a href="'.$enableurl.'" title="'.get_string('enable').'">'.$pix;
     }
 
