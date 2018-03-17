@@ -31,7 +31,7 @@ class Command_Parameter {
     /**
      * Types of parameter allowed
      */
-    const PARAMETER_TYPES_ALLOWED = 'boolean|enum|menum|mhenum|text|ltext|internal';
+    const PARAMETER_TYPES_ALLOWED = 'boolean|enum|menum|mhenum|senum|text|ltext|internal';
 
     /**
      * Parameter's name
@@ -41,12 +41,17 @@ class Command_Parameter {
     /**
      * Parameter's type
      */
-    protected $type; // Types : boolean | enum | menum | mhenum | text | ltext | internal.
+    protected $type; // Types : boolean | enum | menum | mhenum | senum | text | ltext | internal.
 
     /**
      * Parameter's description : uses for label or choices of enum parameter
      */
     protected $description;
+
+    /**
+     * Parameter's description : used to add attributes to the form input
+     */
+    protected $attributes;
 
     /**
      * Parameter's default value (optional)
@@ -71,7 +76,7 @@ class Command_Parameter {
      * @param $default string Parameter's defaut value (optional).
      * @param $choices array Parameter's choices (in case of enum).
      */
-    public function __construct($name, $type, $description, $default = null, $choices = null) {
+    public function __construct($name, $type, $description, $default = null, $choices = null, $attrs = null) {
         // Checking parameter's name.
         if (empty($name)) {
             throw new Command_Exception('parameteremptyname');
@@ -100,6 +105,8 @@ class Command_Parameter {
             $this->choices = $choices;
         }
 
+        $this->attributes = $attrs;
+
         // Checking parameter's default value.
         if (!is_null($default) && $this->type == 'enum' && (!is_string($default) || !array_key_exists($default, $this->choices))) {
             throw new Command_Exception('parameterwrongdefaultvalue', $this->name);
@@ -122,6 +129,14 @@ class Command_Parameter {
      */
     public function get_type() {
         return $this->type;
+    }
+
+    /**
+     * Get parameter's type.
+     * @return string Parameter's attributes.
+     */
+    public function get_attributes() {
+        return $this->attributes;
     }
 
     /**

@@ -34,7 +34,7 @@ global $CLI_VMOODLE_PRECHECK;
 $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 // Config preload to get real roots.
-require('../../../config.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->dirroot.'/lib/clilib.php');      // Cli only functions.
 require_once($CFG->dirroot.'/lib/cronlib.php');
 
@@ -72,7 +72,11 @@ if (!empty($options['host'])) {
 }
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+if (!defined('MOODLE_INTERNAL')) {
+    // If we are still in precheck, this means this is NOT a VMoodle install and full setup has already run.
+    // Otherwise we only have a tiny config at this location, sso run full config again forcing playing host if required.
+    require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+}
 echo('Config check : playing for '.$CFG->wwwroot);
 
 cron_run();

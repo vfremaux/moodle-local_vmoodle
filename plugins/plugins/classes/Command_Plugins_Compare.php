@@ -254,22 +254,22 @@ class Command_Plugins_Compare extends Command {
                 if (array_key_exists($host, $this->plugins) && property_exists($this->plugins[$host], $plugin->name)) {
                     $remote_plugin = $this->plugins[$host]->{$plugin->name};
                     if (is_null($remote_plugin)) {
-                        $cell = '<img src="'.$renderer->pix_url('notinstalled', 'vmoodleadminset_plugins').' alt="Not installed" title="'.$title.'" />';
+                        $cell = '<img src="'.$renderer->image_url('notinstalled', 'vmoodleadminset_plugins').' alt="Not installed" title="'.$title.'" />';
                     } else {
                         if ($remote_plugin->enabled) {
-                            $cell = '<img src="'.$renderer->pix_url('enabled', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
+                            $cell = '<img src="'.$renderer->image_url('enabled', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
                         } else {
-                            $cell = '<img src="'.$renderer->pix_url('disabled', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
+                            $cell = '<img src="'.$renderer->image_url('disabled', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
                         }
                         if ($localtypeplugins[$plugin->name]->versiondb > $remote_plugin->versiondb) {
-                            $cell .= '&nbsp;<img src="'.$renderer->pix_url('needsupgrade', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
+                            $cell .= '&nbsp;<img src="'.$renderer->image_url('needsupgrade', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
                         }
                         if ($remote_plugin->versiondisk > $remote_plugin->versiondb) {
-                            $cell .= '&nbsp;<img src="'.$renderer->pix_url('needslocalupgrade', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
+                            $cell .= '&nbsp;<img src="'.$renderer->image_url('needslocalupgrade', 'vmoodleadminset_plugins').'" title="'.$title.'" />';
                         }
                     }
                 } else {
-                    $cell = '<img src="'.$renderer->pix_url('notinstalled', 'vmoodleadminset_plugins').'" alt="Not installed" title="'.$title.'"/>';
+                    $cell = '<img src="'.$renderer->image_url('notinstalled', 'vmoodleadminset_plugins').'" alt="Not installed" title="'.$title.'"/>';
                 }
                 $this->report.= '<td id="plug_'.$col.'_'.$row.'" class="cell c'.$col.($extra_class ? ' '.$extra_class : '').'" style="vertical-align: middle; text-align: center;" onmouseout="cellOut('.$col.','.$row.');" onmouseover="cellOver('.$col.','.$row.');">'.$cell.'</td>';
                 $col++;
