@@ -119,3 +119,76 @@ function genericlib_uninstall() {
 
     return true;
 }
+
+function vmoodle_get_all_plugins() {
+    global $DB;
+
+    function fix_names(&$a) {
+        str_replace('/', '_', $a);
+    }
+
+    // Get all configurable plugins.
+    $sql = '
+        SELECT DISTINCT
+            plugin
+        FROM
+            {config_plugins}
+        WHERE
+             name != "version"
+    ';
+    $configurables = $DB->get_records_sql($sql);
+    $configurablenames = array_keys($configurables);
+
+    $subplugintypes = core_component::get_plugin_types_with_subplugins();
+    $subplugintypenames = array_keys($subplugintypes);
+
+    array_walk($configurablenames, 'fix_names');
+
+    $list = array();
+    $plugintypes = core_component::get_plugin_types();
+    $ptypes = array_keys($plugintypes);
+    sort($ptypes);
+
+    foreach ($ptypes as $type) {
+        $mayhavesubs = in_array($type, $subplugintypenames);
+        $pluginlist = core_component::get_plugin_list($type);
+        foreach (array_keys($pluginlist) as $plugin) {
+            if ($type != 'mod') {
+                $normalized = $type.'_'.$plugin;
+                $snormalized = $normalized;
+            } else {
+                $normalized = 'mod_'.$plugin;
+                $snormalized = $plugin;
+            }
+            if (!in_array($normalized, $configurablenames)) {
+                // Rip out all pugins that have no configuration.
+                continue;
+            }
+            if ($type == 'filter') {
+                $list[$normalized] = '['.$normalized.'] '.get_string('filtername', $snormalized);
+            } else {
+                $list[$normalized] = '['.$normalized.'] '.get_string('pluginname', $snormalized);
+            }
+
+            if ($mayhavesubs) {
+                $plugindir = core_component::get_plugin_directory($type, $plugin);
+                if (file_exists($plugindir.'/db/subplugins.php')) {
+                    if ($subplugins = core_component::get_subplugins($normalized)) {
+                        foreach ($subplugins as $subtype => $subplugins) {
+                            foreach ($subplugins as $subplugin) {
+                                $normalized = $subtype.'_'.$subplugin;
+                                $snormalized = $normalized;
+                                if (!in_array($normalized, $configurablenames)) {
+                                    // Rip out all pugins that have no configuration.
+                                    continue;
+                                }
+                                $list[$normalized] = '-- ['.$normalized.'] '.get_string('pluginname', $snormalized);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return $list;
+}

@@ -45,7 +45,8 @@ $publishes = array('dataexchange' => array(
                                               'mnetadmin_rpc_get_local_langs',
                                               'mnetadmin_rpc_set_local_langs',
                                               'mnetadmin_rpc_import_file',
-                                              'mnetadmin_rpc_get_remote_file'),
+                                              'mnetadmin_rpc_get_remote_file',
+                                              'mnetadmin_rpc_load_plugin_config'),
     ),
 );
 $subscribes = array(
@@ -57,5 +58,6 @@ $subscribes = array(
                          'mnetadmin_rpc_purge_caches' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_purge_caches',
                          'mnetadmin_rpc_import_file' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_import_file',
                          'mnetadmin_rpc_get_remote_file' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_remote_file',
+                         'mnetadmin_rpc_load_plugin_config' => 'local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_load_plugin_config',
                          ),
 );
