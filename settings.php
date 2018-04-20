@@ -22,6 +22,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 if (get_config('local_vmoodle', 'late_install')) {
     // Need performing some corrections on some db recordings, specially subplugins mnet function records.
@@ -120,7 +121,7 @@ if ($hasadmin) {
         $settings->add(new admin_setting_configtext($key, $label, $desc, '/var/moodledata/<%%INSTANCE%%>'));
 
         $settings->add(new admin_setting_heading('mnetschema', get_string('mnetschema', 'local_vmoodle'), ''));
-    
+
         $subnetworks = array('-1' => get_string('nomnet', 'local_vmoodle'));
         $subnetworks['0'] = get_string('mnetfree', 'local_vmoodle');
         $subnetworksrecords = $DB->get_records_sql('SELECT * from {local_vmoodle} WHERE mnet > 0 ORDER BY mnet');
@@ -235,5 +236,14 @@ if ($hasadmin) {
         $label = get_string('configclusterix', 'local_vmoodle');
         $desc = get_string('configclusterix_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
+    }
+
+    if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
+        include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
+        \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+    } else {
+        $label = get_string('plugindist', 'local_vmoodle');
+        $desc = get_string('plugindist_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
     }
 }

@@ -125,9 +125,10 @@ class Command_MultiSql extends Command {
         // Creating XMLRPC client.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
         $rpcclient->set_method('local/vmoodle/plugins/sql/rpclib.php/mnetadmin_rpc_run_sql_command');
-        $rpcclient->add_param($this->_get_generated_command(), 'string');
-        $rpcclient->add_param($this->values, 'array');
-        $rpcclient->add_param(false, 'boolean');
+        $rpcclient->add_param($this->_get_generated_command(), 'string'); // The command.
+        $rpcclient->add_param($this->values, 'array'); // Params.
+        $rpcclient->add_param(false, 'boolean'); // Returns ? here not.
+        $rpcclient->add_param(true, 'boolean'); // Need purge caches ?
         $rpcclient->add_param(true, 'boolean'); // Telling other side we are a multiple command.
 
         // Sending requests.

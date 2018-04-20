@@ -40,13 +40,15 @@ require_once($CFG->dirroot.'/lib/cronlib.php');
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(array('help' => false,
-                                                     'host' => true),
+                                                     'debug' => false,
+                                                     'host' => false),
                                                array('h' => 'help',
+                                                     'd' => 'debug',
                                                      'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error($unrecognized." is not a recognized option\n");
 }
 
 if ($options['help']) {
@@ -55,6 +57,7 @@ Execute periodic cron actions.
 
 Options:
 -h, --help            Print out this help
+-d, --debug           Forces cron to run with debugging mode.
 -H, --host            The host name to work for
 
 Example:
@@ -78,5 +81,25 @@ if (!defined('MOODLE_INTERNAL')) {
     require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 }
 echo('Config check : playing for '.$CFG->wwwroot);
+
+if (!empty($options['debug'])) {
+    switch ($options['debug']) {
+        case 'minimal': {
+            $CFG->debug = DEBUG_MINIMAL;
+        }
+
+        case 'normal': {
+            $CFG->debug = DEBUG_NORMAL;
+        }
+
+        case 'all': {
+            $CFG->debug = DEBUG_ALL;
+        }
+
+        case 'developer': {
+            $CFG->debug = DEBUG_DEVELOPER;
+        }
+    }
+}
 
 cron_run();
