@@ -118,7 +118,7 @@ function vmoodle_boot_configuration() {
 
             if (!$sidecnx = vmoodle_make_connection($vmaster, true)) {
                 // If vmoodle cnx not valid.
-                die ('VMoodle master server ('.$vmaster->vdbtype.':'.$vmaster->vdbname.'@'.$vmaster->vdbhost.') unreachable from '.$CFG->wwwroot);
+                die ('VMoodle master server ('.$vmaster->vdbtype.':'.$vmaster->vdbname.'@'.$vmaster->vdbhost.') unreachable from '.$CFG->wwwroot."\n");
             }
 
             $sql = "
@@ -136,10 +136,10 @@ function vmoodle_boot_configuration() {
                     $vmoodle = mysqli_fetch_object($res);
                     vmoodle_feed_config($vmoodle);
                 } else {
-                    die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.");
+                    die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.\n");
                 }
             } else {
-                die ("VMoodling : Could not fetch virtual moodle configuration");
+                die ("VMoodling : Could not fetch virtual moodle configuration\n");
             }
         } else if ($CFG->vmasterdbtype == 'postgres' || $CFG->vmasterdbtype == 'postgres7') {
             $vmaster = new StdClass();
@@ -164,14 +164,14 @@ function vmoodle_boot_configuration() {
                     $vmoodle = pg_fetch_object($res);
                     vmoodle_feed_config($vmoodle);
                 } else {
-                    die ("VMoodling : No configuration for this host. May be faked.");
+                    die ("VMoodling : No configuration for this host. May be faked.\n");
                 }
                 pg_close($sidecnx);
             } else {
-                die ("VMoodling : Could not fetch virtual moodle configuration");
+                die ("VMoodling : Could not fetch virtual moodle configuration\n");
             }
         } else {
-            die("VMoodling : Unsupported Database for VMoodleMaster");
+            die("VMoodling : Unsupported Database for VMoodleMaster\n");
         }
 
         // Apply child default config if any.

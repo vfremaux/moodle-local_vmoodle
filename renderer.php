@@ -74,4 +74,34 @@ class local_vmoodle_renderer extends plugin_renderer_base {
             return false;
         }
     }
+
+    /**
+     * Print the start of a collapsable block.
+     * @param string $id The id of the block.
+     * @param string $caption The caption of the block.
+     * @param string $content The HTMLcontent of the block.
+     * @param string $classes The CSS classes of the block.
+     * @param string $displayed True if the block is displayed by default, false otherwise.
+     */
+    public function collapsable_block($id, $caption, $content, $classes = '', $displayed = true) {
+        global $OUTPUT;
+        static $i = 0;
+
+        $i++;
+
+        $template = new StdClass;
+        $template->id = $id;
+        $template->i = $i;
+
+        $template->caption = $caption;
+        $template->captionnotags = strip_tags($caption);
+
+        $pixpath = ($displayed) ? '/t/expanded' : '/t/collapsed';
+        $template->pixpathurl = $OUTPUT->pix_url($pixpath);
+        $template->showctlalt = ($displayed) ? get_string('hide') : get_string('show');
+        $template->hideclass = ($displayed) ? '' : ' vmoodle-hidden';
+        $template->blockcontent = $content;
+
+        return $this->output->render_from_template('local_vmoodle/collapsibleblock', $template);
+    }
 }

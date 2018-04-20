@@ -168,6 +168,8 @@ $string['errorinvalidsessionorplatform'] = 'Les données de session VMoodle sont
 $string['errorplatformnotavailable'] = 'La plate-forme {$a} n\'est pas disponible.';
 $string['errorreactivetemplate'] = 'Le nom du chemin du moodle data et le nom de la base de données est introuvable pour réactiver la plateforme désirée.';
 $string['errorsetupdb'] = 'Erreur de mise en place de la base de données';
+$string['emulatecommunity'] = 'Emuler la version communautaire';
+$string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
 $string['failedplatforms'] = 'Echec des plates-formes :';
 $string['fileschema'] = 'Position des fichiers';
 $string['filter'] = 'Filtrer';
@@ -189,6 +191,10 @@ $string['insuffisantcapabilities'] = 'Capacités insuffisantes';
 $string['key_autorenew_parms'] = 'Réactualisation automatique des clefs réseau';
 $string['lastcron'] = 'Dernier Cron';
 $string['lastcrongap'] = '&Delta;';
+$string['licenseprovider'] = 'Fournisseur version Pro';
+$string['licenseprovider_desc'] = 'Entrez la clef de votre distributeur.';
+$string['licensekey'] = 'Clef de license pro';
+$string['licensekey_desc'] = 'Entrez ici la clef de produit que vous avez reçu de votre distributeur.';
 $string['maindb'] = 'Base de données principale';
 $string['mainpath'] = 'fichiers utilisateur principaux';
 $string['mainservicesformselection'] = 'Patron vis à vis du Moodle maître<br/>Ce patron est appliqué au nouveau noeud. Le patron "miroir" est appliqué au Moodle maître (ce moodle) ';
@@ -219,6 +225,7 @@ $string['mysqlcmd'] = 'Emplacement de la commande mysql';
 $string['mysqldumpcmd'] = 'Emplacement de la commande mysqldump';
 $string['name'] = 'Nom';
 $string['newvmoodle'] = 'Nouvelle plate-forme virtuelle';
+$string['newplatformregistered'] = 'Un nouvelle instance de moodle a été enregistrée';
 $string['nextstep'] = 'Continuer';
 $string['nomnet'] = 'Pas de réseau Moodle';
 $string['none'] = 'Aucune';
@@ -254,6 +261,7 @@ $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Le plugin a été désactivé.';
 $string['pluginenabled'] = 'Le plugin a été activé.';
 $string['pluginname'] = 'VMoodle';
+$string['plugindist'] = 'Distribution du plugin';
 $string['pluginnotdisabled'] = 'Le plugin n\'a pas été désactivé.';
 $string['pluginnotenabled'] = 'Le plugin n\'a pas été activé.';
 $string['pluginnotuninstalled'] = 'Le plugin n\'a pas été désintallé.';
@@ -264,7 +272,7 @@ $string['preupgrade'] = 'Tâches pré-mise à jour';
 $string['publish'] = 'Publication';
 $string['rawstrategy'] = 'Stratégie (valeur brute)';
 $string['rawstrategy_desc'] = 'Vous pouvez utiliser cette forme dans des fichiers de réglages par défauts ou directement en base de données.';
-$string['reactivetemplate'] = 'Réactiver la plateforme';
+$string['reactiveorregistertemplate'] = 'Réactiver la plateforme ou enregistrer une nouvelle identité';
 $string['regexp'] = 'exp reg';
 $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
@@ -345,7 +353,6 @@ $string['vdbprefix'] = 'Préfixe des tables ';
 $string['vdbs'] = 'Bases de données virtuelles';
 $string['vdbtype'] = 'Type de la base de données ';
 $string['vlogfilepattern'] = 'Fichier journal du VCron';
-$string['vhostname'] = 'Hôte du site';
 $string['vhostname'] = 'Nom d\'hôte';
 $string['virtualplatforms'] = 'Plates-formes virtuelles';
 $string['vmoodleadministration'] = 'Administration des plates-formes virtuelles ';
@@ -569,3 +576,11 @@ d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln
 $string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif
 accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
 ';
+
+$string['plugindist_desc'] = '
+<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
+correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
+sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
+<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
+<p>Notez que les deux composant local_sharedresources et mod_sharedresource doivent fonctionner au même niveau de distribution</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';

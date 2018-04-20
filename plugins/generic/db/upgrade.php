@@ -27,6 +27,9 @@ function xmldb_vmoodleadminset_generic_upgrade($oldversion = 0) {
     // Initializing.
     $result = true;
 
+    if ($oldversion < 2018021601) {
+        upgrade_plugin_savepoint(true, 2018021601, 'vmoodleadminset', 'generic');
+    }
     // Moodle 2.0 breakline.
 
     return $result;

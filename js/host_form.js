@@ -17,8 +17,8 @@ function opencnxpopup(wwwroot) {
 
     // PHP file linked the pop-up, and name.
     var url = wwwroot + "/local/vmoodle/views/management.testcnx.php" + "?" + "vdbtype="
-            + dbtype + "&" + "vdbhost=" + dbhost + "&" + "vdblogin=" + dblogin
-            + "&" + "vdbpass=" + dbpass + "&" + "vdbname=" + dbname;
+            + dbtype + "&" + "vdbhost=" + encodeURIComponent(dbhost) + "&" + "vdblogin=" + encodeURIComponent(dblogin)
+            + "&" + "vdbpass=" + encodeURIComponent(dbpass) + "&" + "vdbname=" + encodeURIComponent(dbname);
 
     // Pop-up's options.
     var options = "width=500,height=300,toolbar=no,menubar=no,location=no,scrollbars=no,status=no";
