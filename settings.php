@@ -146,9 +146,9 @@ if ($hasadmin) {
         $label = get_string('servicesstrategy', 'local_vmoodle');
         $desc = get_string('servicesstrategy_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $services_strategies));
-    
+
         $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
-    
+
         $onoffopts[0] = get_string('off', 'local_vmoodle');
         $onoffopts[1] = get_string('on', 'local_vmoodle');
 
@@ -236,14 +236,15 @@ if ($hasadmin) {
         $label = get_string('configclusterix', 'local_vmoodle');
         $desc = get_string('configclusterix_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
+
+        if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
+            include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
+            \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+        } else {
+            $label = get_string('plugindist', 'local_vmoodle');
+            $desc = get_string('plugindist_desc', 'local_vmoodle');
+            $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
+        }
     }
 
-    if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
-        include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
-        \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
-    } else {
-        $label = get_string('plugindist', 'local_vmoodle');
-        $desc = get_string('plugindist_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
-    }
 }

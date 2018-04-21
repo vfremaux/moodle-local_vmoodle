@@ -48,7 +48,7 @@ define(['jquery', 'core/log'], function($, log) {
 
             // Reopen the clicked item.
             $('#id-vmoodlecmd-panel-' + panelid).removeClass('vmoodle-hidden');
-        ,
+        },
 
         filtercapabilitytable: function(filterinput) {
             $('.capabilityrow').css('display', 'table-row');
