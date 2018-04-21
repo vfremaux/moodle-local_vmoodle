@@ -29,7 +29,7 @@ define(['jquery', 'core/log'], function($, log) {
 
         switch_panel: function() {
 
-            var that = $(this);
+            that = $(this);
 
             var handleid = that.attr('id');
             var panelid = that.attr('id').replace('id-showctl-', '');
