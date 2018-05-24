@@ -17,7 +17,7 @@
 
 define(['jquery', 'core/log'], function($, log) {
 
-    vmoodle = {
+    var vmoodle = {
 
         vmoodlestrings: '',
 
@@ -27,7 +27,7 @@ define(['jquery', 'core/log'], function($, log) {
             log.debug("AMD Vmoodle initialisation ");
         },
 
-        switch_panel: function(e) {
+        switch_panel: function() {
 
             var that = $(this);
 
@@ -61,4 +61,4 @@ define(['jquery', 'core/log'], function($, log) {
 
     return vmoodle;
 
-})
+});

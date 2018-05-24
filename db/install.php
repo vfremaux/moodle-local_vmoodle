@@ -48,6 +48,8 @@ function xmldb_local_vmoodle_install() {
     }
 
     set_config('late_install', 1, 'local_vmoodle');
+
+    return true;
 }
 
 /**
@@ -95,4 +97,5 @@ function xmldb_local_vmoodle_late_install() {
     }
 
     set_config('late_install', null, 'local_vmoodle');
+    return true;
 }

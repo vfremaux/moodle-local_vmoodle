@@ -27,10 +27,9 @@ global $CLI_VMOODLE_PRECHECK;
 $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
-require_once($CFG->dirroot.'/local/vmoodle/fixtures/fix_mnet_tables_lib.php'); // Fixture primitives.
 
 // Ensure errors are well explained.
-$CFG->debug = 31676;
+$CFG->debug = E_ALL;
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(array('verbose' => false,
@@ -49,7 +48,7 @@ if ($options['help']) {
     $help = "
 Command line MNET Table Consistancy Fixture.
 
-    Fixes all surnumerous RPC and Service records, and clean up irrelevnat
+    Fixes all surnumerous RPC and Service records, and clean up irrelevant.
     binding records.
 
     Options:
@@ -72,5 +71,7 @@ if (!empty($options['host'])) {
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot);
+
+require_once($CFG->dirroot.'/local/vmoodle/fixtures/fix_mnet_tables_lib.php'); // Fixture primitives.
 
 fix_mnet_tables_fixture();

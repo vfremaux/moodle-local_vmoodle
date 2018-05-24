@@ -10,11 +10,17 @@ function vmoodle_get_jump_link_url($vmoodleid, $wantsurl = '') {
             $url->param('wantsurl', $wantsurl);
         }
     } else {
-        // if not mnet
+        // If not mnet.
         $url = $vmoodle->vhostname;
         if (!empty($wantsurl)) {
             $url.= '?wantsurl='.$wantsurl;
         }
     }
     return $url;
+}
+
+function vmoodle_is_enabled($wwwroot) {
+    global $DB;
+
+    return $DB->get_field('local_vmoodle', 'enabled', array('vhostname' => $wwwroot));
 }
