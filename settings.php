@@ -73,7 +73,7 @@ if ($hasadmin) {
         $label = get_string('vmoodleip', 'local_vmoodle');
         $desc = get_string('vmoodleip_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
-    
+
         $dbopts['mysqli'] = 'MySQLi';
         $dbopts['postgres'] = 'Postgres';
         $settings->add(new admin_setting_heading('dbschema', get_string('dbschema', 'local_vmoodle'), ''));

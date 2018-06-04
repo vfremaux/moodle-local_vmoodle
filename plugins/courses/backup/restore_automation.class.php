@@ -19,6 +19,8 @@
  *
  * @Author Wafa Adham ,wafa@adham.ps
  */
+namespace local_vmoodle;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
@@ -90,26 +92,26 @@ class restore_automation {
         $unzipresult = $fp->extract_to_pathname($CFG->tempdir.'/backup/'.$file->get_filename(), $tempdir);
 
         // Check category exists.
-        if (!$cat = $DB->get_record('course_categories',array('id' => $coursecategoryid))) {
+        if (!$cat = $DB->get_record('course_categories', array('id' => $coursecategoryid))) {
             print_error("Invalid destination category");
         }
 
         // Create the base course.
-        $data = new StdClass();
+        $data = new \StdClass();
         $data->fullname = "Course restore in progress...";
         $data->shortname= "course_shortname".(rand(0, 293736));
         $data->category = $coursecategoryid;
 
         $course = create_course($data);
 
-        $rc = new restore_controller($file->get_contenthash(),
+        $rc = new \restore_controller($file->get_contenthash(),
                                      $course->id,
-                                     backup::INTERACTIVE_NO,
-                                     backup::MODE_GENERAL,
+                                     \backup::INTERACTIVE_NO,
+                                     \backup::MODE_GENERAL,
                                      $USER->id,
-                                     backup::TARGET_NEW_COURSE);
+                                     \backup::TARGET_NEW_COURSE);
 
-        $rc->set_status(backup::STATUS_AWAITING);
+        $rc->set_status(\backup::STATUS_AWAITING);
         $rc->execute_plan();
         $results = $rc->get_results();
 
