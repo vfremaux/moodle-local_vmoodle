@@ -23,12 +23,12 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require_once dirname(dirname(dirname(__FILE__))) . '/config.php';
+require_once __DIR__ . '/../../config.php';
 
 // grab the GET params - wantsurl could be anything - take it
 // with PARAM_RAW
 $hostid = optional_param('hostid', '0', PARAM_INT);
-// PATCH : Multijump rerouting
+// PATCH+ : Multijump rerouting
 /*
 $hostwwwroot = optional_param('hostwwwroot', '', PARAM_URL);
 $wantsurl = optional_param('wantsurl', '', PARAM_RAW);
@@ -60,7 +60,6 @@ if (!$hostid) {
     $hostid = $DB->get_field('mnet_host', 'id', array('wwwroot' => $hostwwwroot));
 }
 */
-// PATCH+ : Multijump rerouting.
 $wwwroot   = optional_param('wwwroot', '', PARAM_RAW);
 $wwwroot   = optional_param('hostwwwroot', $wwwroot, PARAM_RAW); // ensures compatibility with standard versions
 $wantsurl = optional_param('wantsurl', '', PARAM_RAW);
