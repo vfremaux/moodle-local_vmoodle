@@ -103,8 +103,7 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
         }
     }
 
-    $rawreturn = curl_exec($ch);
-    $res = xmlrpc_decode($rawreturn);
+    $res = xmlrpc_decode(curl_exec($ch));
 
     // check for curl errors
     $curlerrno = curl_errno($ch);
@@ -417,7 +416,6 @@ function mnet_generate_keypair($dn = null, $days=28) {
         // can not generate keys - missing openssl.cnf??
         return null;
     }
-
     if (!empty($CFG->opensslcnf)) { //allow specification of openssl.cnf especially for Windows installs
         $csr_rsc = openssl_csr_new($dn, $new_key, array("config" => $CFG->opensslcnf));
         $selfSignedCert = openssl_csr_sign($csr_rsc, null, $new_key, $days, array("config" => $CFG->opensslcnf));
@@ -443,6 +441,7 @@ function mnet_generate_keypair($dn = null, $days=28) {
 
     return $keypair;
 }
+
 
 function mnet_update_sso_access_control($username, $mnet_host_id, $accessctrl) {
     global $DB;
@@ -570,7 +569,6 @@ function mnet_get_app_jumppath ($applicationid) {
  */
 function mnet_debug($debugdata, $debuglevel=1) {
     global $CFG;
-
     $setlevel = get_config('', 'mnet_rpcdebug');
     if (empty($setlevel) || $setlevel < $debuglevel) {
         return;
