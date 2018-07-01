@@ -33,22 +33,20 @@ if (get_config('local_vmoodle', 'late_install')) {
 $systemcontext = context_system::instance();
 $hasadmin = false;
 if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // This is AdminSettings Edunao driven administration.
+    // This is AdminSettings driven administration.
     if (has_capability('local/adminsettings:nobody', $systemcontext)) {
         $hasadmin = true;
     }
 } else {
     // This is Moodle Standard.
-    if ($ADMIN->fulltree) {
-        $hasadmin = true;
-    }
+    $hasadmin = true;
 }
 
 if ($hasadmin) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');
-        $viewurl = $CFG->wwwroot . '/local/vmoodle/view.php';
+        $viewurl = $CFG->wwwroot.'/local/vmoodle/view.php';
         $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
 
         $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
