@@ -225,9 +225,9 @@ if ($action == 'doadd') {
 
         if ($interactive) {
             if (!$new) {
-                $messageobject->message = get_string('plateformreactivate', 'local_vmoodle');
+                $messageobject->message = get_string('platformreactivate', 'local_vmoodle');
             } else {
-                $messageobject->message = get_string('newplateformregistered', 'local_vmoodle');
+                $messageobject->message = get_string('newplatformregistered', 'local_vmoodle');
             }
             $messageobject->style = 'notifysuccess';
             $SESSION->vmoodle_ma['confirm_message'] = $messageobject;

@@ -127,7 +127,7 @@ class auth_plugin_mnet extends auth_plugin_base {
                 $userdata["profile_field_{$fieldname}"] = $fielddata;
             }
         }
-        // PATCH
+        // PATCH-.
 
         $userdata['myhosts'] = array();
         if ($courses = enrol_get_users_courses($user->id, false)) {
@@ -363,7 +363,7 @@ class auth_plugin_mnet extends auth_plugin_base {
                     } else {
                         $localtimemodified = 0;
                     }
-    
+
                     if (!empty($val) and $localtimemodified < $val) {
                         mnet_debug('refetching the user picture from the identity provider host');
                         $fetchrequest = new mnet_xmlrpc_client();
@@ -400,8 +400,7 @@ class auth_plugin_mnet extends auth_plugin_base {
                         }
                     }
                 }
-    
-                // PATCH : capture profile fields, check if corresponding entry is defined and update data
+
                 if (preg_match('/^profile_field_(.*)/', $key, $matches)){
                     $fieldname = $matches[1];
                     if ($field = $DB->get_record('user_info_field', array('shortname' => $fieldname))){
@@ -423,12 +422,11 @@ class auth_plugin_mnet extends auth_plugin_base {
         }
 
         // $localuser->mnethostid = $remotepeer->id;
-        // /PATCH
 
         if (empty($localuser->firstaccess)) { // Now firstaccess, grab it here
             $localuser->firstaccess = time();
         }
-        // /PATCH-.
+        // PATCH-.
         user_update_user($localuser, false);
 
         if (!$firsttime) {
@@ -442,9 +440,9 @@ class auth_plugin_mnet extends auth_plugin_base {
             // with info so that the IDP can maintain mnetservice_enrol_enrolments
             $mnetrequest->add_param($remoteuser->username);
             $fields = 'id, category, sortorder, fullname, shortname, idnumber, summary, startdate, visible';
-            // FIX 
+            // FIX+
             $courses = enrol_get_users_courses($localuser->id, false, $fields, 'visible DESC,sortorder ASC');
-            // /FIX.
+            // FIX-
             if (is_array($courses) && !empty($courses)) {
                 // Second request to do the JOINs that we'd have done
                 // inside enrol_get_users_courses() if we had been allowed
