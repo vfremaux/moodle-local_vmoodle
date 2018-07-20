@@ -39,7 +39,7 @@ if (is_dir($CFG->dirroot.'/local/adminsettings')) {
     }
 } else {
     // This is Moodle Standard.
-    $hasadmin = true;
+    $hasadmin = has_capability('moodle/site:config', $systemcontext);
 }
 
 if ($hasadmin) {
@@ -72,6 +72,7 @@ if ($hasadmin) {
         $desc = get_string('vmoodleip_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
 
+        $dbopts['mariadb'] = 'MariaDB';
         $dbopts['mysqli'] = 'MySQLi';
         $dbopts['postgres'] = 'Postgres';
         $settings->add(new admin_setting_heading('dbschema', get_string('dbschema', 'local_vmoodle'), ''));
@@ -79,7 +80,7 @@ if ($hasadmin) {
         $key = 'local_vmoodle/dbtype';
         $label = get_string('vdbtype', 'local_vmoodle');
         $desc = get_string('vdbtype_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 'mysqli', $dbopts));
+        $settings->add(new admin_setting_configselect($key, $label, $desc, 'mariadb', $dbopts));
 
         $key = 'local_vmoodle/vdbhost';
         $label = get_string('vdbhost', 'local_vmoodle');
@@ -244,5 +245,4 @@ if ($hasadmin) {
             $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
         }
     }
-
 }

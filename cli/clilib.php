@@ -83,7 +83,7 @@ function vmoodle_parse_csv_nodelist($nodelistlocation = '') {
 
     $optionaldefaults = array(
             'mnet' => 1,
-            'vdbtype' => 'mysqli',
+            'vdbtype' => 'mariadb',
             'vdbhost' => $CFG->dbhost,
             'vdbpersist' => $CFG->dboptions['dbpersist'],
             'vdbprefix' => 'mdl_',
@@ -233,7 +233,7 @@ function vmoodle_parse_csv_snaplist($nodelistlocation = '') {
 
     $optionaldefaults = array(
             'mnet' => 1,
-            'vdbtype' => 'mysqli',
+            'vdbtype' => 'mariadb',
             'vdbhost' => $CFG->dbhost,
             'vdbpersist' => $CFG->dboptions['dbpersist'],
             'vdbprefix' => 'mdl_',

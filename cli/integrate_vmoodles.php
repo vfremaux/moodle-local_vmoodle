@@ -122,7 +122,7 @@ if (!empty($options['nodefile'])) {
         }
 
         if (!array_key_exists('vdbtype', $data)) {
-            $data['vdbtype'] = 'mysqli';
+            $data['vdbtype'] = 'mariadb';
         }
 
         if (!array_key_exists('enabled', $data)) {
@@ -184,7 +184,7 @@ if (!empty($options['configdir'])) {
                     $newrec->$key = $value;
                 }
                 if (empty($newrec->vdbtype)) {
-                    $newrec->vdbtype = 'mysqli';
+                    $newrec->vdbtype = 'mariadb';
                 }
                 $newrec->mnet = $maxmnet;
                 $maxmnet++;

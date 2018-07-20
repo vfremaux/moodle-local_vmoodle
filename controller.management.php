@@ -74,7 +74,7 @@ if ($action == 'add') {
         if (@$config->automatedschema) {
             $platformform = new StdClass();
             $platformform->vhostname = (@$config->vmoodlehost) ? $config->vmoodlehost : 'localhost';
-            $platformform->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mysqli';
+            $platformform->vdbtype = (@$config->vdbtype) ? $config->vdbtype : 'mariadb';
             $platformform->vdbhost = (@$config->vdbhost) ? $config->vdbhost : 'localhost';
             $platformform->vdblogin = $config->vdblogin;
             $platformform->vdbpass = $config->vdbpass;
@@ -478,6 +478,7 @@ if ($action == 'doadd') {
                 $newmnethost->updateparams->deleted = 1;
                 $newmnethost->commit();
                 $messageobject->message = get_string('successaddnewhostwithoutmnet', 'local_vmoodle');
+                $message = new Stdclass;
                 $message->style = 'notifysuccess';
                 $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
 
@@ -976,11 +977,13 @@ if ($action == 'snapshot') {
 /* *************************** Delete a Vmoodle and uninstall it *********** */
 if (($action == 'delete') || ($action == 'fulldelete')) {
     $id = required_param('id', PARAM_INT);
+
     // Unmarks the Vmoodle in everyplace (subnetwork, common).
     if ($vmoodle = $DB->get_record('local_vmoodle', array('id' => $id))) {
         if ($vmoodlehost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname))) {
+
             if (($vmoodlehost->deleted == 0)) {
-                $vmoodlehost->deleted    = 1;
+                $vmoodlehost->deleted = 1;
                 $DB->update_record('mnet_host', $vmoodlehost);
             }
 
