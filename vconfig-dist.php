@@ -45,7 +45,7 @@ require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 // EDIT A CONFIGURATION FOR MASTER MOODLE.
 
 $CFG->vmasterdbhost = 'localhost';
-$CFG->vmasterdbtype = 'mysqli';
+$CFG->vmasterdbtype = 'mariadb';
 $CFG->vmasterdbname = '';
 $CFG->vmasterdblogin = '';
 $CFG->vmasterdbpass = '';

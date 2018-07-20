@@ -272,7 +272,7 @@ if (!function_exists('filesystem_create_dir')) {
             }
             if (filesystem_is_dir("{$source}/{$afile}", $pathbase)) {
                 filesystem_create_dir("{$dest}/{$afile}", FS_NON_RECURSIVE, $pathbase);
-                if (count(filesystem_is_dir("{$source}/{$afile}", $pathbase)) != 0) {
+                if (count(filesystem_get_file_list("{$dest}/{$afile}", '', $pathbase)) > 0) {
                     filesystem_copy_tree("{$source}/{$afile}", "{$dest}/{$afile}", $pathbase, $excludepatterns);
                 }
             } else {

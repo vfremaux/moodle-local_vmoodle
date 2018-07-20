@@ -623,7 +623,7 @@ function vmoodle_make_this() {
 function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
 
     // If database is MySQL typed.
-    if ($vmoodle->vdbtype == 'mysqli') {
+    if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         if (!($res = mysqli_query($sql, $cnx))) {
             echo "vmoodle_execute_query() : ".mysqli_error($cnx)."<br/>";
             return false;
@@ -658,7 +658,7 @@ function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
  * @return boolean If true, closing the connection is well-executed.
  */
 function vmoodle_close_connection($vmoodle, $cnx) {
-    if ($vmoodle->vdbtype == 'mysqli') {
+    if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         $res = mysqli_close($cnx);
     } else if ($vmoodle->vdbtype == 'postgres') {
         $res = pg_close($cnx);
@@ -691,15 +691,17 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
     $pass = '';
     $pgm = null;
 
-    if ($vmoodle->vdbtype == 'mysql' || $vmoodle->vdbtype == 'mysqli') {
+    if ($vmoodle->vdbtype == 'mysql' || $vmoodle->vdbtype == 'mysqli' || $vmoodle->vdbtype == 'mariadb') {
         // Default port.
         if (empty($port)) {
             $port = 3306;
         }
 
         // Password.
-        if (!empty($vmoodle->vdbpass)) {
+        if (!empty($vmoodle->vdbpass) && ($CFG->ostype != 'WINDOWS')) {
             $pass = "-p".escapeshellarg($vmoodle->vdbpass);
+        } else {
+            $pass = "-p".$vmoodle->vdbpass;
         }
 
         // Making the command.
@@ -722,7 +724,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
 
         // Password.
         if (!empty($vmoodle->vdbpass)) {
-            $pass = $vmoodle->vdbpass;
+            $pass = '"'.$vmoodle->vdbpass.'"';
         }
 
         // Making the command, (if needed, a password prompt will be displayed).
@@ -747,7 +749,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $pgm = str_replace('/', DIRECTORY_SEPARATOR, $pgm);
 
         if (!is_executable($phppgm)) {
-            print_error('dbcommanderror', 'local_vmoodle', $phppgm);
+            print_error('dbcommanderror', 'local_vmoodle', '', $phppgm);
             return false;
         }
         // Final command.
@@ -831,7 +833,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
     // Execute the command.
 
     if (!defined('CLI_SCRIPT')) {
-        putenv('LANG=en_US.utf-8'); 
+        putenv('LANG=en_US.utf-8');
     }
 
     // Ensure utf8 is correctly handled by php exec().
@@ -855,7 +857,7 @@ function vmoodle_create_database($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
+    } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $createstatement = 'CREATE SCHEMA IF NOT EXISTS %DATABASE% ';
@@ -864,7 +866,7 @@ function vmoodle_create_database($vmoodledata) {
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
     if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', $sql);
+        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
         die;
     }
 }
@@ -1050,7 +1052,7 @@ function vmoodle_destroy($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $dropstatement = 'DROP DATABASE IF EXISTS';
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
+    } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $dropstatement = 'DROP DATABASE IF EXISTS';
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $dropstatement = 'DROP SCHEMA';
@@ -1071,7 +1073,11 @@ function vmoodle_destroy($vmoodledata) {
 
     // Destroy moodledata.
 
-    $cmd = " rm -rf \"$vmoodledata->vdatapath\" ";
+    if ($CFG->ostype == 'WINDOWS') {
+        $cmd = " RMDIR \"$vmoodledata->vdatapath\" ";
+    } else {
+        $cmd = " rm -rf \"$vmoodledata->vdatapath\" ";
+    }
     exec($cmd);
 
     // Delete vmoodle instance.
@@ -1080,14 +1086,15 @@ function vmoodle_destroy($vmoodledata) {
 
     // Delete all related mnet_hosts info.
 
-    $mnethost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodledata->vhostname));
-    $DB->delete_records('mnet_host', array('wwwroot' => $mnethost->wwwroot));
-    $DB->delete_records('mnet_host2service', array('hostid' => $mnethost->id));
-    $DB->delete_records('mnetservice_enrol_courses', array('hostid' => $mnethost->id));
-    $DB->delete_records('mnetservice_enrol_enrolments', array('hostid' => $mnethost->id));
-    $DB->delete_records('mnet_log', array('hostid' => $mnethost->id));
-    $DB->delete_records('mnet_session', array('mnethostid' => $mnethost->id));
-    $DB->delete_records('mnet_sso_access_control', array('mnet_host_id' => $mnethost->id));
+    if ($mnethost = $DB->get_record('mnet_host', array('wwwroot' => $vmoodledata->vhostname))) {
+        $DB->delete_records('mnet_host', array('wwwroot' => $mnethost->wwwroot));
+        $DB->delete_records('mnet_host2service', array('hostid' => $mnethost->id));
+        $DB->delete_records('mnetservice_enrol_courses', array('hostid' => $mnethost->id));
+        $DB->delete_records('mnetservice_enrol_enrolments', array('hostid' => $mnethost->id));
+        $DB->delete_records('mnet_log', array('hostid' => $mnethost->id));
+        $DB->delete_records('mnet_session', array('mnethostid' => $mnethost->id));
+        $DB->delete_records('mnet_sso_access_control', array('mnet_host_id' => $mnethost->id));
+    }
 
     // If using domain subpath, add the subpath symlink (Linux only).
     if (!empty($CFG->vmoodleusesubpaths)) {
@@ -1167,15 +1174,19 @@ function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $
              * We open the main site as a provider and
              * all the subs as consumers.
              */
+            $services['sharedresourceservice'] = new StdClass();
             $services['sharedresourceservice']->publish = 1;
 
+            $peerservices['sharedresourceservice'] = new StdClass();
             $peerservices['sharedresourceservice']->subscribe = 1;
         }
 
         if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
+            $services['publishflow'] = new StdClass();
             $services['publishflow']->publish = 1;
             $services['publishflow']->subscribe = 1;
 
+            $peerservices['publishflow'] = new Stdclass();
             $peerservices['publishflow']->publish = 1;
             $peerservices['publishflow']->subscribe = 1;
         }
@@ -1195,7 +1206,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
+    } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $pgm = (!empty($config->cmd_mysql)) ? stripslashes($config->cmd_mysql) : false;
     } else if ($vmoodledata->vdbtype == 'postgres') {
         // Needs to point the pg_restore command.
@@ -1233,7 +1244,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
         $sqlcmd = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
+    } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $sqlcmd = $pgm.' -h'.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -P'.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-u'.$thisvmoodle->vdblogin.' '.$thisvmoodle->vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
@@ -1603,6 +1614,10 @@ function vmoodle_setup_db($vmoodle) {
 
             case 'mysql':
                 $vmoodle->vdbtype = 'mysqli';
+                break;
+
+            case 'mariadb':
+                $vmoodle->vdbtype = 'mariadb';
                 break;
         }
     }

@@ -80,29 +80,25 @@ if ($vmoodles) {
 
         $vmoodlecmd = '';
         $editurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'edit', 'id' => $vmoodle->id));
-        $pix = $OUTPUT->image_url('t/edit','core');
         $label = get_string('edithost', 'local_vmoodle');
-        $vmoodlecmd .= '<a href="'.$editurl.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
+        $vmoodlecmd .= '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit', $label, 'core').'</a>';
 
         if ($vmoodle->enabled == 1) {
-            $deleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'delete', 'id' => $vmoodle->id));
-            $pix = $OUTPUT->image_url('t/delete');
+            $deleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id));
             $label = get_string('deletehost', 'local_vmoodle');
             $jshandler = 'return confirm(\''.get_string('confirmdelete', 'block_vmoodle').'\')';
-            $vmoodlecmd .= '&nbsp;<a href="'.$deleteurl.'" onclick="'.$jshandler.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
+            $vmoodlecmd .= '&nbsp;<a href="'.$deleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', $label, 'core').'</a>';
         } else {
             $fulldeleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'fulldelete', 'id' => $vmoodle->id));
-            $pix = $OUTPUT->image_url('t/delete');
             $label = get_string('fulldeletehost', 'local_vmoodle');
             $jshandler = 'return confirm(\''.get_string('confirmfulldelete', 'block_vmoodle').'\')';
-            $vmoodlecmd .= '&nbsp;<a href="'.$fulldeleteurl.'" onclick="'.$jshandler.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
+            $vmoodlecmd .= '&nbsp;<a href="'.$fulldeleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', $label, 'core').'</a>';
         }
 
         $params = array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $vmoodle->vhostname);
         $snapurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $pix = $OUTPUT->image_url('snapshot', 'local_vmoodle');
         $label = get_string('snapshothost', 'local_vmoodle');
-        $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'"><img src="'.$pix.'" title="'.$label.'" /></a>';
+        $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'">'.$OUTPUT->pix_icon('snapshot', $label, 'local_vmoodle').'</a>';
         $vmoodlestatus = vmoodle_print_status($vmoodle, true);
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {
