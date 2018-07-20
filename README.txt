@@ -1,4 +1,4 @@
-VMoodle block
+VMoodle
 #############
 
 Implements a packaged virtualization control feature for large "Moodle Arrays" 
@@ -17,7 +17,7 @@ The original bloc is mostly conserved for quick access to VMoodles configuration
 Version 2014071301 summary
 =============================
 
-Essentially redraws the internal class organization to cope qith 
+Essentially redraws the internal class organization to cope qit 
 core Moodle class loading strategy.
 
 version 2013020801 summary
@@ -91,7 +91,7 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
     $rq = xmlrpc_encode_request('system/keyswap', array($CFG->wwwroot, $mnet->public_key, $application->name, $force), array("encoding" => "utf-8"));
 // /PATCH
 
-1. Master configuration changes : Installing the config.php hook to vconfig.php
+Master configuration changes : Installing the config.php hook to vconfig.php
 ###############################################################################
 
 Main config.php file must be changed in order to plug virtualization hooking.
@@ -148,6 +148,62 @@ before using it.
 
 Any undefined moodle will respond with an error message.
 
+Additional useful settings
+###############################
+
+Those additional keys have been added to the $CFG global variable to drive alternative features
+from the physical config file.
+
+/*
+ * A way to force protocol to https even if the system context variable HTTP_X_FORWARDED_PROTO
+ * is not set. This may e useful in some load balancing or proxied installation 
+ */
+// $CFG-&gt;vmoodle_force_https_proto = true; // Default false.
+
+/*
+ * This allows vmoodle instances to be depoyed on a subdiretory basis of a single domaine, e.g:
+ * http://mymoodle.domain.org/moodle1
+ * http://mymoodle.domain.org/moodle2
+ * http://mymoodle.domain.org/moodle3
+ * ...
+ *
+ * In that case you will need having symlinks to the root moodle installation (link to self) named
+ * as per directory:
+ * 
+ * lxxxxxxxxx moodle1 =&gt; .
+ * lxxxxxxxxx moodle2 =&gt; .
+ * etc.
+ */
+// $CFG-&gt;vmoodleusesubpaths = true; // Default false.
+
+/*
+ * Will load an additional config file for master installation named as
+ * /local/defaults_maindefaultname.php
+ * in which plugin settings defaults can be added
+ */
+// $CFG-&gt;vmoodlehardmasterdefaults = 'maindefaultname'; // Default empty.
+
+/*
+ * Will load an additional config file for master installation named as
+ * /local/defaults_childsdefaultname.php
+ * in which plugin settings defaults can be added
+ */
+// $CFG-&gt;vmoodlehardchildsdefaults = 'childsdefaultname'; // Default empty.
+
+/*
+ * Used to avoid master moodle is actually usable.
+ */
+// $CFG-&gt;vmoodlenodefault = true; // Default false.
+
+/*
+ * You may hard define the login/pass of any child moodle in the config file, 
+ * so no need to expose logins and password in your local_vmoodle DB tables.
+ * Note this is NOT usable if your instances use multiple distinct credentials for
+ * accessing the DB.
+ */
+// $CFG-&gt;vchildsdblogin = 'xxxxx'; // Default empty.
+// $CFG-&gt;vchildsdbpass = 'xxxxx'; // Default empty.
+
 Cron handling by virtualization
 ###############################
 
@@ -186,3 +242,15 @@ directory.
 
 Use them adding an additional --host options with the current wwwroot of the instance
 you want to address.
+
+VMoodle boot output variables
+################################################
+
+when booting a virtual moodle, $CFG is added severa variables during the boot process :
+
+$CFG->vmoodleroot The computed effective wwwroot of the vmoodle instance. May comme from Web context or from
+                  CLI forced value. Includes subdir if deploying as subdirectories.
+
+$CFG->vmoodlename The vmoodle server name (without protocol). Includes subdir if deploying as subdirectories.
+
+$CFG->vhost the host name (first token of the domain name).
