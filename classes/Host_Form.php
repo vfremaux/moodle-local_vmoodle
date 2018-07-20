@@ -111,7 +111,7 @@ class Host_Form extends \moodleform {
         $mform->addElement('header', 'dbform', get_string('addformdbgroup', 'local_vmoodle'));
 
         // Database type.
-        $dbtypearray = array('mysqli' => 'MySQL', 'postgres' => 'PostgreSQL');
+        $dbtypearray = array('mariadb' => 'MariaDB', 'mysqli' => 'MySQL', 'postgres' => 'PostgreSQL');
         $mform->addElement('select', 'vdbtype', get_string('vdbtype', 'local_vmoodle'), $dbtypearray);
         $mform->addHelpButton('vdbtype', 'vdbtype', 'local_vmoodle');
         $mform->setType('vdbtype', PARAM_TEXT);

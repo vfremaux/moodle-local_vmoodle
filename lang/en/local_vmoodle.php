@@ -21,6 +21,9 @@ $string['vmoodle:managevmoodles'] = 'Manage moodle satellites';
 $string['vmoodle:myaddinstance'] = 'Can add instance to my pages';
 $string['vmoodle:addinstance'] = 'Can add instance';
 
+// Privacy
+$string['privacy:metadata'] = 'The Local VMoodle plugin does not store any personal data about any user.';
+
 // Local strings.
 
 $string['addall'] = 'Add all';
@@ -343,7 +346,7 @@ $string['uninstall'] = 'Uninstall';
 $string['unknownhost'] = 'The host you are trying to setup has no DNS resolution. You can force the way executing again the procedure but the MNET initialisation will not be processed.';
 $string['unknownhostforced'] = 'the new host you are trying to setup has no DNS resolution. You have required forcing this limitation. MNET bindings will not be performed and you will have to set them up manually.';
 $string['unknownuserhost'] = 'User host platform unknown';
-$string['emptyormalformedvhostname'] = 'Empty or malformed url';
+$string['emptyormalformedvhost'] = 'Empty or malformed url';
 $string['upgrade'] = 'Upgrade databases';
 $string['uploadscript'] = 'Upload a script';
 $string['vdatapath'] = 'Path for "moodledata" ';
@@ -363,7 +366,7 @@ $string['vdbprefix'] = 'Tables prefix ';
 $string['vdbprefix_desc'] = 'Should not change unless very specific local situation.';
 $string['vdbs'] = 'Virtual dbs';
 $string['vdbtype'] = 'Database type ';
-$string['vdbtype_desc'] = 'Actually supported mysqli and postgres. Old mysql (Moodle 1.9) not supported any more.';
+$string['vdbtype_desc'] = 'Actually supported mariadb, mysqli and postgres. Old mysql (Moodle 1.9) not supported any more.';
 $string['vlogfilepattern'] = 'VCron log file pattern';
 $string['vlogfilepattern_desc'] = 'A system path pattern for storing the log file of each vcron. It accepts a %VHOSTNAME% token and removes any protocol prefix from urls';
 $string['vhostname'] = 'Site\'s host';

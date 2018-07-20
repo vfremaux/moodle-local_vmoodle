@@ -339,7 +339,7 @@ $string['unknownhost'] = 'L\'hôte que vous tentez de mettre en place n\'est pas
 $string['unknownhost'] = 'Le nom de domaine de la plate-forme ne peut être résolu. Vous pouvez forcer le passage en reexécutant la procédure, mais les fonctions réseau ne pourront probablement pas être activées correctement.';
 $string['unknownhostforced'] = 'L\'hôte que vous tentez de mettre en place n\'est pas connu sur le réseau. Vous avez demandé un déploiment en mode forcé. Les fonctions du réseau Moodle seront désactivées après déploiement et devront être configurées manuellement.';
 $string['unknownuserhost'] = 'Plate-forme hôte de l\'utilisateur inconnu';
-$string['emptyormalformedvhostname'] = 'Url vide ou malformée';
+$string['emptyormalformedvhost'] = 'Url vide ou malformée';
 $string['upgrade'] = 'Mettre à jour les données';
 $string['uploadscript'] = 'Uploader un script';
 $string['vdatapath'] = 'Chemin "moodledata" ';
@@ -535,7 +535,7 @@ de deux répertoires :</p>
     <li>Le premier contient deux scripts SQL appelés :
     "moodle_master.&lt;base&gt;.sql" et
     "moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; peut être soit
-    "mysqli" ou "postgres", selon la plate-forme qui a servi de modèle au
+    "mariadb", "mysqli" ou "postgres", selon la plate-forme qui a servi de modèle au
     template. Le premier script permet de charger la base avec un modèle de
     donnée type, issu de l\'export d\'une plate-forme modèle. Le deuxième
     fichier permet d\'exécuter des requêtes SQL contextualisées utilisant
