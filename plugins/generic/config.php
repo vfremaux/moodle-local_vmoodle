@@ -68,14 +68,14 @@ $category = new Command_Category('generic');
 $param1 = new Command_Parameter(
     'source1',
     'boolean',
-    'Maintenance mode',
+    vmoodle_get_string('maintenancemode', 'vmoodleadminset_generic'),
     null,
     null);
 
 $param2 = new Command_Parameter(
     'source2',
     'ltext',
-    'Maintenance message',
+    vmoodle_get_string('maintenancemessage', 'vmoodleadminset_generic'),
     null,
     null);
 
@@ -102,14 +102,14 @@ $category->add_command($cmd);
 $param1 = new Command_Parameter(
     'key',
     'enum',
-    'Config Key',
+    vmoodle_get_string('configkey', 'vmoodleadminset_generic'),
     null,
     vmoodle_config_get_params());
 
 $param2 = new Command_Parameter(
     'value',
     'ltext',
-    'Config Value',
+    vmoodle_get_string('configvalue', 'vmoodleadminset_generic'),
     null,
     null);
 
@@ -122,16 +122,16 @@ $category->add_command($cmd);
 
 
 $param1 = new Command_Parameter(
-    'key',
-    'enum',
-    'Config Key',
+    'pkey',
+    'senum',
+    vmoodle_get_string('configkey', 'vmoodleadminset_generic'),
     null,
     vmoodle_config_get_plugins_params());
 
 $param2 = new Command_Parameter(
-    'value',
+    'pvalue',
     'ltext',
-    'Config Value',
+    vmoodle_get_string('configvalue', 'vmoodleadminset_generic'),
     null,
     null);
 
@@ -139,6 +139,9 @@ $cmd = new Command_SetPluginConfig(
     vmoodle_get_string('cmdpluginconfigvalue', 'vmoodleadminset_generic'),
     vmoodle_get_string('cmdpluginconfigvalue_desc', 'vmoodleadminset_generic'),
     array($param1, $param2));
+$category->add_command($cmd);
+
+$cmd = new Command_CopyFullPluginConfig();
 $category->add_command($cmd);
 
 $cmd = new Command_CopyFile();

@@ -22,6 +22,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 if (get_config('local_vmoodle', 'late_install')) {
     // Need performing some corrections on some db recordings, specially subplugins mnet function records.
@@ -32,22 +33,20 @@ if (get_config('local_vmoodle', 'late_install')) {
 $systemcontext = context_system::instance();
 $hasadmin = false;
 if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // This is AdminSettings Edunao driven administration.
+    // This is AdminSettings driven administration.
     if (has_capability('local/adminsettings:nobody', $systemcontext)) {
         $hasadmin = true;
     }
 } else {
     // This is Moodle Standard.
-    if ($ADMIN->fulltree) {
-        $hasadmin = true;
-    }
+    $hasadmin = has_capability('moodle/site:config', $systemcontext);
 }
 
 if ($hasadmin) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');
-        $viewurl = $CFG->wwwroot . '/local/vmoodle/view.php';
+        $viewurl = $CFG->wwwroot.'/local/vmoodle/view.php';
         $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
 
         $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
@@ -72,7 +71,7 @@ if ($hasadmin) {
         $label = get_string('vmoodleip', 'local_vmoodle');
         $desc = get_string('vmoodleip_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
-    
+
         $dbopts['mysqli'] = 'MySQLi';
         $dbopts['postgres'] = 'Postgres';
         $settings->add(new admin_setting_heading('dbschema', get_string('dbschema', 'local_vmoodle'), ''));
@@ -120,7 +119,7 @@ if ($hasadmin) {
         $settings->add(new admin_setting_configtext($key, $label, $desc, '/var/moodledata/<%%INSTANCE%%>'));
 
         $settings->add(new admin_setting_heading('mnetschema', get_string('mnetschema', 'local_vmoodle'), ''));
-    
+
         $subnetworks = array('-1' => get_string('nomnet', 'local_vmoodle'));
         $subnetworks['0'] = get_string('mnetfree', 'local_vmoodle');
         $subnetworksrecords = $DB->get_records_sql('SELECT * from {local_vmoodle} WHERE mnet > 0 ORDER BY mnet');
@@ -145,9 +144,9 @@ if ($hasadmin) {
         $label = get_string('servicesstrategy', 'local_vmoodle');
         $desc = get_string('servicesstrategy_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $services_strategies));
-    
+
         $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
-    
+
         $onoffopts[0] = get_string('off', 'local_vmoodle');
         $onoffopts[1] = get_string('on', 'local_vmoodle');
 
@@ -235,5 +234,14 @@ if ($hasadmin) {
         $label = get_string('configclusterix', 'local_vmoodle');
         $desc = get_string('configclusterix_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
+
+        if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
+            include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
+            \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+        } else {
+            $label = get_string('plugindist', 'local_vmoodle');
+            $desc = get_string('plugindist_desc', 'local_vmoodle');
+            $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
+        }
     }
 }

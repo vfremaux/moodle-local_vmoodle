@@ -1,0 +1,14 @@
+{
+   "name": "moodle-local_vmoodle",
+   "dependencies": {
+      "grunt": "^1.0.2",
+      "grunt-contrib-less": "^1.4.1",
+      "grunt-contrib-uglify": "^3.3.0",
+      "grunt-contrib-watch": "^1.0.0",
+      "grunt-eslint": "^20.1.0",
+      "grunt-load-gruntfile": "0.0.2"
+   },
+   "engines": {
+      "node": ">=8.9"
+   }
+}

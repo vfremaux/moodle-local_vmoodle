@@ -34,19 +34,21 @@ global $CLI_VMOODLE_PRECHECK;
 $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 // Config preload to get real roots.
-require('../../../config.php');
+require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->dirroot.'/lib/clilib.php');      // Cli only functions.
 require_once($CFG->dirroot.'/lib/cronlib.php');
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(array('help' => false,
-                                                     'host' => true),
+                                                     'debug' => false,
+                                                     'host' => false),
                                                array('h' => 'help',
+                                                     'd' => 'debug',
                                                      'H' => 'host'));
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error($unrecognized." is not a recognized option\n");
 }
 
 if ($options['help']) {
@@ -55,6 +57,7 @@ Execute periodic cron actions.
 
 Options:
 -h, --help            Print out this help
+-d, --debug           Forces cron to run with debugging mode.
 -H, --host            The host name to work for
 
 Example:
@@ -72,7 +75,31 @@ if (!empty($options['host'])) {
 }
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+if (!defined('MOODLE_INTERNAL')) {
+    // If we are still in precheck, this means this is NOT a VMoodle install and full setup has already run.
+    // Otherwise we only have a tiny config at this location, sso run full config again forcing playing host if required.
+    require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+}
 echo('Config check : playing for '.$CFG->wwwroot);
+
+if (!empty($options['debug'])) {
+    switch ($options['debug']) {
+        case 'minimal': {
+            $CFG->debug = DEBUG_MINIMAL;
+        }
+
+        case 'normal': {
+            $CFG->debug = DEBUG_NORMAL;
+        }
+
+        case 'all': {
+            $CFG->debug = DEBUG_ALL;
+        }
+
+        case 'developer': {
+            $CFG->debug = DEBUG_DEVELOPER;
+        }
+    }
+}
 
 cron_run();

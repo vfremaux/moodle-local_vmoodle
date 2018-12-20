@@ -161,6 +161,8 @@ $string['details'] = 'Details:';
 $string['disableinstances'] = 'disable instances ';
 $string['donotopenservices'] = 'Do not open MNET services';
 $string['dropbackup'] = 'Drop backup';
+$string['emulatecommunity'] = 'Emulate the community version.';
+$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['edithost'] = 'Edit the configuration';
 $string['editvmoodle'] = 'Edit a virtual host definition';
 $string['elements'] = 'element(s)';
@@ -193,6 +195,10 @@ $string['insuffisantcapabilities'] = 'Insufficient capabilities';
 $string['key_autorenew_parms'] = 'Aumated MNET key renewal';
 $string['lastcron'] = 'Last cron';
 $string['lastcrongap'] = '&Delta;';
+$string['licenseprovider'] = 'Pro License provider';
+$string['licenseprovider_desc'] = 'Input here your provider key';
+$string['licensekey'] = 'Pro license key';
+$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['maindb'] = 'Main db';
 $string['mainpath'] = 'Main path';
 $string['mainservicesformselection'] = 'Services pattern to master Moodle<br/>This pattern is applied to the new node. the mirrored pattern is applied to the master node (this moodle)';
@@ -223,6 +229,7 @@ $string['musthaveshortname'] = 'Shortname is mandatory';
 $string['mysqlcmd'] = 'mysql command location';
 $string['mysqldumpcmd'] = 'Mysqldump command location';
 $string['newvmoodle'] = 'New virtual host';
+$string['newplatformregistered'] = 'A new moodle instance has been registered.';
 $string['nextstep'] = 'Next';
 $string['nomnet'] = 'No Moodle Net';
 $string['none'] = 'None';
@@ -252,11 +259,12 @@ $string['parameterwrongdefaultvalue'] = 'The default value of parameter "{$a}" i
 $string['peerservicesformselection'] = 'Services pattern to subnet peers<br/>This pattern is applied to the new node. the mirrored pattern is applied to all peers in the subnetwork';
 $string['pgsqlcmd'] = 'Postgres command location';
 $string['pgsqldumpcmd'] = 'Postgres sqldump command location';
-$string['plateformreactivate'] = 'Platform reactivated';
+$string['platformreactivate'] = 'Platform reactivated';
 $string['platformname'] = 'Platform name';
 $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Plugin is disabled.';
 $string['pluginenabled'] = 'Plugin is enabled.';
+$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'VMoodle'; // @CORE
 $string['pluginnotdisabled'] = 'Plugin were not disabled.';
 $string['pluginnotenabled'] = 'Plugin were not enabled.';
@@ -268,7 +276,7 @@ $string['preupgrade'] = 'Pre Upgrade Transforms';
 $string['publish'] = 'Publish';
 $string['rawstrategy'] = 'Raw strategy';
 $string['rawstrategy_desc'] = 'You may use this serialized form in default settings files.';
-$string['reactivetemplate'] = 'Reactivate the plateforme';
+$string['reactiveorregistertemplate'] = 'Reactivate the plateforme or register a new moodle identity';
 $string['regexp'] = 'regexp';
 $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
@@ -560,3 +568,10 @@ $string['systempath_desc'] = 'Absolute system path to executable';
 
 $string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
 
+$string['plugindist_desc'] = '
+<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
+core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
+and improvement effort.</p>
+<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
+<p>Please contact one of our distributors to get "Pro" version support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';

@@ -88,7 +88,7 @@ function mnetadmin_rpc_get_fields($user, $table, $fields, $select) {
  * @param boolean $return true if the result of SQL should be returned, false otherwise.
  * In that case query CANNOT be multiple
  */
-function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false, $multiple = false) {
+function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false, $purgecaches = false, $multiple = false) {
     global $CFG, $USER, $vmcommandconstants, $DB;
 
     // Adding requirements.
@@ -107,6 +107,8 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
         $commands[] = $command;
     }
 
+    $failed = true;
+
     // Runnning commands.
     foreach ($commands as $command) {
         if (empty($command) || preg_match('/^\s+$/s', $command)) {
@@ -116,6 +118,7 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
             try {
                 $record = $DB->get_record_sql($command, $params);
                 $response->value = $record;
+                $failed = false;
             } catch(Exception $e) {
                 $response->errors[] = $DB->get_last_error();
                 $response->error = $DB->get_last_error();
@@ -123,15 +126,17 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
         } else {
             try {
                 debug_trace("Vmoodle Remote sql : $command ".serialize($params));
-                if (!$DB->execute($command, $params)) {
-                    $response->errors[] = 'No rows affected.';
-                    $response->error = 'No rows affected.';
-                }
+                $DB->execute($command, $params);
+                $failed = false;
             } catch(Exception $e) {
                 $response->errors[] = $DB->get_last_error();
                 $response->error = $DB->get_last_error();
             }
         }
+    }
+
+    if (!$failed && $purgecaches) {
+        purge_all_caches();
     }
 
     // Returning response of last statement.

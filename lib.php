@@ -57,6 +57,68 @@ foreach ($pluginlibs as $lib) {
 }
 
 /**
+ * Implements the generic community/pro packaging switch.
+ * Tells wether a feature is supported or not. Gives back the
+ * implementation path where to fetch resources.
+ * @param string $feature a feature key to be tested.
+ */
+function local_vmoodle_supports_feature($feature) {
+    global $CFG;
+    static $supports;
+
+    $config = get_config('local_vmoodle');
+
+    if (!isset($supports)) {
+        $supports = array(
+            'pro' => array(
+                'admin' => array('pro'),
+            ),
+            'community' => array(
+            ),
+        );
+        $prefer = array();
+    }
+
+    // Check existance of the 'pro' dir in plugin.
+    if (is_dir(__DIR__.'/pro')) {
+        if ($feature == 'emulate/community') {
+            return 'pro';
+        }
+        if (empty($config->emulatecommunity)) {
+            $versionkey = 'pro';
+        } else {
+            $versionkey = 'community';
+        }
+    } else {
+        $versionkey = 'community';
+    }
+
+    list($feat, $subfeat) = explode('/', $feature);
+
+    if (!array_key_exists($feat, $supports[$versionkey])) {
+        return false;
+    }
+
+    if (!in_array($subfeat, $supports[$versionkey][$feat])) {
+        return false;
+    }
+
+    if (array_key_exists($feat, $supports['community'])) {
+        if (in_array($subfeat, $supports['community'][$feat])) {
+            // If community exists, default path points community code.
+            if (isset($prefer[$feat][$subfeat])) {
+                // Configuration tells which location to prefer if explicit.
+                $versionkey = $prefer[$feat][$subfeat];
+            } else {
+                $versionkey = 'community';
+            }
+        }
+    }
+
+    return $versionkey;
+}
+
+/**
  * get the list of available vmoodles
  * @return an array of vmoodle objects
  */
@@ -486,45 +548,6 @@ function replace_parameters_values($matches, $params, $parametersreplace = true,
 }
 
 /**
- * Print the start of a collapsable block.
- * @param string $id The id of the block.
- * @param string $caption The caption of the block.
- * @param string $classes The CSS classes of the block.
- * @param string $displayed True if the block is displayed by default, false otherwise.
- */
-function print_collapsable_bloc_start($id, $caption, $classes = '', $displayed = true) {
-    global $OUTPUT;
-
-    $caption = strip_tags($caption);
-
-    $pixpath = ($displayed) ? '/t/switch_minus' : '/t/switch_plus';
-    echo '<div id="vmblock_'.$id.'">'.
-            '<div class="header">'.
-                '<div class="title">'.
-                    '<input '.
-                        'type="image" class="hide-show-image" '.
-                        'onclick="elementToggleHide(this, false, function(el) {
-                                return findParentNode(el, \'DIV\', \'bvmc\');
-                                }, \''.get_string('show').' '.$caption.'\', \''.get_string('hide').' '.$caption.'\');
-                                return false;" '.
-                        'src="'.$OUTPUT->pix_url($pixpath).'" '.
-                        'alt="'.get_string('show').' '.strip_tags($caption).'" '.
-                        'title="'.get_string('show').' '.strip_tags($caption).'"/>'.
-                    '<h2>'.strip_tags($caption).'</h2>'.
-                '</div>'.
-            '</div>';
-            $hidden = ($displayed) ? '' : ' hidden';
-            echo '<div class="content bvmc '.$hidden.'">';
-}
-
-/**
- * Print the end of a collapsable block.
- */
-function print_collapsable_block_end() {
-    echo '</div></div>';
-}
-
-/**
  * Load a vmoodle plugin and cache it.
  * @param string $pluginname The plugin name.
  * @return Command_Category The category plugin.
@@ -565,7 +588,7 @@ function vmoodle_get_available_templates() {
         }
     }
 
-    $templatesarray[] = get_string('reactivetemplate', 'local_vmoodle');
+    $templatesarray[0] = get_string('reactiveorregistertemplate', 'local_vmoodle');
 
     return $templatesarray;
 }
@@ -675,7 +698,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         }
 
         // Password.
-        if (!empty($vmoodle->vdbpass)) {
+        if (!empty($vmoodle->vdbpass) && $CFG->ostype != 'WINDOWS') {
             $pass = "-p".escapeshellarg($vmoodle->vdbpass);
         }
 
@@ -699,7 +722,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
 
         // Password.
         if (!empty($vmoodle->vdbpass)) {
-            $pass = $vmoodle->vdbpass;
+            $pass = '"'.$vmoodle->vdbpass.'"';
         }
 
         // Making the command, (if needed, a password prompt will be displayed).
@@ -724,7 +747,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $pgm = str_replace('/', DIRECTORY_SEPARATOR, $pgm);
 
         if (!is_executable($phppgm)) {
-            print_error('dbcommanderror', 'local_vmoodle', $phppgm);
+            print_error('dbcommanderror', 'local_vmoodle', '', $phppgm);
             return false;
         }
         // Final command.
@@ -770,16 +793,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
     $description = $DB->get_field('course', 'fullname', array('id' => SITEID));
     $cfgipaddress = gethostbyname($hostname);
 
-    // Availability of SQL commands.
-
-    // Checks if paths commands have been properly defined in 'vconfig.php'.
-    if ($vmoodledata->vdbtype == 'mysql') {
-        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
-        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } else if ($vmoodledata->vdbtype == 'postgres') {
-        $createstatement = 'CREATE SCHEMA %DATABASE% ';
-    }
+    vmoodle_create_database($vmoodledata);
 
     // SQL files paths.
     $templatesqlfilepath = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_master.sql';
@@ -809,14 +823,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
         return false;
     }
 
-    // Creates the new database before importing the data.
-
-    $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-    if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', $sql);
-        return false;
-    }
-
     $sqlcmd = vmoodle_get_database_dump_cmd($vmoodledata);
 
     // Make final commands to execute, depending on the database type.
@@ -835,6 +841,32 @@ function vmoodle_load_database_from_template($vmoodledata) {
 
     // End.
     return true;
+}
+
+/**
+ * Creates a database for Moodle.
+ * @param object $vmoodledata
+ */
+function vmoodle_create_database($vmoodledata) {
+    global $DB;
+
+    // Availability of SQL commands.
+
+    // Checks if paths commands have been properly defined in 'vconfig.php'.
+    if ($vmoodledata->vdbtype == 'mysql') {
+        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
+    } else if ($vmoodledata->vdbtype == 'mysqli' || $vmoodledata->vdbtype == 'mariadb') {
+        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
+    } else if ($vmoodledata->vdbtype == 'postgres') {
+        $createstatement = 'CREATE SCHEMA IF NOT EXISTS %DATABASE% ';
+    }
+
+    // Creates the new database before importing the data.
+    $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
+    if (!$DB->execute($sql)) {
+        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
+        die;
+    }
 }
 
 /**
@@ -1056,6 +1088,11 @@ function vmoodle_destroy($vmoodledata) {
     $DB->delete_records('mnet_log', array('hostid' => $mnethost->id));
     $DB->delete_records('mnet_session', array('mnethostid' => $mnethost->id));
     $DB->delete_records('mnet_sso_access_control', array('mnet_host_id' => $mnethost->id));
+
+    // If using domain subpath, add the subpath symlink (Linux only).
+    if (!empty($CFG->vmoodleusesubpaths)) {
+        vmoodle_del_subpath($vmoodledata);
+    }
 }
 
 /**
@@ -1130,15 +1167,19 @@ function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $
              * We open the main site as a provider and
              * all the subs as consumers.
              */
+            $services['sharedresourceservice'] = new StdClass;
             $services['sharedresourceservice']->publish = 1;
 
+            $peerservices['sharedresourceservice'] = new StdClass;
             $peerservices['sharedresourceservice']->subscribe = 1;
         }
 
         if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
+            $services['publishflow'] = StdClass;
             $services['publishflow']->publish = 1;
             $services['publishflow']->subscribe = 1;
 
+            $peerservices['publishflow'] = Stdclass;
             $peerservices['publishflow']->publish = 1;
             $peerservices['publishflow']->subscribe = 1;
         }
@@ -1719,4 +1760,80 @@ function vmoodle_parse_config($configfile) {
     $CFG = $cfg;
 
     return $data;
+}
+
+function vmoodle_add_subpath(&$vmoodle) {
+    global $CFG;
+
+    $config = get_config('local_vmoodle');
+
+    if ($CFG->ostype != 'WINDOWS') {
+
+        // Take first path fragmnent.
+        $parts = explode('/', preg_replace('#https?://#', '', $vmoodle->vhostname));
+        array_shift($parts); // remove domain name.
+        $vmoodlepath = array_shift($parts);
+
+        if (!is_link($CFG->dirroot.'/'.$vmoodlepath)) {
+
+            $cmd = '';
+            if (!empty($config->sudoer)) {
+                $cmd = "sudo -u{$config->sudoer} ";
+            }
+            $cmd .= "ln -s {$CFG->dirroot} {$CFG->dirroot}/{$vmoodlepath}";
+
+            exec($cmd, $output, $return);
+            if ($return) {
+                // We assume the following man statement:
+                /*
+                 * sudo exits with a value of 1 if there is a configuration/permission problem or if sudo
+                 * cannot execute the given command.
+                 */
+                mtrace('Symlink creation failed. You may create the vmoodle virtual subdir by hand.');
+                mtrace($cmd);
+                mtrace(implode("\n", $output));
+            }
+
+        }
+    } else {
+        mtrace('VMoodle Sub path cannot be used on Windows systems. Symlink not created.');
+    }
+}
+
+function vmoodle_del_subpath(&$vmoodle) {
+    global $CFG;
+
+    $config = get_config('local_vmoodle');
+
+    if ($CFG->ostype != 'WINDOWS') {
+
+        // Take first path fragmnent.
+        $parts = explode('/', preg_replace('#https?://#', '', $vmoodle->vhostname));
+        array_shift($parts); // remove domain name.
+        $vmoodlepath = array_shift($parts);
+
+        if (is_link($CFG->dirroot.'/'.$vmoodlepath)) {
+
+            $cmd = '';
+            if (!empty($config->sudoer)) {
+                $cmd = "sudo -u{$config->sudoer} ";
+            }
+            $cmd .= "unlink {$CFG->dirroot}/{$vmoodlepath}";
+
+            exec($cmd, $output, $return);
+            if ($return != 0) {
+                // We assume the following man statement:
+                /*
+                 * sudo exits with negative value if there is a configuration/permission problem or if sudo
+                 * cannot execute the given command.
+                 */
+                mtrace('Symlink deletion failed. You may remove the vmoodle virtual subdir by hand.');
+                mtrace($cmd);
+                mtrace(implode("\n", $output));
+            }
+
+        }
+    } else {
+        mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
+    }
 }

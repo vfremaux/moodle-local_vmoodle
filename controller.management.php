@@ -165,8 +165,9 @@ if ($action == 'doadd') {
         debug_trace('Vnode addition processing input data');
     }
 
-    if ($submitteddata->vtemplate === 0) {
+    if (empty($submitteddata->vtemplate)) {
 
+        // Update potentially existing record.
         $sqlrequest = 'UPDATE
                             {mnet_host}
                        SET
@@ -175,6 +176,7 @@ if ($action == 'doadd') {
                             wwwroot = "'.$submitteddata->vhostname.'"';
         $DB->execute($sqlrequest);
 
+        // Check if ever was existing or not.
         $sqlrequest = 'SELECT
                         *
                        FROM
@@ -183,7 +185,10 @@ if ($action == 'doadd') {
                             vhostname = "'.$submitteddata->vhostname.'"';
         $record = $DB->get_record_sql($sqlrequest);
 
+        // In case not, create a new record and exit.
+        $new = false;
         if (empty($record)) {
+            $new = true;
             $record = (object) array('name' => $submitteddata->name,
                                      'shortname' => $submitteddata->shortname,
                                      'description' => $submitteddata->description,
@@ -201,12 +206,29 @@ if ($action == 'doadd') {
             $DB->insert_record('local_vmoodle', $record);
         }
 
+        if (!is_dir($submitteddata->vdatapath)) {
+            // Make a datapath if not existing.
+            mkdir($submitteddata->vdatapath, 0755, true);
+        }
+
+        // If using domain subpath, add the subpath symlink (Linux only).
+        if (!empty($CFG->vmoodleusesubpaths)) {
+            vmoodle_add_subpath($submitteddata);
+        }
+
+        // Ensure a database is created.
+        vmoodle_create_database($submitteddata);
+
         if (function_exists('debug_trace')) {
             debug_trace('Vnode simple reactivation');
         }
 
         if ($interactive) {
-            $messageobject->message = get_string('plateformreactivate', 'local_vmoodle');
+            if (!$new) {
+                $messageobject->message = get_string('platformreactivate', 'local_vmoodle');
+            } else {
+                $messageobject->message = get_string('newplatformregistered', 'local_vmoodle');
+            }
             $messageobject->style = 'notifysuccess';
             $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
             redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
@@ -422,34 +444,8 @@ if ($action == 'doadd') {
             }
 
             // If using domain subpath, add the subpath symlink (Linux only).
-
             if (!empty($CFG->vmoodleusesubpaths)) {
-
-                if ($CFG->ostype != 'WINDOWS') {
-                    // Take first path fragmnent.
-                    $parts = explode('/', preg_replace('#https?://#', '', $submitteddata->vhostname));
-                    array_shift($parts); // remove domain name.
-                    $vmoodlepath = array_shift($parts);
-
-                    $cmd = '';
-                    if (!empty($config->sudoer)) {
-                        $cmd = "sudo -u{$config->sudoer} ";
-                    }
-                    $cmd .= "ln -s {$CFG->dirroot} {$CFG->dirroot}/{$vmoodlepath}";
-
-                    if (!is_link($CFG->dirroot.'/'.$vmoodlepath)) {
-                        exec($cmd, $output, $return);
-                        if ($return) {
-                            // We assume the following man statement:
-                            // sudo exits with a value of 1 if there is a configuration/permission problem or if sudo cannot execute the given command.
-                            mtrace('Symlink creation failed. You may create the vmoodle virtual subdir by hand.');
-                            mtrace($cmd);
-                            mtrace(implode("\n", $output));
-                        }
-                    }
-                } else {
-                    mtrace('VMoodle Sub path cannot be used on Windows systems. Symlink not created.');
-                }
+                vmoodle_add_subpath($submitteddata);
             }
 
             // Finish the step.
