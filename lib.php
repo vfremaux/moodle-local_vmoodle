@@ -698,7 +698,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         }
 
         // Password.
-        if (!empty($vmoodle->vdbpass)) {
+        if (!empty($vmoodle->vdbpass) && $CFG->ostype != 'WINDOWS') {
             $pass = "-p".escapeshellarg($vmoodle->vdbpass);
         }
 
@@ -722,7 +722,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
 
         // Password.
         if (!empty($vmoodle->vdbpass)) {
-            $pass = $vmoodle->vdbpass;
+            $pass = '"'.$vmoodle->vdbpass.'"';
         }
 
         // Making the command, (if needed, a password prompt will be displayed).
@@ -747,7 +747,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $pgm = str_replace('/', DIRECTORY_SEPARATOR, $pgm);
 
         if (!is_executable($phppgm)) {
-            print_error('dbcommanderror', 'local_vmoodle', $phppgm);
+            print_error('dbcommanderror', 'local_vmoodle', '', $phppgm);
             return false;
         }
         // Final command.
@@ -855,7 +855,7 @@ function vmoodle_create_database($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
-    } else if ($vmoodledata->vdbtype == 'mysqli') {
+    } else if ($vmoodledata->vdbtype == 'mysqli' || $vmoodledata->vdbtype == 'mariadb') {
         $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $createstatement = 'CREATE SCHEMA IF NOT EXISTS %DATABASE% ';
@@ -864,7 +864,7 @@ function vmoodle_create_database($vmoodledata) {
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
     if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', $sql);
+        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
         die;
     }
 }
@@ -1167,15 +1167,19 @@ function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $
              * We open the main site as a provider and
              * all the subs as consumers.
              */
+            $services['sharedresourceservice'] = new StdClass;
             $services['sharedresourceservice']->publish = 1;
 
+            $peerservices['sharedresourceservice'] = new StdClass;
             $peerservices['sharedresourceservice']->subscribe = 1;
         }
 
         if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
+            $services['publishflow'] = StdClass;
             $services['publishflow']->publish = 1;
             $services['publishflow']->subscribe = 1;
 
+            $peerservices['publishflow'] = Stdclass;
             $peerservices['publishflow']->publish = 1;
             $peerservices['publishflow']->subscribe = 1;
         }

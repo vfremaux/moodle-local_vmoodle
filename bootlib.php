@@ -218,7 +218,7 @@ function vmoodle_boot_configuration() {
  */
 function vmoodle_make_connection(&$vmoodle, $binddb = false) {
 
-    if ($vmoodle->vdbtype == 'mysqli') {
+    if ($vmoodle->vdbtype == 'mysqli' || $vmoodle->vdbtype == 'mariadb') {
         // Important : force new link here.
 
         $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, 3306);

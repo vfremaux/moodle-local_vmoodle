@@ -17,7 +17,7 @@
 
 define(['jquery', 'core/log'], function($, log) {
 
-    vmoodle = {
+    var vmoodle = {
 
         vmoodlestrings: '',
 
@@ -27,7 +27,7 @@ define(['jquery', 'core/log'], function($, log) {
             log.debug("AMD Vmoodle initialisation ");
         },
 
-        switch_panel: function(e) {
+        switch_panel: function() {
 
             var that = $(this);
 
@@ -52,7 +52,7 @@ define(['jquery', 'core/log'], function($, log) {
 
         filtercapabilitytable: function(filterinput) {
             $('.capabilityrow').css('display', 'table-row');
-            if (filterinput.value != '') {
+            if (filterinput.value !== '') {
                 $('.capabilityrow').css('display', 'none');
                 $('.capabilityrow[id*=\'' + filterinput.value + '\']').css('display', 'table-row');
             }
@@ -61,4 +61,4 @@ define(['jquery', 'core/log'], function($, log) {
 
     return vmoodle;
 
-})
+});
