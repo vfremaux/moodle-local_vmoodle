@@ -21,7 +21,7 @@ $string['vmoodle:managevmoodles'] = 'Manage moodle satellites';
 $string['vmoodle:myaddinstance'] = 'Can add instance to my pages';
 $string['vmoodle:addinstance'] = 'Can add instance';
 
-// Privacy
+// Privacy.
 $string['privacy:metadata'] = 'The Local VMoodle plugin does not store any personal data about any user.';
 
 // Local strings.
@@ -82,6 +82,7 @@ $string['categoryignored'] = 'The category {$a} has been ignored:';
 $string['categorywrongname'] = 'The category\'s name is wrong.';
 $string['categorywrongpluginname'] = 'The plugin\'s name linked to the category {$a} is wrong.';
 $string['certificate'] = 'Certificate';
+$string['checkmnetkeys'] = 'Check mnet keys';
 $string['clidestroynode'] = 'Destroying node {$a}';
 $string['cliemptynodelist'] = 'Node list is empty';
 $string['climakenode'] = 'Making node {$a}';
@@ -170,6 +171,7 @@ $string['edithost'] = 'Edit the configuration';
 $string['editvmoodle'] = 'Edit a virtual host definition';
 $string['elements'] = 'element(s)';
 $string['enableinstances'] = 'enable instances ';
+$string['environment'] = 'Technical environment';
 $string['errorbaddirectorylocation'] = 'moodledata path should not contain blank spaces. Relocate dump template location by changing your moodledata location in the filesystem';
 $string['errorbindingmnet'] = 'Error binding MNET services';
 $string['errorinvalidsessionorplatform'] = 'VMoodle session data were invalid or no platform was given.';
@@ -244,6 +246,8 @@ $string['novmoodle'] = 'The host and/or its corresponding record doesn\' exist a
 $string['novmoodles'] = 'No virtual moodle defined.';
 $string['off'] = 'Disabled';
 $string['on'] = 'Enabled';
+$string['onlymainsitecangenerate'] = 'Only main site can generate data copy scripts.';
+$string['onlymainsiteadminscangenerate'] = 'Only administrators of main site can generate copy scripts.';
 $string['openallservices'] = 'Open all MNET services';
 $string['operation'] = 'Operation';
 $string['organization'] = 'Organization';
@@ -330,6 +334,7 @@ $string['successfinishedcapture'] = 'Capture completed.';
 $string['successfullplatforms'] = 'Successfull platforms:';
 $string['successstrategyservices'] = 'Default services strategy deployment done.';
 $string['sudoer'] = 'Sudoer';
+$string['sudos'] = 'Sudos';
 $string['syncvmoodleregister'] = 'Synchronize VMoodle registers';
 $string['tabpoolmanage'] = 'Pool management';
 $string['tabpoolsadmin'] = 'Pool administration';
@@ -388,6 +393,7 @@ $string['vmoodlesnapshot3'] = 'STEP 3 on 3 : Files saved. The platform snapshot 
 $string['vpaths'] = 'Virtual file paths';
 $string['vtemplate'] = 'Vmoodle template';
 $string['weboperated'] = 'Operated by web';
+$string['webserveruser'] = 'Web server user';
 $string['withmessage'] = 'with message "{$a}"';
 $string['withoutmessage'] = 'without message';
 $string['withselection'] = 'With the selection: ';
@@ -565,7 +571,7 @@ $CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] key. Take care all clus
 ';
 
 $string['sudoer_desc'] = 'A linux user that can perform changes in moodle installation directory. This user should be
-subject of a sudo rule like : www-data  ALL = (user) NOPASSWD:/usr/bin/ln';
+subject of a sudo rule like : www-data  ALL = (user) NOPASSWD:/usr/bin/ln. This is needed when vmoodling as a subdir of a master domain.';
 
 $string['systempath_desc'] = 'Absolute system path to executable';
 
