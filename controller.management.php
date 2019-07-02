@@ -478,7 +478,7 @@ if ($action == 'doadd') {
                 $newmnethost->updateparams->deleted = 1;
                 $newmnethost->commit();
                 $messageobject->message = get_string('successaddnewhostwithoutmnet', 'local_vmoodle');
-                $message = new Stdclass;
+                $message = new StdClass();
                 $message->style = 'notifysuccess';
                 $SESSION->vmoodle_ma['confirm_message'] = $messageobject;
 
@@ -1113,6 +1113,13 @@ if ($action == 'destroy') {
 /* ******************** Run an interactive cronlike trigger forcing key renew on all vmoodle *********** */
 if ($action == 'renewall') {
 
+    /*
+     * Important Note : Renewing relies on Web triggering of the mnetcron function
+     * on the pears, asking for key change. If you are using password to protect
+     * the Moodle cron by Web note that ALL sites should use the SAME cron password
+     * for renewall to be performed globally.
+     */
+
     // Self renew.
     echo $OUTPUT->header();
     echo '<pre>';
@@ -1120,7 +1127,7 @@ if ($action == 'renewall') {
     if ($CFG->cronremotepassword) {
         $params['password'] = $CFG->cronremotepassword;
     }
-    $renewuri = new moodle_url('/admin/cron.php', $params);
+    $renewuri = new moodle_url('/local/vmoodle/mnetcron.php', $params);
     echo "Running on : $renewuri\n";
 
     echo "#############################\n";
@@ -1151,7 +1158,7 @@ if ($action == 'renewall') {
 
     echo '<pre>';
     foreach ($vmoodles as $vmoodle) {
-        $renewuri = $vmoodle->vhostname.'/admin/cron.php?forcerenew=1';
+        $renewuri = $vmoodle->vhostname.'/local/vmoodle/mnetcron.php?forcerenew=1';
         if ($CFG->cronremotepassword) {
             $renewuri .= '&password='.$CFG->cronremotepassword;
         }

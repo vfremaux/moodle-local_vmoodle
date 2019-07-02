@@ -30,6 +30,8 @@ class CopyScriptsParams_Form extends moodleform {
     public function definition() {
         $mform = $this->_form;
 
+        $config = get_config('local_vmoodle');
+
         $mform->addelement('header', 'maindbhead', get_string('maindb', 'local_vmoodle'));
         $mform->setExpanded('maindbhead');
         $mform->addElement('text', 'fromversion', get_string('fromversion', 'local_vmoodle'), '');
@@ -39,12 +41,21 @@ class CopyScriptsParams_Form extends moodleform {
         $mform->setType('toversion', PARAM_TEXT);
 
         $mform->addelement('header', 'cronlineshead', get_string('cronlines', 'local_vmoodle'));
+
         $mform->setExpanded('cronlineshead');
         $cliopstr = get_string('clioperated', 'local_vmoodle');
         $webopstr = get_string('weboperated', 'local_vmoodle');
         $cronoptions = array('cli' => $cliopstr, 'web' => $webopstr);
         $mform->addElement('select', 'cronmode', get_string('cronmode', 'local_vmoodle'), $cronoptions);
         $mform->setType('cronmode', PARAM_TEXT);
+
+        if (empty($config->webserveruser)) {
+            $config->webserveruser = 'www-data';
+        }
+        $mform->addelement('header', 'envhead', get_string('environment', 'local_vmoodle'));
+        $mform->addElement('text', 'webserveruser', get_string('webserveruser', 'local_vmoodle'), '');
+        $mform->setType('webserveruser', PARAM_TEXT);
+        $mform->setDefault('webserveruser', $config->web_server_user);
 
         $this->add_action_buttons(true, get_string('generate', 'local_vmoodle'));
     }

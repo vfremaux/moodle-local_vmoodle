@@ -22,7 +22,7 @@
  * @author      Valery Fremaux (valery.fremaux@gmail.com)
  */
 
-$plugin = new stdclass;
+$plugin = new StdClass();
 $plugin->version = 2018021601;
 $plugin->requires = 2016051900;
 $plugin->component = 'vmoodleadminset_generic';

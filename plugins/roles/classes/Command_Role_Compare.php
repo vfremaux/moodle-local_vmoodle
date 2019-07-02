@@ -292,7 +292,7 @@ class Command_Role_Compare extends Command {
          */
 
         // Creating header.
-        $this->report = '<h3>'.get_string('comparerole', 'vmoodleadminset_roles', $role->name).help_button_vml('rolelib', 'rolecompare', 'rolecompare').'</h3>';
+        $this->report = '<h3>'.get_string('comparerole', 'vmoodleadminset_roles', role_get_name($role)).help_button_vml('rolelib', 'rolecompare', 'rolecompare').'</h3>';
 
         // Adding edit role link.
         $this->report.= '<center><p>'.$OUTPUT->single_button(new moodle_url('/admin/roles/define.php', array('roleid' => $role->id, 'action' => 'edit')), get_string('editrole', 'vmoodleadminset_roles'), 'get').'</p></center>';

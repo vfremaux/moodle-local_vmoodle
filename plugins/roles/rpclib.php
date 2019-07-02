@@ -184,13 +184,13 @@ function mnetadmin_rpc_get_role_capabilities($user, $role, $capabilities = null,
 }
 
 /**
- * Set role capabilities of a virtual platform.
+ * Set role capabilities of a virtual platform. If role does not exists (on base of shortname), will create it.
  * @param string $user The calling user.
- * @param string $role The role to set capabilities.
+ * @param string $roledata The complete role information to set capabilities on.
  * @param mixed $rolecapabilities The role capabilities (array or object due to xmlrpc failures).
  * @param bool $clear True if the role capabilities should be cleared before, false otherwise.
  */
-function mnetadmin_rpc_set_role_capabilities($user, $role, $rolecapabilities, $clear = false, $jsonresponse = true) {
+function mnetadmin_rpc_set_role_capabilities($user, $roledata, $rolecapabilities, $clear = false, $jsonresponse = true) {
     global $CFG, $USER, $DB;
 
     // Creating response.
@@ -198,6 +198,8 @@ function mnetadmin_rpc_set_role_capabilities($user, $role, $rolecapabilities, $c
     $response->status = RPC_SUCCESS;
     $response->errors = array();
     $response->error = '';
+
+    $roledata = (object) $roledata;
 
     // Invoke local user and check his rights.
     if ($authresponse = invoke_local_user((array)$user, 'local/vmoodle:execute')) {
@@ -210,8 +212,10 @@ function mnetadmin_rpc_set_role_capabilities($user, $role, $rolecapabilities, $c
     }
 
     // Getting role.
-    $recordrole = $DB->get_record('role', array('shortname' => $role));
+    $recordrole = $DB->get_record('role', array('shortname' => $roledata->shortname));
     if (!$recordrole) {
+        /*
+        // This was before : failure.
         $response->status = RPC_FAILURE_RECORD;
         $response->errors[] = 'Set role capability : Unable to retrieve role.';
         $response->error = 'Set role capability : Unable to retrieve role.';
@@ -219,6 +223,24 @@ function mnetadmin_rpc_set_role_capabilities($user, $role, $rolecapabilities, $c
             return json_encode($response);
         } else {
             return $response;
+        }
+        */
+        try {
+            /*
+             * @TODO : we will not make any special processing fo sortorder. this should be done later, f.e. adding an "afterrole"
+             * information in the transmission in order to insert at the same location.
+             */
+            unset($roleadata->id); // Remove locally id for new insertion.
+            $DB->insert_record('role', $roledata);
+        } catch (Exception $ex) {
+            $response->status = RPC_FAILURE_RECORD;
+            $response->errors[] = "Set role capability : Unable to retrieve role. Failed to create.{$roledata->shortname}";
+            $response->error = "Set role capability : Unable to retrieve role. Failed to create {$roledata->shortname}.";
+            if ($jsonresponse) {
+                return json_encode($response);
+            } else {
+                return $response;
+            }
         }
     }
 

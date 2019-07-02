@@ -67,7 +67,7 @@ class Command_Role_Sync extends Command {
      * @throws Command_Exception
      */
     public function run($hosts) {
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -79,6 +79,7 @@ class Command_Role_Sync extends Command {
 
         // Getting role.
         $role = $this->get_parameter('role')->get_value();
+        $roledata = (array) $DB->get_record('role', array('shortname' => $role));
 
         // Checking hosts.
         $platform = $this->get_parameter('platform')->get_value();
@@ -157,9 +158,10 @@ class Command_Role_Sync extends Command {
         // Creating XMLRPC client.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
         $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_capabilities');
-        $rpcclient->add_param($role, 'string');
+        $rpcclient->add_param($roledata, 'array');
         $rpcclient->add_param($rolecapabilities, 'array');
-        $rpcclient->add_param(true, 'boolean');
+        $rpcclient->add_param(true, 'boolean'); // Clear
+        $rpcclient->add_param(true, 'boolean'); // Require JSON
 
         // Sending requests.
         foreach ($mnethosts as $mnethost) {

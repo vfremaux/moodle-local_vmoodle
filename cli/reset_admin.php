@@ -17,7 +17,7 @@
 /**
  * This script allows you to reset any local user password.
  *
- * @package    block_vmoodle
+ * @package    local_vmoodle
  * @subpackage cli
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @copyright   Valery fremaux (http://www.mylearningfactory.com)

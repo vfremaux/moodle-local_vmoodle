@@ -28,18 +28,13 @@ unset($options);
 list($options, $unrecognized) = cli_get_params(
     array(
         'help'             => false,
-        'enable' => false,
-        'enablelater' => false,
-        'disable' => false,
+        'withmaster'       => false,
         'verbose'       => false,
         'debug'       => false,
         'fullstop'       => false,
     ),
     array(
         'h' => 'help',
-        'e' => 'enable',
-        'l' => 'enablelater',
-        'x' => 'disable',
         'm' => 'withmaster',
         'd' => 'debug',
         'v' => 'verbose',
@@ -54,20 +49,14 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help = "
-Command line for maintenance mode.
+Command line for starting MNET on nodes.
 
     Options:
-    -e, --enable                    Enable.
-    -l, --enablelater=MINUTES       Enable later.
-    -x, --disable                   Disable.
-    -h, --help                      Print out this help
-    -d, --debug                     Turns on debug mode on workers
-    -v, --verbose                   Print out the workers output
-    -s, --fullstop                  Stops on first error if set
-
-Examples :
-    - sudo -uwwww-data php /local/vmoodle/cli/bulkmaintenance.php --disable
-    - sudo -uwwww-data php /local/vmoodle/cli/bulkmaintenance.php --enable=30
+    -m, --withmaster        Init mnet also on main host.
+    -h, --help              Print out this help
+    -d, --debug             Turns on debug mode on workers
+    -v, --verbose           Print out the workers output
+    -s, --fullstop          Stops on first error if set
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -80,32 +69,39 @@ if (!empty($options['debug'])) {
     $debug = ' --debug ';
 }
 
-$enable = '';
-if (!empty($options['enable'])) {
-    $enable = ' --enable ';
-}
-
-$enablelater = '';
-if (!empty($options['enablelater'])) {
-    $enablelater = " --enablelater={$options['enablelater']} ";
-}
-
-$disable = '';
-if (!empty($options['disable'])) {
-    $disable = ' --disable ';
-}
-
 $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
 // Start updating.
 // Linux only implementation.
 
-echo "Starting changing maintenance mode....\n";
+echo "Starting renewing mnet network....\n";
+
+if (!empty($options['withmaster'])) {
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/renew_mnetkeys.php  {$debug} ";
+
+    mtrace("Executing $workercmd\n######################################################\n");
+    $output = array();
+    exec($workercmd, $output, $return);
+    if ($return) {
+        if (!empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            die("Worker ended with error\n");
+        } else {
+            echo "Worker ended with error:\n";
+            echo implode("\n", $output)."\n";
+        }
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output);
+            echo "\n";
+        }
+    }
+}
 
 $i = 1;
 if ($allhosts) {
     foreach ($allhosts as $h) {
-        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/maintenance.php  --host={$h->vhostname} {$debug} {$disable} {$enable} {$enablelater} ";
+        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/renew_mnetkeys.php {$debug} --host=\"{$h->vhostname}\" ";
 
         mtrace("Executing $workercmd\n######################################################\n");
         $output = array();
@@ -127,4 +123,4 @@ if ($allhosts) {
     }
 }
 
-echo "All done.\n";
+echo "done.\n";

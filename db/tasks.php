@@ -15,24 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
- *
+ * check keys and renew with peers.
  * @package     local_vmoodle
  * @category    local
- * @author      Valery Fremaux <valery.fremaux@gmail.com>
- * @copyright   2008 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright   2019 Valery Fremaux (valery.fremaux@gmail.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version = 2019012700; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2018042700; // Requires this Moodle version.
-$plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '3.5.0 (Build 2019012700)';
-
-// Non moodle attributes.
-$plugin->codeincrement = '3.5.0003';
-$plugin->privacy = 'dualrelease';
-$plugin->devprotectedfiles = array('vconfig.php');
+$tasks = array(
+    array(
+        'classname' => 'local_vmoodle\task\check_mnet_keys',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '6',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+);

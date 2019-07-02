@@ -52,7 +52,7 @@ define(['jquery', 'core/log'], function($, log) {
 
         filtercapabilitytable: function(filterinput) {
             $('.capabilityrow').css('display', 'table-row');
-            if (filterinput.value != '') {
+            if (filterinput.value !== '') {
                 $('.capabilityrow').css('display', 'none');
                 $('.capabilityrow[id*=\'' + filterinput.value + '\']').css('display', 'table-row');
             }

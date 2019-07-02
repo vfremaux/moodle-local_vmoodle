@@ -80,25 +80,23 @@ if ($vmoodles) {
 
         $vmoodlecmd = '';
         $editurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'edit', 'id' => $vmoodle->id));
-        $label = get_string('edithost', 'local_vmoodle');
-        $vmoodlecmd .= '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit', $label, 'core').'</a>';
+        $vmoodlecmd .= '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit', get_string('edithost', 'local_vmoodle')).'</a>';
 
         if ($vmoodle->enabled == 1) {
-            $deleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id));
-            $label = get_string('deletehost', 'local_vmoodle');
-            $jshandler = 'return confirm(\''.get_string('confirmdelete', 'block_vmoodle').'\')';
-            $vmoodlecmd .= '&nbsp;<a href="'.$deleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', $label, 'core').'</a>';
+            $deleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'delete', 'id' => $vmoodle->id));
+            $jshandler = 'return confirm(\''.get_string('confirmdelete', 'local_vmoodle').'\')';
+            $vmoodlecmd .= '&nbsp;<a href="'.$deleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', get_string('deletehost', 'local_vmoodle')).'</a>';
         } else {
             $fulldeleteurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'fulldelete', 'id' => $vmoodle->id));
             $label = get_string('fulldeletehost', 'local_vmoodle');
-            $jshandler = 'return confirm(\''.get_string('confirmfulldelete', 'block_vmoodle').'\')';
-            $vmoodlecmd .= '&nbsp;<a href="'.$fulldeleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', $label, 'core').'</a>';
+            $jshandler = 'return confirm(\''.get_string('confirmfulldelete', 'local_vmoodle').'\')';
+            $vmoodlecmd .= '&nbsp;<a href="'.$fulldeleteurl.'" onclick="'.$jshandler.'">'.$OUTPUT->pix_icon('t/delete', get_string('deletehost', 'local_vmoodle')).'</a>';
         }
 
         $params = array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $vmoodle->vhostname);
         $snapurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $label = get_string('snapshothost', 'local_vmoodle');
-        $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'">'.$OUTPUT->pix_icon('snapshot', $label, 'local_vmoodle').'</a>';
+        $pixicon = $OUTPUT->pix_icon('snapshot', get_string('snapshothost', 'local_vmoodle'), 'local_vmoodle');
+        $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'">'.$pixicon.'</a>';
         $vmoodlestatus = vmoodle_print_status($vmoodle, true);
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {
@@ -172,15 +170,17 @@ if (empty($templates)) {
 
 echo '<br/>';
 echo '<div class="vmoodle-tools-row">';
-echo '<div class="vmoodle-tool">';
-$params = array('view' => 'management', 'what' => 'generateconfigs');
-$label = get_string('generateconfigs', 'local_vmoodle');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
-echo '</div>';
-echo '<div class="vmoodle-tool">';
-$label = get_string('generatecopyscripts', 'local_vmoodle');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecopyscripts.php', $params), $label, 'get');
-echo '</div>';
+if ((@$CFG->mainwwwroot == $CFG->wwwroot) && ($USER->mnethostid == $CFG->mnet_localhost_id)) {
+    echo '<div class="vmoodle-tool">';
+    $params = array('view' => 'management', 'what' => 'generateconfigs');
+    $label = get_string('generateconfigs', 'local_vmoodle');
+    echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
+    echo '</div>';
+    echo '<div class="vmoodle-tool">';
+    $label = get_string('generatecopyscripts', 'local_vmoodle');
+    echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecopyscripts.php', $params), $label, 'get');
+    echo '</div>';
+}
 echo '<div class="vmoodle-tool">';
 $label = get_string('generatecustomscripts', 'local_vmoodle');
 echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecustomscripts.php', $params), $label, 'get');

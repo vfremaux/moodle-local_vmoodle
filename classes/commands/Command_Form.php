@@ -68,7 +68,7 @@ class Command_Form extends \moodleform {
         $this->mode = $mode;
 
         // Setting form action.
-        switch($mode) {
+        switch ($mode) {
             case self::MODE_COMMAND_CHOICE:
                 $url = new \moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin', 'what' => 'validateassistedcommand'));
                 break;

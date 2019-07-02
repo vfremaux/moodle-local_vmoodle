@@ -21,7 +21,7 @@
  * @category local
  * @subpackage cli
  * @revised by Valery Fremaux for VMoodle upgrades
- * @copyright  2009 Petr Skoda (http://skodak.org)
+ * @copyright  2009 Valery Fremaux (http://www.mylearningfactory.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -76,7 +76,7 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
     -b, --bindhost        Remote host to bind to. If bind host is 'subs', then we perform a master to child binding. If set to a vmoodle wwwroot
-                          the, will bind the child to the master and it's subnet peers.
+                          , will bind the child to the master and it's subnet peers.
     -s, --subnet          An optional vmoodle subnet number. If given, changes the host vmoodle subnet.
     -H, --host            Switches to this host virtual configuration before processing.
     -h, --help            Print out this help.
@@ -116,7 +116,6 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 echo "Starting MNET environment\n";
 
 global $MNET;
-
 
 $mnetstate = get_config('moodle', 'mnet_dispatcher_mode');
 if ($mnetstate != 'strict') {

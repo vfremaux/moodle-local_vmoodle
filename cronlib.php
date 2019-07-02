@@ -98,7 +98,7 @@ function vcron_process_result($vhost, $rawresponse, $timestampsend, $timestampre
     }
 
     // A debug trace for developers.
-    if ($vcron->traceenable) {
+    if (!empty($vcron->traceenable)) {
         if ($crontrace) {
             fputs($crontrace, "VCron start on $vhost->vhostname : $timestampsend\n" );
             fputs($crontrace, $rawresponse."\n");
