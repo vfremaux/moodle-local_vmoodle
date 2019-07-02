@@ -15,16 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of Generic plugin library.
- *
+ * check keys and renew with peers.
  * @package     local_vmoodle
  * @category    local
- * @author      Valery Fremaux (valery.fremaux@gmail.com)
+ * @copyright   2019 Valery Fremaux (valery.fremaux@gmail.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin = new StdClass();
-$plugin->version = 2019060200;
-$plugin->requires = 2016051900;
-$plugin->component = 'vmoodleadminset_generic';
-$plugin->release = '3.6.0 (build 2019060200)';
-$plugin->dependencies = array('local_vmoodle' => 2017090100);
+$tasks = array(
+    array(
+        'classname' => 'local_vmoodle\task\check_mnet_keys',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '6',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ),
+);

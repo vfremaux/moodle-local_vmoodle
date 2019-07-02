@@ -18,8 +18,8 @@
  * this script scans all virtual instances to perform a cronmonitor worker
  * action on each.
  *
- * @package block_vmoodle
- * @category blocks
+ * @package local_vmoodle
+ * @category local
  * @author Valery fremaux (valery.fremaux@club-internet.fr)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */

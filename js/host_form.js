@@ -83,8 +83,8 @@ function syncSchema(){
     var syncedelement3 = document.getElementById("id_vdatapath");
     var syncedelement4 = document.getElementById("id_vhostname");
 
-    dbescapedelement = originelement.value.replace('-', '_');
-    dbescapedelement = dbescapedelement.replace(' ', '_');
+    dbescapedelement = originelement.value.replace(/-/g, '_');
+    dbescapedelement = dbescapedelement.replace(/ /g, '_');
     syncedelement2.value = syncedelement2.value.replace(/<%%INSTANCE%%>/g, dbescapedelement);
     syncedelement3.value = syncedelement3.value.replace(/<%%INSTANCE%%>/g, originelement.value);
     syncedelement4.value = syncedelement4.value.replace(/<%%INSTANCE%%>/g, originelement.value);

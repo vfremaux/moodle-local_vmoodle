@@ -44,7 +44,7 @@ require_once($CFG->dirroot.'/config.php');
             }
 
             if (b == false) {
-                dirroot  = dirroot.replace("+"," ");
+                dirroot  = dirroot.replace(/+/g, " ");
             } else {
                 b = true;
             }
@@ -83,8 +83,8 @@ require_once($CFG->dirroot.'/config.php');
                 if (tab1 != null && tab1.length >= 1) {
                     element.value = "mdl_" + tab1[0];
                     element1.value = "vmdl_" + tab1[0];
-                    element1.value = element1.value.replace('-', '_');
-                    element1.value = element1.value.replace(' ', '_');
+                    element1.value = element1.value.replace(/-/g, '_');
+                    element1.value = element1.value.replace(/ /g, '_');
                 }
 
                 dirroot = unescape(dirroot);
@@ -97,7 +97,7 @@ require_once($CFG->dirroot.'/config.php');
                         }
                     }
                     if (b == false) {
-                        dirroot  = dirroot.replace("+", " ");
+                        dirroot  = dirroot.replace(/+/g, " ");
                     } else {
                         b = true;
                     }

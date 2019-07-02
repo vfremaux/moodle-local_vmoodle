@@ -447,14 +447,14 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
                                  $filerec->filepath,
                                  $filerec->filename)) {
         if (function_exists('debug_trace')) {
-            debug_trace("Deleting old file ".print_r($filerec,true));
+            debug_trace("Deleting old file ".print_r($filerec, true));
         }
         $oldfile->delete();
     }
 
     // Store new file.
     if (function_exists('debug_trace')) {
-        debug_trace("Creating old file ".print_r($filerec,true));
+        debug_trace("Creating old file ".print_r($filerec, true));
     }
     $newfile = $fs->create_file_from_string($filerec, base64_decode($filecontent));
 
