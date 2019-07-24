@@ -24,6 +24,9 @@ define(['jquery', 'core/log'], function($, log) {
         init: function() {
             $('.vmoodle-hide-show-image').bind('click', this.switch_panel);
 
+            // File area remote reader ajax binding.
+            $('#mform12 select[name="platform"]').bind('change', this.remote_filearealist);
+
             log.debug("AMD Vmoodle initialisation ");
         },
 
@@ -56,6 +59,19 @@ define(['jquery', 'core/log'], function($, log) {
                 $('.capabilityrow').css('display', 'none');
                 $('.capabilityrow[id*=\'' + filterinput.value + '\']').css('display', 'table-row');
             }
+        },
+
+        remote_filearealist: function() {
+            var that = $(this);
+            var targeturl = that.val();
+            var targetdiv = $('#fitem_id_fileareaid .felement.fselect');
+
+            var url = targeturl + '/local/vmoodle/plugins/generic/ajax/get_system_fileareas.php';
+
+            // Reset the filearea choice list with target's local set.
+            $.get(url, function(data) {
+                targetdiv.html(data);
+            }, 'html');
         }
     };
 

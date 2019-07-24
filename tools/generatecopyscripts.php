@@ -32,6 +32,14 @@ $PAGE->set_context($context);
 require_login();
 require_capability('moodle/site:config', $context);
 
+if (@$CFG->mainwwwroot != $CFG->wwwroot) {
+    print_error('onlymainsitecangenerate', 'local_vmoodle');
+}
+
+if ($USER->mnethostid != $CFG->mnet_localhost_id) {
+    print_error('onlymainsiteadminscangenerate', 'local_vmoodle');
+}
+
 $PAGE->set_heading(get_string('scriptgenerator', 'local_vmoodle'));
 $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
@@ -256,23 +264,25 @@ if ($data = $mform->get_data()) {
 
     // Main host data copy.
     $datastr = '# Data copy for '.$SITE->fullname."\n";
-    $datastr .= "sudo -uwww-data rm -rf {$main->newdataroot}\n";
-    $datastr .= "sudo -uwww-data rsync -r {$main->olddataroot} {$main->tomoodledatacontainer}\n";
+    $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->newdataroot}\n";
+    $datastr .= "sudo -u{$data->webserveruser} rsync -r {$main->olddataroot} {$main->tomoodledatacontainer}\n";
 
     // Active Vhosts data copy.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
 
+            $datarootbasename = basename($hostreps[$vhost->name]->olddataroot);
             $datastr .= "\n";
             $datastr .= '# Data copy for '.$vhost->name."\n";
-            $datastr .= "sudo -uwww-data rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
-            $datastr .= "sudo -uwww-data mkdir {$hostreps[$vhost->name]->newdataroot}\n";
-            $datastr .= "sudo -uwww-data rsync -r -o -p -g --del {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
+            $datastr .= "sudo -u{$data->webserveruser} mkdir {$hostreps[$vhost->name]->newdataroot}\n";
+            $datastr .= "sudo -u{$data->webserveruser} rsync -r -o -p -g --del {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
             $datastr .= '# Purge eventual caches of '.$vhost->name."\n";
-            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/cache\n";
-            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/localcache\n";
-            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/muc\n";
-            $datastr .= "sudo -uwww-data rm -rf {$main->tomoodledatacontainer}/sessions\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/cache\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/localcache\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/muc\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/lock\n";
+            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/sessions\n";
 
             // Vhost replacements.
         }
@@ -320,14 +330,17 @@ if ($data = $mform->get_data()) {
 
     // Main host upgrade.
     $preupgradestr = '# Pre upgrade for '.$SITE->fullname."\n";
-    $preupgradestr .= "sudo -uwww-data php {$main->newdirroot}/admin/cli/mysql_compressed_rows.php --fix\n";
+    $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/admin/cli/mysql_compressed_rows.php --fix\n";
+    if ($data->toversion >= 35) {
+        $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/admin/cli/mysql_collation.php --collation=utf8mb4_general_ci\n";
+    }
 
     $upgradestr = '# Full upgrade for '.$SITE->fullname."\n";
-    $upgradestr .= "sudo -uwww-data php {$main->newdirroot}/admin/cli/upgrade.php  --non-interactive --allow-unstable\n";
+    $upgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/admin/cli/upgrade.php  --non-interactive --allow-unstable\n";
 
     $postupgradestr = '# Post upgrade for '.$SITE->fullname."\n";
-    $postupgradestr .= "sudo -uwww-data php {$main->newdirroot}/admin/cli/purge_caches.php\n";
-    $postupgradestr .= "sudo -uwww-data php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$main->archivewwwroot}\n";
+    $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/admin/cli/purge_caches.php\n";
+    $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$main->archivewwwroot}\n";
     $postupgradestr .= "wget {$main->archivewwwroot}/admin/cron.php?forcerenew=1\n";
 
     // Active Vhosts upgrades.
@@ -336,17 +349,20 @@ if ($data = $mform->get_data()) {
 
             $upgradestr .= "\n";
             $upgradestr .= '# Full upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
-            $upgradestr .= "sudo -uwww-data php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/upgrade.php --host={$hostreps[$vhost->name]->currentwwwroot} --non-interactive --allow-unstable\n";
+            $upgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/upgrade.php --host={$hostreps[$vhost->name]->currentwwwroot} --non-interactive --allow-unstable\n";
 
             $preupgradestr .= "\n";
             $preupgradestr .= '# Pre upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
-            $preupgradestr .= "sudo -uwww-data php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_compressed_rows.php --fix --host={$hostreps[$vhost->name]->currentwwwroot}\n";
+            $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_compressed_rows.php --fix --host={$hostreps[$vhost->name]->currentwwwroot}\n";
+            if ($data->toversion >= 35) {
+                $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_collation.php --collation=utf8mb4_general_ci --host={$hostreps[$vhost->name]->currentwwwroot}\n";
+            }
 
             $postupgradestr .= "\n";
             $postupgradestr .= '# Post upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
-            $postupgradestr .= "sudo -uwww-data php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/purge_caches.php --host={$hostreps[$vhost->name]->currentwwwroot}\n";
+            $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/purge_caches.php --host={$hostreps[$vhost->name]->currentwwwroot}\n";
             if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {
-                $postupgradestr .= "sudo -uwww-data php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$hostreps[$vhost->name]->archivewwwroot}\n";
+                $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$hostreps[$vhost->name]->archivewwwroot}\n";
             }
             if (is_dir($CFG->dirroot.'/blocks/vmoodle')) {
                 $postupgradestr .= "wget {$hostreps[$vhost->name]->archivewwwroot}/admin/cron.php?forcerenew=1\n";
@@ -358,34 +374,34 @@ if ($data = $mform->get_data()) {
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('copyscripts', 'block_vmoodle'), 2);
+echo $OUTPUT->heading(get_string('copyscripts', 'local_vmoodle'), 2);
 
 $blockid = 1;
 
 if ($backupdbstr) {
-    echo $OUTPUT->heading(get_string('backupdbcopyscript', 'block_vmoodle'), 3);
-    echo $OUTPUT->heading(get_string('makebackup', 'block_vmoodle'), 4);
+    echo $OUTPUT->heading(get_string('backupdbcopyscript', 'local_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('makebackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$backupdbstr.'</pre>');
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$backupdbtransfer.'</pre>');
-    echo $OUTPUT->heading(get_string('restorebackup', 'block_vmoodle'), 4);
+    echo $OUTPUT->heading(get_string('restorebackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$restorebackupdbstr.'</pre>');
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$restorebackupdbtransfer.'</pre>');
-    echo $OUTPUT->heading(get_string('dropbackup', 'block_vmoodle'), 4);
+    echo $OUTPUT->heading(get_string('dropbackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$dropbackupdbstr.'</pre>');
 }
 
 if ($dbstr) {
-    echo $OUTPUT->heading(get_string('dbcopyscript', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('dbcopyscript', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$dbstr.'</pre>');
@@ -395,49 +411,49 @@ if ($dbstr) {
 }
 
 if ($datastr) {
-    echo $OUTPUT->heading(get_string('datacopyscript', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('datacopyscript', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$datastr.'</pre>');
 }
 
 if ($configstr) {
-    echo $OUTPUT->heading(get_string('adjustconfig', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('adjustconfig', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$configstr.'</pre>');
 }
 
 if ($preupgradestr) {
-    echo $OUTPUT->heading(get_string('preupgrade', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('preupgrade', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$preupgradestr.'</pre>');
 }
 
 if ($upgradestr) {
-    echo $OUTPUT->heading(get_string('upgrade', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('upgrade', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$upgradestr.'</pre>');
 }
 
 if ($postupgradestr) {
-    echo $OUTPUT->heading(get_string('postupgrade', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('postupgrade', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$postupgradestr.'</pre>');
 }
 
 if ($cronstr) {
-    echo $OUTPUT->heading(get_string('cronlines', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('cronlines', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$cronstr.'</pre>');
 }
 
 if ($sudostr) {
-    echo $OUTPUT->heading(get_string('sudos', 'block_vmoodle'), 3);
+    echo $OUTPUT->heading(get_string('sudos', 'local_vmoodle'), 3);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$sudostr.'</pre>');

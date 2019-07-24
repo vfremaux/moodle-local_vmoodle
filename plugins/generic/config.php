@@ -147,6 +147,12 @@ $category->add_command($cmd);
 $cmd = new Command_CopyFile();
 $category->add_command($cmd);
 
+$cmd = new Command_CopyFileArea();
+$category->add_command($cmd);
+
+$cmd = new Command_CopyTable();
+$category->add_command($cmd);
+
 $cmd = new Command_SyncLangCustomisation();
 $category->add_command($cmd);
 

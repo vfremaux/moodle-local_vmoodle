@@ -108,7 +108,7 @@ function vmoodle_boot_configuration() {
     $CFG->mainwwwroot = $CFG->wwwroot;
 
     if ($CFG->vmoodleroot != $CFG->wwwroot) {
-        if ($CFG->vmasterdbtype == 'mysqli') {
+        if (($CFG->vmasterdbtype == 'mysqli') || ($CFG->vmasterdbtype == 'mariadb')) {
             $vmaster = new StdClass();
             $vmaster->vdbtype = $CFG->vmasterdbtype;
             $vmaster->vdbhost = $CFG->vmasterdbhost;
@@ -218,7 +218,7 @@ function vmoodle_boot_configuration() {
  */
 function vmoodle_make_connection(&$vmoodle, $binddb = false) {
 
-    if ($vmoodle->vdbtype == 'mysqli' || $vmoodle->vdbtype == 'mariadb') {
+    if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         // Important : force new link here.
 
         $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, 3306);

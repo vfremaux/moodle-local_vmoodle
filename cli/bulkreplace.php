@@ -63,7 +63,7 @@ Command line global DB replacement
     -f, --fullstop          Stops on first error.
     -d, --debug             Turns on debug mode.
 
-\$ sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkreplace.php --search=//oldsitehost --replace=//newsitehost --host=http://vmoodlewwwroot
+\$ sudo -u www-data /usr/bin/php local/vmoodle/cli/bulkreplace.php --search=//oldsitehost --replace=//newsitehost
 
 "; // TODO: localize - to be translated later when everything is finished.
 

@@ -93,6 +93,7 @@ $string['clisnapstep'] = 'Phase de capture {$a}';
 $string['clistart'] = 'Démarrage de la production';
 $string['cliusingtemplate'] = 'Construction sur le modèle {$a}';
 $string['closewindow'] = 'Fermer cette fenêtre';
+$string['checkmnetkeys'] = 'Vérifier les clefs MNET';
 $string['commanddescription'] = 'Description';
 $string['commandemptydescription'] = 'La description de la commande est vide.';
 $string['commandemptyname'] = 'Le nom de la commande est vide.';
@@ -170,6 +171,7 @@ $string['errorreactivetemplate'] = 'Le nom du chemin du moodle data et le nom de
 $string['errorsetupdb'] = 'Erreur de mise en place de la base de données';
 $string['emulatecommunity'] = 'Emuler la version communautaire';
 $string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
+$string['environment'] = 'Environment technique';
 $string['failedplatforms'] = 'Echec des plates-formes :';
 $string['fileschema'] = 'Position des fichiers';
 $string['filter'] = 'Filtrer';
@@ -237,6 +239,8 @@ $string['novmoodle'] = 'La plateforme et/ou son bloc correspondant n\'existe plu
 $string['novmoodles'] = 'Aucune plate-forme virtuelle définie';
 $string['off'] = 'Désactivé';
 $string['on'] = 'Activé';
+$string['onlymainsitecangenerate'] = 'Seul le site principal peut générer les scripts de copie de donnée.';
+$string['onlymainsiteadminscangenerate'] = 'Seuls les administrateurs du site principal peuvent générer les scripts de copie de donnée.';
 $string['openallservices'] = 'Ouvrir tous les services';
 $string['operation'] = 'Opération';
 $string['organization'] = 'Organisation';
@@ -322,6 +326,7 @@ $string['successfinishedcapture'] = 'Capture de la plate-forme terminée.';
 $string['successfullplatforms'] = 'Succès des plates-formes :';
 $string['successstrategyservices'] = 'Déploiement de la stratégie de service(s) par défaut effectué.';
 $string['sudoer'] = 'Sudoer';
+$string['sudos'] = 'Sudos';
 $string['syncvmoodleregister'] = 'Synchroniser les registres VMoodle';
 $string['tabpoolmanage'] = 'Gestion des instances';
 $string['tabpoolsadmin'] = 'Super administration';
@@ -339,7 +344,7 @@ $string['unknownhost'] = 'L\'hôte que vous tentez de mettre en place n\'est pas
 $string['unknownhost'] = 'Le nom de domaine de la plate-forme ne peut être résolu. Vous pouvez forcer le passage en reexécutant la procédure, mais les fonctions réseau ne pourront probablement pas être activées correctement.';
 $string['unknownhostforced'] = 'L\'hôte que vous tentez de mettre en place n\'est pas connu sur le réseau. Vous avez demandé un déploiment en mode forcé. Les fonctions du réseau Moodle seront désactivées après déploiement et devront être configurées manuellement.';
 $string['unknownuserhost'] = 'Plate-forme hôte de l\'utilisateur inconnu';
-$string['emptyormalformedvhostname'] = 'Url vide ou malformée';
+$string['emptyormalformedvhost'] = 'Url vide ou malformée';
 $string['upgrade'] = 'Mettre à jour les données';
 $string['uploadscript'] = 'Uploader un script';
 $string['vdatapath'] = 'Chemin "moodledata" ';
@@ -370,6 +375,7 @@ $string['vmoodlesnapshot3'] = 'ETAPE 3 de 3 : Fichiers capturés. La capture de 
 $string['vpaths'] = 'Fichiers utilisateurs virtuels';
 $string['vtemplate'] = 'Template de Vmoodle';
 $string['weboperated'] = 'Opéré en ligne';
+$string['webserveruser'] = 'Utilisateur de fonctionnement du serveur Web';
 $string['withmessage'] = 'avec le message "{$a}"';
 $string['withoutmessage'] = 'sans message';
 $string['withselection'] = 'Avec la sélection: ';
@@ -535,7 +541,7 @@ de deux répertoires :</p>
     <li>Le premier contient deux scripts SQL appelés :
     "moodle_master.&lt;base&gt;.sql" et
     "moodle_setup_template.&lt;base&gt;.sql". &lt;base&gt; peut être soit
-    "mysqli" ou "postgres", selon la plate-forme qui a servi de modèle au
+    "mariadb", "mysqli" ou "postgres", selon la plate-forme qui a servi de modèle au
     template. Le premier script permet de charger la base avec un modèle de
     donnée type, issu de l\'export d\'une plate-forme modèle. Le deuxième
     fichier permet d\'exécuter des requêtes SQL contextualisées utilisant
@@ -570,7 +576,8 @@ doit être forcée par un fichier de configuration physique (pas de valeur en ba
 $CFG->forced_plugin_settings[\'vmoodle\'][\'clusterix\'] assurée localement. Veuillez à ce que chaque cluster impose une valeur différente.';
 
 $string['sudoer_desc'] = 'Un utilisateur linux capable d\'opérer dans le répertoire d\'installation de moodle. Cet utilisateur doit bénéficier
-d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln
+d\'une règle de sudo du type : www-data  ALL = (user) NOPASSWD:/usr/bin/ln. Ceci n\'est nécessaire QUE si les hôtes VMoodle sont définis comme
+sous-répertoires du domaine principal.
 ';
 
 $string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif

@@ -412,7 +412,6 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
  * @param boolean $jsonrequired Is json required for return ?.
  */
 function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filename, $filecontent, $jsonrequired = true) {
-    global $CFG;
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Receiving moodle file');
@@ -447,14 +446,14 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
                                  $filerec->filepath,
                                  $filerec->filename)) {
         if (function_exists('debug_trace')) {
-            debug_trace("Deleting old file ".print_r($filerec,true));
+            debug_trace("Deleting old file ".print_r($filerec, true));
         }
         $oldfile->delete();
     }
 
     // Store new file.
     if (function_exists('debug_trace')) {
-        debug_trace("Creating old file ".print_r($filerec,true));
+        debug_trace("Creating old file ".print_r($filerec, true));
     }
     $newfile = $fs->create_file_from_string($filerec, base64_decode($filecontent));
 
@@ -485,7 +484,6 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
  * @param boolean $jsonrequired Is json required for return ?.
  */
 function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filename, $jsonrequired = true) {
-    global $CFG;
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Getting local moodle file');
@@ -516,14 +514,122 @@ function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $f
                                  $filerec->itemid,
                                  $filerec->filepath,
                                  $filerec->filename)) {
-        $return->filecontent = base64_encode($file->get_content());
         $return = new StdClass;
+        $return->filecontent = base64_encode($file->get_content());
         $return->status = RPC_SUCCESS;
     } else {
         $return = new StdClass;
         $return->status = RPC_FAILURE_DATA;
         $return->error = "Cannot find required file";
         $return->errors[] = "Cannot find required file";
+    }
+
+    if ($jsonrequired) {
+        return json_encode($return);
+    }
+    return $return;
+}
+
+/**
+ * Get a local table content and send it to caller as an encoded data serialzed blob..
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $table The table name.
+ * @param boolean $jsonrequired Is json required for return ?.
+ */
+function mnetadmin_rpc_get_table_data($user, $table, $select, $jsonrequired = true) {
+    global $DB;
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Getting local moodle data records');
+    }
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+    }
+
+    try {
+        $totalcount = $DB->count_records($table, []);
+        if (!empty($select)) {
+            $records = $DB->get_records_select($table, $select, []);
+        } else {
+            $records = $DB->get_records($table, []);
+        }
+        $return = new StdClass;
+        $return->status = RPC_SUCCESS;
+        if (!empty($records)) {
+            $data = json_encode($records);
+            $return->tablecontent = base64_encode($data); // Ensures any binary content passes through.
+            $return->count = count($records);
+            $return->countall = $totalcount;
+        } else {
+            $return->tablecontent = ''; // Empty response.
+            $return->count = 0; // Empty response.
+            $return->countall = $totalcount;
+        }
+    } catch (Exception $e) {
+        $return = new StdClass;
+        $return->status = RPC_FAILURE_DATA;
+        $return->error = "Cannot find required data from table";
+        $return->errors[] = "Cannot find required data from table";
+        $return->errors[] = $DB->get_last_error();
+    }
+
+    debug_trace($return);
+
+    if ($jsonrequired) {
+        return json_encode($return);
+    }
+    return $return;
+}
+
+/**
+ * Import a table dataset and replace the existing data with it.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $table The table name.
+ * @param string $content The records as base64 encoded serialized json.
+ * @param boolean $jsonrequired Is json required for return ?.
+ */
+function mnetadmin_rpc_import_table_content($user, $table, $content, $jsonrequired = true) {
+    global $DB;
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Importing data in table '.$table);
+    }
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+    }
+
+    try {
+        // Delete all records.
+        $DB->delete_records($table, []);
+
+        $deserialized = base64_decode($content);
+        $records = json_decode($deserialized);
+
+        $cpt = 0;
+        if (!empty($records)) {
+            foreach($records as $rec) {
+                $DB->insert_record($table, $rec);
+                $cpt++;
+            }
+        }
+
+        $return = new StdClass;
+        $return->status = RPC_SUCCESS;
+        $return->message = $cpt.' records imported.';
+    } catch (Exception $e) {
+        $return = new StdClass;
+        $return->status = RPC_FAILURE_DATA;
+        $return->error = "Cannot import required data in table";
+        $return->errors[] = "Cannot import required data in table";
+        $return->errors[] = $DB->get_last_error();
     }
 
     if ($jsonrequired) {

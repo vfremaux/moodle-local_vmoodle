@@ -32,6 +32,7 @@ $category = new Command_Category('roles');
 // Adding commands
 $category->add_command(new Command_Role_Sync());
 $category->add_command(new Command_Role_Compare());
+$category->add_command(new Command_Role_Capability_Sync());
 $category->add_command(new Command_Role_Allow_Sync());
 $category->add_command(new Command_Role_Allow_Compare());
 

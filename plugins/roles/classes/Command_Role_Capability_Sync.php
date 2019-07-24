@@ -39,7 +39,7 @@ class Command_Role_Capability_Sync extends Command {
         $rolemenu = array();
 
         foreach ($roles as $r) {
-            $rolemenu[$r->shortname] = $r->name;
+            $rolemenu[$r->shortname] = role_get_name($r);
         }
         $label = get_string('roleparamsyncdesc', 'vmoodleadminset_roles');
         $roleparam = new Command_Parameter('role', 'enum', $label, null, $rolemenu);
@@ -49,7 +49,7 @@ class Command_Role_Capability_Sync extends Command {
         $capabilities = array();
 
         foreach ($records as $record) {
-            $capabilities[$record->name] = get_capability_string($record->name);
+            $capabilities[$record->name] = '['.$record->name.'] '.get_capability_string($record->name);
         }
 
         asort($capabilities);
@@ -66,7 +66,7 @@ class Command_Role_Capability_Sync extends Command {
      * @throws Command_Exception.
      */
     public function run($hosts) {
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
 
         // Adding constants.
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
@@ -78,6 +78,7 @@ class Command_Role_Capability_Sync extends Command {
 
         // Getting role.
         $role = $this->get_parameter('role')->get_value();
+        $roledata = (array) $DB->get_record('role', array('shortname' => $role));
 
         // Getting platform.
         $platform = $this->get_parameter('platform')->get_value();
@@ -167,9 +168,10 @@ class Command_Role_Capability_Sync extends Command {
         // Creating XMLRPC client.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
         $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_capabilities');
-        $rpcclient->add_param($role, 'string');
+        $rpcclient->add_param($roledata, 'array');
         $rpcclient->add_param($rolecapability, 'string');
-        $rpcclient->add_param(false, 'boolean');
+        $rpcclient->add_param(false, 'boolean'); // Clear.
+        $rpcclient->add_param(true, 'boolean'); // JSON
 
         // Sending requests.
         foreach ($mnethosts as $mnethost) {

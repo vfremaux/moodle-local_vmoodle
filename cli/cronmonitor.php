@@ -139,7 +139,7 @@ if (!empty($options['file'])) {
                 } else {
                     $proxytype = CURLPROXY_HTTP;
                 }
-                curl_setopt($ch, CURL_PROXYTYPE, $proxytype);
+                curl_setopt($ch, CURLOPT_PROXYTYPE, $proxytype);
             }
         }
 
