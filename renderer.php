@@ -22,11 +22,11 @@ defined('MOODLE_INTERNAL') || die;
 
 class local_vmoodle_renderer extends plugin_renderer_base {
 
-    public function pix_url($image, $subplugin = null) {
+    public function image_url($image, $subplugin = null) {
         global $CFG, $OUTPUT;
 
         if (!$subplugin) {
-            return $OUTPUT->pix_url($image, 'local_vmoodle');
+            return $OUTPUT->image_url($image, 'local_vmoodle');
         }
 
         list($type, $plugin) = explode('_', $subplugin);
@@ -97,7 +97,7 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         $template->captionnotags = strip_tags($caption);
 
         $pixpath = ($displayed) ? '/t/expanded' : '/t/collapsed';
-        $template->pixpathurl = $OUTPUT->pix_url($pixpath);
+        $template->pixpathurl = $OUTPUT->image_url($pixpath);
         $template->showctlalt = ($displayed) ? get_string('hide') : get_string('show');
         $template->hideclass = ($displayed) ? '' : ' vmoodle-hidden';
         $template->blockcontent = $content;

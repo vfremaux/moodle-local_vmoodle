@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Get the local instance list of system filearea identities. this is scirpt is unprotected and
+ * Get the local instance list of system filearea identities. this is script is unprotected and
  * should NOT reveal any sensible information as it does not give access to any file content, but
  * just definitions that are resulting on component installs and moodle standard setup.
  *
@@ -25,12 +25,15 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 
+define('AJAX_SCRIPT', 1);
+
 require('../../../../../config.php');
 
 $systemcontext = context_system::instance();
 
 $sql = "
     SELECT DISTINCT
+        CONCAT(component, filearea, itemid) as pkey,
         component,
         filearea,
         itemid
@@ -42,7 +45,7 @@ $sql = "
         component, filearea, itemid
 ";
 
-$fileareas = $DB->get_records_sql($sql, array([$systemcontext->id));
+$fileareas = $DB->get_records_sql($sql, array($systemcontext->id));
 
 if ($fileareas) {
     $return = '<select id="id_fileareaid" name="fileareaid">';

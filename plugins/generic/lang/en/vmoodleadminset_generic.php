@@ -19,6 +19,10 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Generic does not directly store any personal data about any user.';
+
 $string['alllanguages'] = 'All languages';
 $string['allplugins'] = 'All files';
 $string['cmdconfigvalue'] = 'Global Config Value';

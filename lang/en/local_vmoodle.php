@@ -21,6 +21,9 @@ $string['vmoodle:managevmoodles'] = 'Manage moodle satellites';
 $string['vmoodle:myaddinstance'] = 'Can add instance to my pages';
 $string['vmoodle:addinstance'] = 'Can add instance';
 
+// Privacy.
+$string['privacy:metadata'] = 'The Local VMoodle plugin does not store any personal data about any user.';
+
 // Local strings.
 
 $string['addall'] = 'Add all';
@@ -96,6 +99,7 @@ $string['clistart'] = 'Starting cli =';
 $string['cliusingtemplate'] = 'Make Node using template {$a}';
 $string['closewindow'] = 'Close the window';
 $string['commanddescription'] = 'Description';
+$string['commandcli'] = 'CLI command syntax';
 $string['commandemptydescription'] = 'The command\'s description is empty.';
 $string['commandemptyname'] = 'The command\'s name is empty.';
 $string['commandformnotlinked'] = 'No command linked to the form.';
@@ -285,6 +289,8 @@ $string['regexp'] = 'regexp';
 $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
 $string['renewallbindings'] = 'Renew all bindings';
+$string['responseerror'] = 'Error in RPC response from source {$a}';
+$string['sendfailure'] = 'RPC Send to source {$a} error';
 $string['restorebackup'] = 'Restore backup';
 $string['restart'] = 'Restart process';
 $string['retrieveplatforms'] = 'Retrieve platforms';

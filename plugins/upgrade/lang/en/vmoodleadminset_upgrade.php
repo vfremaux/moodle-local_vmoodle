@@ -20,6 +20,9 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Upgrade does not directly store any personal data about any user.';
+
 $string['pluginname'] = 'Distributed code upgrade';
 $string['upgrade'] = 'Code upgrade notifications';
 $string['cmdupgradename'] = 'Command name for upgrade';

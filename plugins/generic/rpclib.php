@@ -411,7 +411,7 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
  * @param string $filecontent The encoded (base64) file content.
  * @param boolean $jsonrequired Is json required for return ?.
  */
-function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filename, $filecontent, $jsonrequired = true) {
+function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filepath, $filename, $filecontent, $jsonrequired = true) {
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Receiving moodle file');
@@ -431,9 +431,8 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
     $filerec->component = $component;
     $filerec->filearea = $filearea;
     $filerec->itemid = $itemid;
-    $filerec->filepath = dirname($filename).'/';
-    $filerec->filepath = str_replace('//', '/', $filerec->filepath); // fixes eventual slash doubling
-    $filerec->filename = basename($filename);
+    $filerec->filepath = $filepath;
+    $filerec->filename = $filename;
 
     $fs = get_file_storage();
 
@@ -474,16 +473,14 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filen
 }
 
 /**
- * Get a remote file and send it to the caller if exists.
- * this is similar to the file download WS procedure but within a mnet trusted network and without token setup.
+ * Get a complete listing of files in a system filearea as a file descriptor. Do not retrieve directories.
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
  * @param string $component The component name.
  * @param string $filearea the file area.
- * @param string $itemid The origin itemid. Usually should be 0, but some other cases may arise.
- * @param string $filename The full pathed name of the file.
+ * @param string $itemid The itemid. Use '*' as wildcard (all itemids in the filearea).
  * @param boolean $jsonrequired Is json required for return ?.
  */
-function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filename, $jsonrequired = true) {
+function mnetadmin_rpc_get_remote_filearea($user, $component, $filearea, $itemid, $jsonrequired = true) {
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Getting local moodle file');
@@ -498,30 +495,79 @@ function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $f
 
     $context = context_system::instance();
 
-    $filerec = new StdClass;
-    $filerec->contextid = $context->id;
-    $filerec->component = $component;
-    $filerec->filearea = $filearea;
-    $filerec->itemid = $itemid;
-    $filerec->filepath = dirname($filename).'/';
-    $filerec->filename = basename($filename);
+    $fs = get_file_storage();
+
+    if ($itemid == '*') {
+        $itemid = false;
+    }
+
+    $files = $fs->get_area_files($context->id, $component, $filearea, $itemid, "itemid, filepath, filename", false);
+    $result = array();
+    if (!empty($files)) {
+        foreach ($files as $f) {
+            $fdesc = new StdClass;
+            $fdesc->component = $component;
+            $fdesc->filearea = $filearea;
+            $fdesc->itemid = $f->get_itemid();
+            $fdesc->filepath = $f->get_filepath();
+            $fdesc->filename = $f->get_filename();
+            $result[] = $fdesc;
+        }
+    }
+
+    $return = new StdClass;
+    $return->status = RPC_SUCCESS;
+    $return->entries = count($result);
+    $return->fileareacontent = $result;
+
+    if ($jsonrequired) {
+        return json_encode($return);
+    }
+    return $return;
+}
+
+/**
+ * Get a remote file and send it to the caller if exists.
+ * this is similar to the file download WS procedure but within a mnet trusted network and without token setup.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $component The component name.
+ * @param string $filearea the file area.
+ * @param string $itemid The origin itemid. Usually should be 0, but some other cases may arise.
+ * @param string $filepath The full pathed name of the file.
+ * @param string $filename The name of the file.
+ * @param boolean $jsonrequired Is json required for return ?.
+ */
+function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filepath, $filename, $jsonrequired = true) {
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Getting local moodle file');
+    }
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+    }
+
+    $context = context_system::instance();
 
     $fs = get_file_storage();
 
-    if ($file = $fs->get_file($filerec->contextid,
-                                 $filerec->component,
-                                 $filerec->filerarea,
-                                 $filerec->itemid,
-                                 $filerec->filepath,
-                                 $filerec->filename)) {
+    if ($file = $fs->get_file($context->id,
+                                 $component,
+                                 $filearea,
+                                 $itemid,
+                                 $filepath,
+                                 $filename)) {
         $return = new StdClass;
         $return->filecontent = base64_encode($file->get_content());
         $return->status = RPC_SUCCESS;
     } else {
         $return = new StdClass;
         $return->status = RPC_FAILURE_DATA;
-        $return->error = "Cannot find required file";
-        $return->errors[] = "Cannot find required file";
+        $return->error = "Cannot find required file $context->id/{$component}/{$filearea}/$itemid{$filepath}{$filename}";
+        $return->errors[] = "Cannot find required file $context->id/{$component}/{$filearea}/$itemid{$filepath}{$filename}";
     }
 
     if ($jsonrequired) {
@@ -576,8 +622,6 @@ function mnetadmin_rpc_get_table_data($user, $table, $select, $jsonrequired = tr
         $return->errors[] = "Cannot find required data from table";
         $return->errors[] = $DB->get_last_error();
     }
-
-    debug_trace($return);
 
     if ($jsonrequired) {
         return json_encode($return);

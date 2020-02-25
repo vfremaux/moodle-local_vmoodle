@@ -1456,16 +1456,16 @@ function vmoodle_print_status($vmoodle, $return = false) {
     global $OUTPUT;
 
     if (!vmoodle_check_installed($vmoodle)) {
-        $vmoodlestate = '<img src="'.$OUTPUT->pix_url('broken', 'local_vmoodle').'"/>';
+        $vmoodlestate = '<img src="'.$OUTPUT->image_url('broken', 'local_vmoodle').'"/>';
     } else if ($vmoodle->enabled) {
         $params = array('view' => 'management', 'what' => 'disable', 'id' => $vmoodle->id);
         $disableurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $pix = '<img src="'.$OUTPUT->pix_url('enabled', 'local_vmoodle').'" />';
+        $pix = '<img src="'.$OUTPUT->image_url('enabled', 'local_vmoodle').'" />';
         $vmoodlestate = '<a href="'.$disableurl.'" title="'.get_string('disable').'">'.$pix.'</a>';
     } else {
         $params = array('view' => 'management', 'what' => 'enable', 'id' => $vmoodle->id);
         $enableurl = new moodle_url('/local/vmoodle/view.php', $params);
-        $pix = '<img src="'.$OUTPUT->pix_url('disabled', 'local_vmoodle').'" />';
+        $pix = '<img src="'.$OUTPUT->image_url('disabled', 'local_vmoodle').'" />';
         $vmoodlestate = '<a href="'.$enableurl.'" title="'.get_string('enable').'">'.$pix;
     }
 
@@ -1847,4 +1847,18 @@ function vmoodle_del_subpath(&$vmoodle) {
     } else {
         mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
     }
+}
+
+function vmoodle_load_command($plugin, $commandname) {
+    global $CFG;
+
+    if (!in_array($plugin, array('generic', 'roles', 'plugins', 'courses'))) {
+        throw new Exception("Unsupported or unkown plugin $plugin");
+    }
+
+    $commandclassfile = $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/classes/Command_'.$commandname.'.php';
+    include_once($commandclassfile);
+    $commandclass = 'vmoodleadminset_'.$plugin.'\\Command_'.$commandname;
+    $command = new $commandclass();
+    return $command;
 }

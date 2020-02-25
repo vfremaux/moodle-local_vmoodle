@@ -20,6 +20,10 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
  
+
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Upgrade ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['pluginname'] = 'Mises à jour distribuées';
 $string['upgrade'] = 'Notifications de mise à jour';
 $string['cmdupgradename'] = 'Command name for upgrade';

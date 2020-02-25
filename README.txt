@@ -159,7 +159,7 @@ from the physical config file.
  * is not set. This may e useful in some load balancing or proxied installation. Use the now standard
  * config variable.
  */
-// $CFG-&gt;vmoodle_force_https_proto = true; // Default false.
+// $CFG-&gt;overridetossl = true; // Default false.
 
 /*
  * This allows vmoodle instances to be depoyed on a subdiretory basis of a single domaine, e.g:

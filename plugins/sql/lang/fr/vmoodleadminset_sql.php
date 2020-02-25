@@ -20,6 +20,9 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle SQL ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['invalidfields'] = 'Champs de table non valides';
 $string['invalidhost'] = 'Hôte MNET invalide';
 $string['invalidselect'] = 'Contrainte(s) de sélection d\'enregistrement non valide';

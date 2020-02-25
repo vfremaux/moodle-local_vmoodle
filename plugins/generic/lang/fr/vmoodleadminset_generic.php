@@ -21,6 +21,10 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Generic ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['alllanguages'] = 'Toutes les langues';
 $string['allplugins'] = 'Tous les fichiers';
 $string['cmdconfigvalue'] = 'Synchroniser un réglage global';

@@ -27,7 +27,7 @@ define(['jquery', 'core/log'], function($, log) {
             // File area remote reader ajax binding.
             $('#mform12 select[name="platform"]').bind('change', this.remote_filearealist);
 
-            log.debug("AMD Vmoodle initialisation ");
+            log.debug("AMD Vmoodle initialised ");
         },
 
         switch_panel: function() {

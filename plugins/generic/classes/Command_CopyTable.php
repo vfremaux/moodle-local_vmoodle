@@ -146,7 +146,7 @@ class Command_CopyTable extends Command {
                 return;
             }
 
-            debug_trace('Launching get_table_data on source ');
+            // debug_trace('Launching get_table_data on source ');
             // Creating XMLRPC client to get the remote customisation language pack.
             $rpcclient = new \local_vmoodle\XmlRpc_Client();
             $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_table_data');
@@ -154,7 +154,7 @@ class Command_CopyTable extends Command {
             $rpcclient->add_param($select, 'string'); // filtering select clause.
             $rpcclient->add_param(true, 'string'); // jsonrequired.
 
-            debug_trace($rpcclient->response);
+            // debug_trace($rpcclient->response);
 
             // Checking result.
             if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
@@ -192,7 +192,7 @@ class Command_CopyTable extends Command {
         $rpc_client->add_param($tablecontent, 'string');
         $rpc_client->add_param(true, 'boolean');
 
-        debug_trace("VMOODLE import_table_content : Sending table $table content as\n$tablecontent");
+        // debug_trace("VMOODLE import_table_content : Sending table $table content as\n$tablecontent");
 
         // Set Config. Sending requests.
         foreach($mnet_hosts as $mnet_host) {

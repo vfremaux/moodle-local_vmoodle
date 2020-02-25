@@ -24,7 +24,6 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');
 }
 
-require_once($CFG->dirroot.'/lib/coursecatlib.php');
 require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/backup/restore_automation.class.php');
 
@@ -71,7 +70,7 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
         $element = trim($element);
         $catid = $DB->get_field('course_categories', 'id', array('name' => $element));
         if ($catid) {
-            $cat = coursecat::get($catid);
+            $cat = \core_course_category::get($catid);
             if (count($pathelms) == 0) {
                 // If last one in the path (the category we wanted to create exists, just update $idnumber
                 if (!is_null($idnumber)) {
@@ -91,7 +90,7 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
                 // This was the last one.
                 $elementdata->idnumber = $idnumber;
             }
-            $cat = coursecat::create($elementdata);
+            $cat = \core_course_category::create($elementdata);
         }
     }
 

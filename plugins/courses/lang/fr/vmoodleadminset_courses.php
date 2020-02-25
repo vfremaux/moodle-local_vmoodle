@@ -21,6 +21,10 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Courses ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['cmdcreatecategory'] = 'Créer une catégorie de cours';
 $string['cmdcreatecategory_desc'] = 'Crée une catégorie de cours par son chemin (noms complets de catégorie)';
 $string['cmdrestorecourse'] = 'Restaurer un cours';
