@@ -285,7 +285,7 @@ $cmd = new Command_Sql(
 );
 $category->add_command($cmd);
 
-$test_rpcommad = new Command_Sql(
+$testrpcommand = new Command_Sql(
     'Command 14',
     'Command with a retrieve platforms command.',
     'UPDATE bb SET value = \'aa\' WHERE name = \'cc\'',
@@ -314,8 +314,8 @@ $cmd = new Command_Sql(
     )
 );
 
-$test_rpcommad->attach_rpc_ommand($cmd);
-$category->add_command($test_rpcommad);
+$testrpcommand->attach_rpc_command($cmd);
+$category->add_command($testrpcommand);
 
 $category->add_command(new Command_Role_Sync());
 $category->add_command(new Command_Role_Capability_Sync());

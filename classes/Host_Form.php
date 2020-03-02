@@ -348,14 +348,16 @@ class Host_Form extends \moodleform {
 
             // Checks 'vdatapath', if not already used.
             if ($this->is_equal_to_another_dataroot($data['vdatapath'])) {
-                if ($data['vtemplate'] !== 0) {
+                if (!empty($data['vtemplate'])) {
                     $errors['vdatapath'] = get_string('badmoodledatapathalreadyused', 'local_vmoodle');
                 }
             }
 
             // Checks 'vdbname', if not already used.
-            if ($this->is_equal_to_another_database_name($data['vdbname']) && $data['vtemplate'] != 0) {
-                $errors['vdbname'] = get_string('baddatabasenamealreadyused', 'local_vmoodle');
+            if ($this->is_equal_to_another_database_name($data['vdbname'])) {
+                if (!empty($data['vtemplate'])) {
+                    $errors['vdbname'] = get_string('baddatabasenamealreadyused', 'local_vmoodle');
+                }
             }
         }
 
@@ -406,7 +408,7 @@ class Host_Form extends \moodleform {
     private function is_equal_to_another_dataroot($vdatapath) {
         global $DB;
 
-        $vmoodles = $DB->get_records('local_vmoodle');
+        $vmoodles = $DB->get_records('local_vmoodle', array('enabled' => 1));
         if (!empty($vmoodles)) {
             // Retrieves all the vmoodles datapaths.
             $vdatapaths = array();

@@ -46,7 +46,7 @@ if ($hasadmin) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');
-        $viewurl = $CFG->wwwroot.'/local/vmoodle/view.php';
+        $viewurl = new moodle_url('/local/vmoodle/view.php');
         $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
 
         $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
@@ -221,6 +221,11 @@ if ($hasadmin) {
         $label = get_string('allowmnetusersasadmin', 'local_vmoodle');
         $desc = get_string('multimnet_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $yesno));
+
+        $key = 'local_vmoodle/web_server_user';
+        $label = get_string('webserveruser', 'local_vmoodle');
+        $desc = '';
+        $settings->add(new admin_setting_configtext($key, $label, $desc, 'www-data', PARAM_TEXT));
 
         $settings->add(new admin_setting_heading('clustering', get_string('clustering', 'local_vmoodle'), ''));
         $ixs = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);

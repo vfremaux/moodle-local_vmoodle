@@ -216,7 +216,7 @@ if ($action == 'doadd') {
             vmoodle_add_subpath($submitteddata);
         }
 
-        // Ensure a database is created.
+        // Ensure a database is created. Let the existing database play if already exists.
         vmoodle_create_database($submitteddata);
 
         if (function_exists('debug_trace')) {

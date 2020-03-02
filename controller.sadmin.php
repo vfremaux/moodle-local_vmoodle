@@ -24,6 +24,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use \local_vmoodle\commands\Command;
+use \local_vmoodle\commands\Command_Parameter;
 use \local_vmoodle\commands\Command_Exception;
 use \local_vmoodle\commands\Command_Category;
 use \local_vmoodle\AdvancedCommand_Form;
@@ -115,10 +116,32 @@ switch ($action) {
             return 0;
         }
 
+        // Make Command_Parameters
+
+        $params = array();
+
+        if (!empty($data->sqlparam1name)) {
+            $param1 = new Command_Parameter($data->sqlparam1name, 'internal', '');
+            $param1->set_value($data->sqlparam1value);
+            $params[] = $param1;
+        }
+
+        if (!empty($data->sqlparam2name)) {
+            $param2 = new Command_Parameter($data->sqlparam2name, 'internal', '');
+            $param2->set_value($data->sqlparam2value);
+            $params[] = $param2;
+        }
+
+        if (!empty($data->sqlparam3name)) {
+            $param3 = new Command_Parameter($data->sqlparam3name, 'internal', '');
+            $param3->set_value($data->sqlparam3value);
+            $params[] = $param3;
+        }
+
         // Creating a Command_MultiSql.
         $command = new Command_MultiSql(get_string('manualcommand', 'local_vmoodle'),
                                         get_string('manualcommand', 'local_vmoodle'),
-                                        $data->sqlcommand);
+                                        $data->sqlcommand, $params);
         // Record the wizard status.
         $SESSION->vmoodle_sa['command'] = serialize($command);
         $SESSION->vmoodle_sa['wizardnow'] = 'targetchoice';

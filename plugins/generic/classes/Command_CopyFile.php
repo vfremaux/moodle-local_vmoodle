@@ -65,7 +65,7 @@ class Command_CopyFile extends Command {
         $select = " contextid = ? AND filename <> '.' ";
         $files = $DB->get_records_select('files', $select, $params);
 
-        $filesmennu = array();
+        $filesmenu = array();
         if (!empty($files)) {
             foreach($files as $fid => $file) {
                 if ($file->filearea == 'preview') {

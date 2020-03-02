@@ -14,4 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Example does not directly store any personal data about any user.';
+
 $string['pluginname'] = 'VMoodle Commands Samples';

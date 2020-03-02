@@ -66,27 +66,29 @@ $category = new Command_Category('generic');
 
 // Set on/off the maintenance mode.
 $param1 = new Command_Parameter(
-    'source1',
+    'mmode',
     'boolean',
     vmoodle_get_string('maintenancemode', 'vmoodleadminset_generic'),
-    null,
+    false,
     null);
+$param1->set_value(false);
 
 $param2 = new Command_Parameter(
-    'source2',
+    'mmessage',
     'ltext',
     vmoodle_get_string('maintenancemessage', 'vmoodleadminset_generic'),
-    null,
+    '',
     null);
+$param2->set_value('');
 
-$sql = 'UPDATE {config} SET value = [[?source1]] WHERE name = \'maintenance_enabled\' '.";\n";
-$sql .= ' UPDATE {config} SET value = [[?source2]] WHERE name = \'maintenance_message\'';
+$sql = 'UPDATE {config} SET value = [[?mmode]] WHERE name = \'maintenance_enabled\' '.";\n";
+$sql .= ' UPDATE {config} SET value = [[?mmessage]] WHERE name = \'maintenance_message\'';
 
 $cmd = new Command_MultiSql(
     vmoodle_get_string('cmdmaintenance', 'vmoodleadminset_generic'),
     vmoodle_get_string('cmdmaintenance_desc', 'vmoodleadminset_generic'),
     $sql,
-    array($param1,$param2));
+    array($param1, $param2));
 
 $category->add_command($cmd);
 
@@ -148,6 +150,9 @@ $cmd = new Command_CopyFile();
 $category->add_command($cmd);
 
 $cmd = new Command_CopyFileArea();
+$category->add_command($cmd);
+
+$cmd = new Command_CopyTable();
 $category->add_command($cmd);
 
 $cmd = new Command_SyncLangCustomisation();

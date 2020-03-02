@@ -19,6 +19,10 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Courses does not directly store any personal data about any user.';
+
 $string['cmdcreatecategory'] = 'Course Category Creation';
 $string['cmdcreatecategory_desc'] = 'Create a course category given a path';
 $string['cmdrestorecourse'] = 'Course restore';
