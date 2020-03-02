@@ -20,6 +20,9 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset SQL does not directly store any personal data about any user.';
+
 $string['pluginname'] = 'Raw SQL commands';
 $string['insuffisantcapabilities'] = 'Insuffisant capabilites';
 $string['invalidfields'] = 'Invalid table fields';

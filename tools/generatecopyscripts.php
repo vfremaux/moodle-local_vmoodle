@@ -28,6 +28,7 @@ require_once($CFG->dirroot.'/local/vmoodle/tools/lib.php');
 $url = new moodle_url('/local/vmoodle/tools/generatecopyscripts.php');
 $context = context_system::instance();
 $PAGE->set_context($context);
+$config = get_config('local_vmoodle');
 
 require_login();
 require_capability('moodle/site:config', $context);
@@ -59,8 +60,15 @@ $restorebackupdbstr = '';
 $restorebackupdbtransfer = '';
 $dropbackupdbstr = '';
 $sudostr = '';
+$vhostnginxstr = '';
+
+$fs = get_file_storage();
+$contextid = \context_system::instance()->id;
 
 if ($data = $mform->get_data()) {
+
+    $fs->delete_area_files($contextid, 'local_vmoodle', 'migrationscripts', 0);
+
     $vhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
     $vmoodlelocation = 'local';
@@ -75,7 +83,11 @@ if ($data = $mform->get_data()) {
 
     $main->originwwwroot = $CFG->wwwroot;
     $main->currentwwwroot = $CFG->wwwroot;
-    $main->archivewwwroot = change_version($data->fromversion, $data->toversion, $CFG->wwwroot, 'from');
+    $oldsuffix = $data->fromversion;
+    if (!empty($config->oldsuffixversion)) {
+        $oldsuffix = $config->oldsuffixversion;
+    }
+    $main->archivewwwroot = change_version($data->fromversion, $oldsuffix, $CFG->wwwroot, 'from');
     $main->currentwwwrootsed = remove_moodle_version($main->currentwwwroot);
     $main->currentwwwrootsed = str_replace("/", "\\/", $CFG->wwwroot);
     $main->originwwwrootsed = str_replace("/", "\\/", $main->originwwwroot);
@@ -85,9 +97,13 @@ if ($data = $mform->get_data()) {
     $main->newdataroot = str_replace($data->fromversion, $data->toversion, $CFG->dataroot);
     $main->tomoodledatacontainer = dirname($main->newdataroot);
 
-    $main->olddirroot = $CFG->dirroot;
-    $main->newdirroot = str_replace($data->fromversion, $data->toversion, $CFG->dirroot);
-    $main->olddirrootsed = str_replace("/", "\\/", $CFG->dirroot);
+    if (empty($CFG->configdirroot)) {
+        $CFG->configdirroot = $CFG->dirroot;
+    }
+
+    $main->olddirroot = $CFG->configdirroot;
+    $main->newdirroot = str_replace($data->fromversion, $data->toversion, $CFG->configdirroot);
+    $main->olddirrootsed = str_replace("/", "\\/", $CFG->configdirroot);
     $main->newdirrootsed = str_replace("/", "\\/", $main->newdirroot);
     $main->oldmoodledatased = str_replace("/", "\\/", $main->olddataroot);
     $main->newmoodledatased = str_replace("/", "\\/", $main->newdataroot);
@@ -106,7 +122,11 @@ if ($data = $mform->get_data()) {
             // Explicits the next version.
             $hostreps[$vhost->name]->currentwwwroot = change_version($data->fromversion, $data->toversion, $hostreps[$vhost->name]->currentwwwroot, 'to');
             // Revert to explicit archive.
-            $hostreps[$vhost->name]->archivewwwroot = change_version($data->toversion, $data->fromversion, $hostreps[$vhost->name]->currentwwwroot);
+            $oldsuffix = $data->fromversion;
+            if (!empty($config->oldsuffixversion)) {
+                $oldsuffix = $config->oldsuffixversion;
+            }
+            $hostreps[$vhost->name]->archivewwwroot = change_version($data->toversion, $oldsuffix, $hostreps[$vhost->name]->currentwwwroot);
             // Finally locally remove the moodle version marker for production exposed domains.
             // Note that current version may NOT have changed from original in most cases.
             $hostreps[$vhost->name]->currentwwwroot = remove_moodle_version($hostreps[$vhost->name]->currentwwwroot);
@@ -140,6 +160,8 @@ if ($data = $mform->get_data()) {
 
     // Active Vhosts DB copy.
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $backupdbstr .= "\n";
@@ -151,6 +173,10 @@ if ($data = $mform->get_data()) {
             $backupdbtransfer .= '# Backup Data transfer for '.$SITE->fullname."\n";
             $backupdbtransfer .= 'mysqldump '.$hostreps[$vhost->name]->olddbname.' -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' > temp.sql'."\n";
             $backupdbtransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->olddbname.'_bak < temp.sql'."\n";
+
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $backupdbtransfer .=  'echo -e "\r'.$ratio.' %         "'."\n";
+            $i++;
         }
     }
 
@@ -162,12 +188,17 @@ if ($data = $mform->get_data()) {
 
     // Active Vhosts DB copy.
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $dropbackupdbstr .= "\n";
             $dropbackupdbstr .= '# Drop Backup DB for '.$vhost->name."\n";
             $dropbackupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$hostreps[$vhost->name]->olddbname}_bak ;' \n";
 
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $dropbackupdbstr .=  'echo -e "\r'.$ratio.' %         "'."\n";
+            $i++;
         }
     }
 
@@ -183,6 +214,8 @@ if ($data = $mform->get_data()) {
     $restorebackupdbtransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname.' < temp.sql'."\n";
 
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $restorebackupdbstr .= "\n";
@@ -191,11 +224,15 @@ if ($data = $mform->get_data()) {
 
             $restorebackupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$hostreps[$vhost->name]->olddbname};' \n";
             $restorebackupdbstr .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$hostreps[$vhost->name]->olddbname};' \n";
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $restorebackupdbstr .=  'echo -e "\r'.$ratio.' %         "'."\n";
 
             $restorebackupdbtransfer .= "\n";
             $restorebackupdbtransfer .= '# Backup Data transfer for '.$SITE->fullname."\n";
             $restorebackupdbtransfer .= 'mysqldump '.$hostreps[$vhost->name]->olddbname.'_bak -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' > temp.sql'."\n";
             $restorebackupdbtransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->olddbname.' < temp.sql'."\n";
+            $restorebackupdbtransfer .=  'echo -e "\r'.$ratio.' %         "'."\n";
+            $i++;
         }
     }
 
@@ -229,14 +266,18 @@ if ($data = $mform->get_data()) {
 
     // Old DB replacement.
     $datatransfer .= '# Old DB adjustements for '.$SITE->fullname."\n";
-    $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'DROP DATABASE IF EXISTS {$main->olddbname};' \n";
+    $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.    $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
+
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass."' -e 'CREATE DATABASE {$main->olddbname};' \n";
     $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
+    $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$main->olddbname."' -e 'UPDATE {$CFG->prefix}local_vmoodle SET vdbtype='mariadb' WHERE 1;' \n";
 
     // Main host replacements.
 
     // Active Vhosts DB copy.
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $dbstr .= "\n";
@@ -259,6 +300,10 @@ if ($data = $mform->get_data()) {
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'rm temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'rm temp'.$data->toversion.'.sql'."\n";
+
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $datatransfer .=  'echo -e "\r'.$ratio.' %         "'."\n";
+            $i++;
         }
     }
 
@@ -269,13 +314,15 @@ if ($data = $mform->get_data()) {
 
     // Active Vhosts data copy.
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $datarootbasename = basename($hostreps[$vhost->name]->olddataroot);
             $datastr .= "\n";
             $datastr .= '# Data copy for '.$vhost->name."\n";
-            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
-            $datastr .= "sudo -u{$data->webserveruser} mkdir {$hostreps[$vhost->name]->newdataroot}\n";
+            // $datastr .= "sudo -u{$data->webserveruser} rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
+            $datastr .= "sudo -u{$data->webserveruser} mkdir -p {$hostreps[$vhost->name]->newdataroot}\n";
             $datastr .= "sudo -u{$data->webserveruser} rsync -r -o -p -g --del {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
             $datastr .= '# Purge eventual caches of '.$vhost->name."\n";
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/cache\n";
@@ -284,7 +331,10 @@ if ($data = $mform->get_data()) {
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/lock\n";
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/sessions\n";
 
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $datastr .=  'echo -e "\r'.$ratio.' %         "'."\n";
             // Vhost replacements.
+            $i++;
         }
     }
 
@@ -325,8 +375,15 @@ if ($data = $mform->get_data()) {
     $configstr .= 'sed -i \'s/'.$main->olddirrootsed.'/'.$main->newdirrootsed.'/g\' '."{$main->newdirroot}/config.php\n";
     $configstr .= 'sed -i \'s/'.$main->oldmoodledatased.'/'.$main->newmoodledatased.'/g\' '."{$main->newdirroot}/config.php\n";
     $configstr .= 'sed -i \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' '."{$main->newdirroot}/config.php\n";
+    if ($data->fromversion <= 31 && $data->toversion >= 34) {
+        $configstr .= 'sed -i \'s/mysqli/mariadb/g\' '."{$main->newdirroot}/config.php\n";
+    }
+    $configstr .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' '."{$main->olddirroot}/config.php\n";
 
     $configstr .= 'sed -i \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
+    if ($data->fromversion <= 31 && $data->toversion >= 34) {
+        $configstr .= 'sed -i \'s/mysqli/mariadb/g\' '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
+    }
 
     // Main host upgrade.
     $preupgradestr = '# Pre upgrade for '.$SITE->fullname."\n";
@@ -345,11 +402,15 @@ if ($data = $mform->get_data()) {
 
     // Active Vhosts upgrades.
     if ($vhosts) {
+        $i = 1;
+        $count = count($vhosts);
         foreach ($vhosts as $vhost) {
 
             $upgradestr .= "\n";
             $upgradestr .= '# Full upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
             $upgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/upgrade.php --host={$hostreps[$vhost->name]->currentwwwroot} --non-interactive --allow-unstable\n";
+            $ratio = sprintf("%.2f", $i/$count * 100);
+            $upgradestr .=  'echo -e "\r'.$ratio.' %         "'."\n";
 
             $preupgradestr .= "\n";
             $preupgradestr .= '# Pre upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
@@ -357,6 +418,7 @@ if ($data = $mform->get_data()) {
             if ($data->toversion >= 35) {
                 $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_collation.php --collation=utf8mb4_general_ci --host={$hostreps[$vhost->name]->currentwwwroot}\n";
             }
+            $preupgradestr .=  'echo -e "\r'.$ratio.' %         "'."\n";
 
             $postupgradestr .= "\n";
             $postupgradestr .= '# Post upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
@@ -367,9 +429,53 @@ if ($data = $mform->get_data()) {
             if (is_dir($CFG->dirroot.'/blocks/vmoodle')) {
                 $postupgradestr .= "wget {$hostreps[$vhost->name]->archivewwwroot}/admin/cron.php?forcerenew=1\n";
             }
-
+            $postupgradestr .=  'echo -e "\r'.$ratio.' %         "'."\n";
+            $i++;
         }
     }
+
+    // Compute the nginx vhost file.
+    $vhostnginxstr = implode('', file($CFG->dirroot.'/local/vmoodle/tools/templates/config-nginx.tpl'));
+    $archivevhostnginxstr = implode('' , file($CFG->dirroot.'/local/vmoodle/tools/templates/config-nginx.tpl'));
+    $newphpversion = '5.6';
+    if ($data->toversion >= 35) {
+        $newphpversion = '7.2';
+    }
+    if ($data->toversion >= 37) {
+        $newphpversion = '7.3';
+    }
+
+    $oldphpversion = '5.6';
+    if ($data->fromversion >= 35) {
+        $oldphpversion = '7.2';
+    }
+    if ($data->fromversion >= 37) {
+        $oldphpversion = '7.3';
+    }
+
+    $servernamesstr = '';
+    $archiveservernamesstr = '';
+    if ($vhosts) {
+        foreach ($vhosts as $vhost) {
+            $servernames[] = "    server_name {$hostreps[$vhost->name]->currentwwwroot};";
+            $archiveservernames[] = "    server_name {$hostreps[$vhost->name]->archivewwwroot};";
+        }
+        $servernamesstr = implode("\n", $servernames);
+        $archiveservernamesstr = implode("\n", $archiveservernames);
+    }
+
+    $vhostnginxstr = str_replace('{$subservernames}', $servernamesstr, $vhostnginxstr);
+    $vhostnginxstr = str_replace('{$mainhostwwwroot}', $main->currentwwwroot, $vhostnginxstr);
+    $vhostnginxstr = str_replace('{$mainhost}', str_replace('_', '-', $main->newdbname), $vhostnginxstr);
+    $vhostnginxstr = str_replace('{$dirroot}', $main->newdirroot, $vhostnginxstr);
+    $vhostnginxstr = str_replace('{$phpversion}', $newphpversion, $vhostnginxstr);
+
+    $archivevhostnginxstr = str_replace('{$subservernames}', $archiveservernamesstr, $archivevhostnginxstr);
+    $archivevhostnginxstr = str_replace('{$mainhostwwwroot}', $main->archivewwwroot, $archivevhostnginxstr);
+    $archivevhostnginxstr = str_replace('{$mainhost}', str_replace('_', '-', $main->olddbname), $archivevhostnginxstr);
+    $archivevhostnginxstr = str_replace('{$dirroot}', $main->olddirroot, $archivevhostnginxstr);
+    $archivevhostnginxstr = str_replace('{$phpversion}', $oldphpversion, $archivevhostnginxstr);
+
 }
 
 echo $OUTPUT->header();
@@ -378,26 +484,90 @@ echo $OUTPUT->heading(get_string('copyscripts', 'local_vmoodle'), 2);
 
 $blockid = 1;
 
+$fileareaurl = new moodle_url('/local/vmoodle/tools/filearea.php');
+echo '<div class="generatedscripts-filearea-access"><a href="'.$fileareaurl.'">'.get_string('retrievefiles', 'local_vmoodle').'</a></div>';
+
 if ($backupdbstr) {
     echo $OUTPUT->heading(get_string('backupdbcopyscript', 'local_vmoodle'), 3);
     echo $OUTPUT->heading(get_string('makebackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
+
     $blockid++;
+
     echo $OUTPUT->box('<pre>'.$backupdbstr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step1-create-backup-databases.sh';
+
+    $fs->create_file_from_string($filedesc, $backupdbstr);
+
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$backupdbtransfer.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step2-copy-backup-databases.sh';
+
+    $fs->create_file_from_string($filedesc, $backupdbtransfer);
+
     echo $OUTPUT->heading(get_string('restorebackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$restorebackupdbstr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'tool-recreate-old-bases.sh';
+
+    $fs->create_file_from_string($filedesc, $restorebackupdbstr);
+
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$restorebackupdbtransfer.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'tool-recover-old-bases.sh';
+
+    $fs->create_file_from_string($filedesc, $restorebackupdbtransfer);
+
     echo $OUTPUT->heading(get_string('dropbackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$dropbackupdbstr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'tool-cleanout-old-backups.sh';
+
+    $fs->create_file_from_string($filedesc, $dropbackupdbstr);
 }
 
 if ($dbstr) {
@@ -405,9 +575,32 @@ if ($dbstr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$dbstr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step3-create-new-databases.sh';
+
+    $fs->create_file_from_string($filedesc, $dbstr);
+
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$datatransfer.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step4-copy-transform-databases.sh';
+
+    $fs->create_file_from_string($filedesc, $datatransfer);
 }
 
 if ($datastr) {
@@ -415,6 +608,17 @@ if ($datastr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$datastr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step5-copy-moodledatas.sh';
+
+    $fs->create_file_from_string($filedesc, $datastr);
 }
 
 if ($configstr) {
@@ -422,6 +626,17 @@ if ($configstr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$configstr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step6-adjust-config-files.sh';
+
+    $fs->create_file_from_string($filedesc, $configstr);
 }
 
 if ($preupgradestr) {
@@ -429,6 +644,17 @@ if ($preupgradestr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$preupgradestr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step7-pre-upgrade-ops.sh';
+
+    $fs->create_file_from_string($filedesc, $preupgradestr);
 }
 
 if ($upgradestr) {
@@ -436,6 +662,17 @@ if ($upgradestr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$upgradestr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step8-upgrade.sh';
+
+    $fs->create_file_from_string($filedesc, $upgradestr);
 }
 
 if ($postupgradestr) {
@@ -443,6 +680,17 @@ if ($postupgradestr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$postupgradestr.'</pre>');
+
+    // Make a file
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'step9-post-upgrade.sh';
+
+    $fs->create_file_from_string($filedesc, $postupgradestr);
 }
 
 if ($cronstr) {
@@ -457,6 +705,29 @@ if ($sudostr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$sudostr.'</pre>');
+}
+
+if ($vhostnginxstr) {
+    // Make a nginx config files
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'new-nginx-config.vhost';
+
+    $fs->create_file_from_string($filedesc, $vhostnginxstr);
+
+    $filedesc = new StdClass;
+    $filedesc->contextid = $contextid;
+    $filedesc->component = 'local_vmoodle';
+    $filedesc->filearea = 'migrationscripts';
+    $filedesc->itemid = 0;
+    $filedesc->filepath = '/';
+    $filedesc->filename = 'old-nginx-config.vhost';
+
+    $fs->create_file_from_string($filedesc, $archivevhostnginxstr);
 }
 
 $mform->display();

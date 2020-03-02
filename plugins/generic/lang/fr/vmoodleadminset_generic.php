@@ -21,13 +21,19 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Generic ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['alllanguages'] = 'Toutes les langues';
 $string['allplugins'] = 'Tous les fichiers';
 $string['cmdconfigvalue'] = 'Synchroniser un réglage global';
 $string['cmdconfigvalue_desc'] = 'Distribue une valeur de configuration global de moodle';
 $string['cmdcopyfile'] = 'Copier un fichier système';
 $string['cmdcopyfile_desc'] = 'Transfère un fichier associé à une zone de fichier de niveau site';
-$string['cmdlangsynccustomisation'] = 'Echange de fichiers de personnalisation de langue"';
+$string['cmdcopytable'] = 'Copier une table';
+$string['cmdcopytable_desc'] = 'Transfère et recoipie le contenu d\'une table de base de données. Convient aux tables qui conteinnent des définitions "système"';
+$string['cmdlangsynccustomisation'] = 'Echange de fichiers de personnalisation de langue';
 $string['cmdlangsynccustomisation_desc'] = 'Echange et Synchronise des fichiers locaux de personnalisation de langue.';
 $string['cmdmaintenance'] = 'Mode maintenance';
 $string['cmdmaintenance_desc'] = 'Active désactive le mode maintenance sur un ensemble d\'instances';
@@ -49,10 +55,15 @@ $string['file_desc'] = 'Fichier système';
 $string['filearea_desc'] = 'Zone de fichiers système';
 $string['langparamdesc'] = 'Langue(s)';
 $string['localfile'] = 'Fichier local';
+$string['localtable'] = 'Table locale';
+$string['tableparam_desc'] = 'Table Moodle ';
+$string['selectparam_desc'] = 'Filtre de données (clause WHERE sur la table)';
 $string['maintenancemessage'] = 'Message de maintenance';
 $string['maintenancemode'] = 'Mode de maintenance';
 $string['mnetadmin_name'] = 'Service de méta-administration';
 $string['platformparamfile_desc'] = 'Plate-forme source du fichier à diffuser';
+$string['platformparamtable_desc'] = 'Plate-forme source de la table à diffuser';
+$string['platformparamselect_desc'] = 'Clause de filtrage (WHERE)';
 $string['platformparamfilearea_desc'] = 'Instance origine des fichiers à copier';
 $string['platformparamsyncdesc'] = 'Plate-forme source pour les modifications du paquetage de langues';
 $string['pluginname'] = 'Fonctions génériques';

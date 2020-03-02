@@ -14,4 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+// Privacy.
+$string['privacy:metadata'] = 'Le composant VMoodle Example ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['pluginname'] = 'Echantillons de commandes VMoodle';

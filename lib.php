@@ -1848,3 +1848,17 @@ function vmoodle_del_subpath(&$vmoodle) {
         mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
     }
 }
+
+function vmoodle_load_command($plugin, $commandname) {
+    global $CFG;
+
+    if (!in_array($plugin, array('generic', 'roles', 'plugins', 'courses'))) {
+        throw new Exception("Unsupported or unkown plugin $plugin");
+    }
+
+    $commandclassfile = $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/classes/Command_'.$commandname.'.php';
+    include_once($commandclassfile);
+    $commandclass = 'vmoodleadminset_'.$plugin.'\\Command_'.$commandname;
+    $command = new $commandclass();
+    return $command;
+}
