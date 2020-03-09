@@ -46,7 +46,7 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 // Add needed javascript here (because addonload() is needed before).
 
-$PAGE->requires->js('/local/vmoodle/js/host_form.js');
+$PAGE->requires->js_call_amd('local_vmoodle/hostform', 'init');
 
 $config = get_config('local_vmoodle');
 
