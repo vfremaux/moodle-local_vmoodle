@@ -40,6 +40,8 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
+use \local_vmoodle\restore_automation;
+
 /**
  * Creates (or updates a category having some absolute path in the categroy tree.
  * If exists, may change idnumber if provided and different of the actual one.
@@ -137,14 +139,14 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
 
     if (!file_exists($location)) {
         $response->status = RPC_FAILURE_DATA;
-        $response->error = get_string('errornolocation', 'vmoodleadminset_courses');
-        $response->errors[] = get_string('errornolocation', 'vmoodleadminset_courses');
+        $response->error = get_string('errornolocation', 'vmoodleadminset_courses')."\n ".$location;
+        $response->errors[] = get_string('errornolocation', 'vmoodleadminset_courses')."\n ".$location;
     }
 
     if (!preg_match('/\.mbz/', $location)) {
         $response->status = RPC_FAILURE_DATA;
-        $response->error = get_string('errornotamoodlearchive', 'vmoodleadminset_courses');
-        $response->errors[] = get_string('errornotamoodlearchive', 'vmoodleadminset_courses');
+        $response->error = get_string('errornotamoodlearchive', 'vmoodleadminset_courses')."\n ".$location;
+        $response->errors[] = get_string('errornotamoodlearchive', 'vmoodleadminset_courses')."\n ".$location;
     }
 
     if (!$coursecat = $DB->get_record('course_categories', array('idnumber' => $catidnumber))) {
@@ -183,7 +185,7 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
 
     debug_trace('RPC Bind : Executing restore');
     try {
-        $newcourseid =  restore_automation::run_automated_restore(null, $location, $coursecat->id);
+        $newcourseid = restore_automation::run_automated_restore(null, $location, $coursecat->id);
 
         if (!$newcourseid) {
             $response->status = RPC_FAILURE_RUN;
