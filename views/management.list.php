@@ -42,17 +42,11 @@ if (!empty($controllerresult)) {
 }
 
 $page = optional_param('vpage', 0, PARAM_INT);
-$namefilter = optional_param('namefilter', '', PARAM_TEXT);
 $perpage = 35;
 
 // Retrieves all virtuals hosts.
 $totalcount = $DB->count_records('local_vmoodle', array());
-if (empty($namefilter)) {
-    $vmoodles = $DB->get_records('local_vmoodle', null, 'name,enabled', '*', $page * $perpage, $perpage);
-} else {
-    $select = ' name LIKE ? OR shortname LIKE ? OR vhostname LIKE ? ';
-    $vmoodles = $DB->get_records_select('local_vmoodle', $select, ['%'.$namefilter.'%', '%'.$namefilter.'%', '%'.$namefilter.'%'], 'name,enabled', '*', $page * $perpage, $perpage);
-}
+$vmoodles = $DB->get_records('local_vmoodle', null, 'name,enabled', '*', $page * $perpage, $perpage);
 
 // If one or more virtual hosts exists.
 if ($vmoodles) {
@@ -137,7 +131,6 @@ if ($vmoodles) {
 
     echo '<center>';
     echo '<p>'.$OUTPUT->paging_bar($totalcount, $page, $perpage, $returnurl, 'vpage').'</p>';
-    echo $renderer->namefilter($namefilter);
     echo '<form name="vmoodlesform" action="'.$returnurl.'" method="POST" >';
     echo html_writer::table($table);
 
@@ -154,7 +147,6 @@ if ($vmoodles) {
     echo '</form>';
     echo '</center>';
 } else {
-    echo $renderer->namefilter($namefilter);
     echo $OUTPUT->notification(get_string('novmoodles', 'local_vmoodle'));
 }
 

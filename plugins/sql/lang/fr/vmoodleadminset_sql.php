@@ -21,7 +21,7 @@
  */
 
 // Privacy.
-$string['privacy:metadata'] = 'Le composant VMoodle SQL ne détient directement aucune donnée relative aux utilisateurs.';
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle SQL ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['invalidfields'] = 'Champs de table non valides';
 $string['invalidhost'] = 'Hôte MNET invalide';

@@ -130,7 +130,8 @@ class Host_Form extends \moodleform {
 
         // Button for testing database connection.
         $label = get_string('testconnection', 'local_vmoodle');
-        $mform->addElement('button', 'testconnection', $label);
+        $attrs = 'onclick="opencnxpopup(\''.$CFG->wwwroot.'\'); return true;"';
+        $mform->addElement('button', 'testconnection', $label, $attrs);
 
         // Database name.
         $mform->addElement('text', 'vdbname', get_string('vdbname', 'local_vmoodle'));
@@ -160,7 +161,7 @@ class Host_Form extends \moodleform {
 
         // Button for testing datapath.
         $elmname = get_string('testdatapath', 'local_vmoodle');
-        $mform->addElement('button', 'testdatapath', $elmname);
+        $mform->addElement('button', 'testdatapath', $elmname, 'onclick="opendatapathpopup(\''.$CFG->wwwroot.'\'); return true;"');
 
         // MultiMNET.
         $subnetworks = array('-1' => get_string('nomnet', 'local_vmoodle'));
@@ -188,7 +189,7 @@ class Host_Form extends \moodleform {
         }
         $subnetworks[$newsubnetwork] = $newsubnetwork.' ('.get_string('mnetnew', 'local_vmoodle').')';
         $label = get_string('multimnet', 'local_vmoodle');
-        $attrs = ['data-subnet' => $newsubnetwork];
+        $attrs = 'onchange="switcherServices(\''.$newsubnetwork.'\'); return true;"';
         $mform->addElement('select', 'mnet', $label, $subnetworks, $attrs);
         $mform->addHelpButton('mnet', 'mnet', 'local_vmoodle');
         $mform->setType('mnet', PARAM_TEXT);
@@ -400,7 +401,7 @@ class Host_Form extends \moodleform {
     }
 
     /**
-     * Checks if the new virtual host's datapath is already used by an enabled vmoodle.
+     * Checks if the new virtual host's datapath is already used.
      * @param  string $vdatapath The datapath to check.
      * @return bool If TRUE, the chosen datapath is already used, else FALSE.
      */

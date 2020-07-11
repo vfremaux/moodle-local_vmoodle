@@ -30,7 +30,19 @@ if (get_config('local_vmoodle', 'late_install')) {
     xmldb_local_vmoodle_late_install();
 }
 
-if ($hassiteconfig) {
+$systemcontext = context_system::instance();
+$hasadmin = false;
+if (is_dir($CFG->dirroot.'/local/adminsettings')) {
+    // This is AdminSettings driven administration.
+    if (has_capability('local/adminsettings:nobody', $systemcontext)) {
+        $hasadmin = true;
+    }
+} else {
+    // This is Moodle Standard.
+    $hasadmin = has_capability('moodle/site:config', $systemcontext);
+}
+
+if ($hasadmin) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');

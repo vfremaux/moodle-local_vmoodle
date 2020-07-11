@@ -21,7 +21,7 @@
  */
 
 // Privacy.
-$string['privacy:metadata'] = 'Le composant VMoodle Plugins ne détient directement aucune donnée relative aux utilisateurs.';
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Plugins ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['backtocomparison'] = 'Retour à la comparaison des plugins';
 $string['cmdcomparedesc'] = 'Compare l\'équipement en plugins.';

@@ -22,7 +22,7 @@
  
 
 // Privacy.
-$string['privacy:metadata'] = 'Le composant VMoodle Upgrade ne détient directement aucune donnée relative aux utilisateurs.';
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Upgrade ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['pluginname'] = 'Mises à jour distribuées';
 $string['upgrade'] = 'Notifications de mise à jour';
