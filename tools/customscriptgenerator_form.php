@@ -32,6 +32,7 @@ class CustomScriptGenerator_Form extends moodleform {
 
         $mform->addelement('header', 'templatehead', get_string('templatehead', 'local_vmoodle'));
         $mform->setExpanded('templatehead');
+        $mform->addHelpButton('templatehead', 'generatescripts', 'local_vmoodle');
 
         $label = get_string('templatetext', 'local_vmoodle');
         $mform->addElement('textarea', 'templatetext', $label, array('cols' => 80, 'rows' => 15));

@@ -44,14 +44,16 @@ use \local_vmoodle\commands\Cli_Command_Parameter;
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array('fromhost'         => true,
-          'tohosts'          => true,
-          'tohostsmatch'     => true,
+          'tohosts'          => false,
+          'tohostsmatch'     => false,
+          'exclude'          => false,
           'command'          => true,
           'attributes'       => true,
           'help'             => true),
     array('f' => 'fromhost',
           't' => 'tohosts',
           'm' => 'tohostsmatch',
+          'e' => 'exclude',
           'c' => 'command',
           'a' => 'attributes',
           'h' => 'help')
@@ -70,6 +72,7 @@ Options:
 -f, --fromhost        The source host
 -t, --tohosts         Remote hosts to transfer to. List of comma separated root urls.
 -m, --tohostsmatch    an alternative regexp pattern for finding the destination hosts.
+-e, --exclude         a regexp pattern to exclude specifically some hosts in the candidate set.
 -c, --command         the command name, as pluginname/command
 -a, --attributes      the attributes as a QUERYSTRING formatted string.
 -h, --help            Print out this help
@@ -92,7 +95,9 @@ if (empty($options['fromhost'])) {
 
 if (empty($options['tohosts'])) {
     // At the moment, the master host cannot be target
-    die("No dest hosts\n");
+    if (empty($options['tohostsmatch'])) {
+        die("No dest hosts\n");
+    }
 }
 
 if (empty($options['command'])) {
@@ -102,35 +107,100 @@ if (empty($options['command'])) {
 // Set an admin user.
 $USER = get_admin();
 
-list($plugin, $commandname) = explode('/', $options['command']);
+if ($options['command'] != 'showtargets') {
+    list($plugin, $commandname) = explode('/', $options['command']);
 
-try {
-    $commandobj = vmoodle_load_command($plugin, $commandname);
-} catch (Exception $e) {
-    die("Command failed to load\n");
+    try {
+        $commandobj = vmoodle_load_command($plugin, $commandname);
+    } catch (Exception $e) {
+        die("Command failed to load\n");
+    }
+
+    if (!empty($options['attributes'])) {
+        $pairs = explode('&', $options['attributes']);
+        foreach ($pairs as $pair) {
+            list($key, $value) = explode('=', $pair);
+            if (empty($key)) {
+                die("Empty attribute key error\n");
+            }
+            $param = new Cli_Command_Parameter($key, urldecode($value));
+            $commandobj->set_parameter($key, $param);
+        }
+    }
+    $param = new Cli_Command_Parameter('platform', $options['fromhost']);
+    $commandobj->set_parameter('platform', $param);
 }
 
-if (!empty($options['attributes'])) {
-    $pairs = explode('&', $options['attributes']);
-    foreach ($pairs as $pair) {
-        list($key, $value) = explode('=', $pair);
-        if (empty($key)) {
-            die("Empty attribute key error\n");
+$tohostsmap = array();
+if (!empty($options['tohosts'])) {
+    // Hostlist wins.
+    if ($options['tohosts'] != '*') {
+        mtrace("Using explicit HostList...\n");
+        $tohostsarr = explode(',', $options['tohosts']);
+        foreach ($tohostsarr as $vhost) {
+            if ($vhost != $options['fromhost']) {
+                // Avoid on ourself.
+                $tohostsmap[$vhost] = $vhost; // Make an assoc array of hosts as required by commands.
+            }
         }
-        $param = new Cli_Command_Parameter($key, urldecode($value));
-        $commandobj->set_parameter($key, $param);
+    } else {
+        mtrace("Using all Hosts...\n");
+        $vhosts = $DB->get_records('local_vmoodle', array());
+        if (!empty($vhosts)) {
+            foreach ($vhosts as $vhost) {
+                if ($vhost != $options['fromhost']) {
+                    // Avoid on ourself.
+                    if (preg_match('/'.$options['tohostsmatch'].'/', $vhost->vhostname)) {
+                        $tohostsmap[$vhost->vhostname] = $vhost->name;
+                    }
+                }
+            }
+        }
+    }
+} else if (!empty($options['tohostsmatch'])) {
+    mtrace("Using Regexp Pattern {$options['tohostsmatch']}...\n");
+    $vhosts = $DB->get_records('local_vmoodle', array());
+
+    // Shift to Regexp PCRE
+    $options['tohostsmatch'] = str_replace('*', '.*', $options['tohostsmatch']);
+    $options['tohostsmatch'] = str_replace('?', '.', $options['tohostsmatch']);
+
+    foreach ($vhosts as $vhost) {
+        if ($vhost->vhostname != $options['fromhost']) {
+            // Avoid on ourself.
+            if (preg_match('/'.$options['tohostsmatch'].'/', $vhost->vhostname)) {
+                $tohostsmap[$vhost->vhostname] = $vhost->name;
+            }
+        }
     }
 }
-$param = new Cli_Command_Parameter('platform', $options['fromhost']);
-$commandobj->set_parameter('platform', $param);
 
-$tohostsarr = explode(',', $options['tohosts']);
-$tohostsmap = array_combine($tohostsarr, $tohostsarr); // Make an assoc array of hosts as required by commands.
+// Post processes tohostsmap for exclusions.
+if (!empty($options['exclude'])) {
+    $excludepatterns = explode(',', $options['exclude']);
+    foreach ($excludepatterns as $expattern) {
+        $expattern = str_replace('*', '.*', $expattern);
+        $expattern = str_replace('?', '.', $expattern);
+        foreach (array_keys($tohostsmap) as $vhostname) {
+            if (preg_match('/'.$expattern.'/', $vhostname)) {
+                // Exclude some matching hosts.
+                unset($tohostsmap[$vhostname]);
+            }
+        }
+    }
+}
+
+if ($options['command'] == 'showtargets') {
+    echo "VMoodle command targets:\n";
+    print_r($tohostsmap);
+    echo "Done.\n";
+    die;
+}
 
 mtrace("About to run command...\n");
 $commandobj->run($tohostsmap);
 
-foreach ($tohostsarr as $targethost) {
+foreach (array_keys($tohostsmap) as $targethost) {
     $result = $commandobj->get_result($targethost);
     print_object($result);
 }

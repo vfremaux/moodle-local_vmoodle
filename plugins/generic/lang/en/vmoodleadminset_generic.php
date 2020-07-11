@@ -29,6 +29,7 @@ $string['cmdconfigvalue'] = 'Global Config Value';
 $string['cmdconfigvalue_desc'] = 'Distributing a configuration value in moodle global configuration';
 $string['cmdcopyfile'] = 'Copy a system file';
 $string['cmdcopyfile_desc'] = 'Sends and copies a site level stored file';
+$string['skipfiles_desc'] = 'Skip n files';
 $string['cmdcopyfilearea'] = 'Copy a system full filearea';
 $string['cmdcopyfilearea_desc'] = 'Sends and copies a site level stored filearea content, with all file and path structure.';
 $string['cmdcopytable'] = 'Copy a moodle DB table';

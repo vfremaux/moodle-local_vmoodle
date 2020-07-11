@@ -76,7 +76,9 @@ function dataexchange_rpc_fetch_config($user, $configkey, $module = '', $jsonreq
 function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false, $jsonrequired = true) {
     global $CFG, $USER;
 
-    debug_trace('RPC '.json_encode($user));
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC '.json_encode($user));
+    }
 
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
@@ -97,14 +99,18 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
     $filename = $CFG->dataroot.'/maintenance.html';
 
     if ($message != 'OFF') {
-        debug_trace('RPC : Setting maintenance on');
+        if (function_exists('debug_trace')) {
+            debug_trace('RPC : Setting maintenance on');
+        }
         $file = fopen($filename, 'w');
         fwrite($file, stripslashes($message));
         fclose($file);
         set_config('maintenance_enabled', 1);
         set_config('maintenance_message', $message);
     } else {
-        debug_trace('RPC : Setting maintenance off');
+        if (function_exists('debug_trace')) {
+            debug_trace('RPC : Setting maintenance off');
+        }
         unlink($filename);
         set_config('maintenance_enabled', 0);
         set_config('maintenance_message', null);
@@ -112,8 +118,6 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
 
     // Be really sure we drop caches.
     cache_helper::invalidate_by_definition('core', 'config');
-
-    debug_trace('RPC Bind : Sending response');
 
     // Returns response (success or failure).
     return json_encode($response);
@@ -129,8 +133,6 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
 function mnetadmin_rpc_set_config($user, $key, $value, $plugin, $jsonrequired = true) {
     global $CFG, $USER;
 
-    debug_trace('RPC '.json_encode($user));
-
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
             return $auth_response;
@@ -145,8 +147,6 @@ function mnetadmin_rpc_set_config($user, $key, $value, $plugin, $jsonrequired = 
 
     set_config($key, $value, $plugin);
 
-    debug_trace('RPC Bind : Sending response');
-
     // Returns response (success or failure).
     return json_encode($response);
 }
@@ -160,8 +160,6 @@ function mnetadmin_rpc_set_config($user, $key, $value, $plugin, $jsonrequired = 
  */
 function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequired = true) {
     global $CFG, $USER;
-
-    debug_trace('RPC '.json_encode($user));
 
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
@@ -185,8 +183,6 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
         set_config($key, $value, $plugin);
     }
 
-    debug_trace('RPC Bind : Sending response');
-
     // Returns response (success or failure).
     return json_encode($response);
 }
@@ -197,8 +193,6 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
  */
 function mnetadmin_rpc_purge_caches($user, $jsonrequired = true) {
     global $CFG, $USER;
-
-    debug_trace('RPC '.json_encode($user));
 
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
@@ -213,7 +207,6 @@ function mnetadmin_rpc_purge_caches($user, $jsonrequired = true) {
 
     purge_all_caches();
 
-    debug_trace('RPC Bind : Sending response');
     // Returns response (success or failure).
     return json_encode($response);
 }
@@ -245,7 +238,6 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "Empty plugin set";
-        debug_trace("Empty pluginset");
         if ($jsonrequired) {
             return json_encode($response);
         }

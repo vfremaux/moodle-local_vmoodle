@@ -254,6 +254,8 @@ $string['operation'] = 'Operation';
 $string['organization'] = 'Organization';
 $string['organizationmail'] = 'foo@organization';
 $string['organizationunit'] = 'Unit';
+$string['oldversionsuffix'] = 'Old versions suffix (migration script generators)';
+$string['oldversionsuffix_desc'] = 'Alternate old version url suffix. Usually a -moodleXX is generated for old moodle versions. Use moodle-[suffix] if defined.';
 $string['parameterallowedvaluesnotgiven'] = 'The allowed values of enum {$a} aren\'t given.';
 $string['parameteremptydescription'] = 'The description of parameter {$a} is empty.';
 $string['parameteremptyname'] = 'The parameter\'s name is empty.';
@@ -293,6 +295,7 @@ $string['responseerror'] = 'Error in RPC response from source {$a}';
 $string['sendfailure'] = 'RPC Send to source {$a} error';
 $string['restorebackup'] = 'Restore backup';
 $string['restart'] = 'Restart process';
+$string['retrievefiles'] = 'Retrieve generated files';
 $string['retrieveplatforms'] = 'Retrieve platforms';
 $string['rpcstatus'] = 'Undefined status.';
 $string['rpcstatus100'] = 'Test command.';
@@ -326,6 +329,7 @@ $string['snapshothost'] = 'Snapshot the configuration';
 $string['snapshotmaster'] = 'Snapshot master Moodle';
 $string['sqlcommand'] = 'SQL command';
 $string['sqlfile'] = 'SQL file';
+$string['sqlparam'] = 'SQL Parameter';
 $string['startingstate'] = 'Starting state';
 $string['status'] = 'Status';
 $string['subscribe'] = 'Subscribe';
@@ -579,6 +583,20 @@ subject of a sudo rule like : www-data  ALL = (user) NOPASSWD:/usr/bin/ln. This 
 $string['systempath_desc'] = 'Absolute system path to executable';
 
 $string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
+
+$string['generatescripts'] = 'Script generator';
+$string['generatescripts_help'] = '
+Generates all type of scripts scanning the vmoodle register and instanciating the script text for each vmoodle.
+
+Injection placeholders:
+
+- %WWWROOT%
+- %DBHOST%
+- %DBNAME%
+- %DBUSER%
+- %DBPASS%
+- %DATAROOT%
+';
 
 $string['plugindist_desc'] = '
 <p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s

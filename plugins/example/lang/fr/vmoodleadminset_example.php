@@ -15,6 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 // Privacy.
-$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Example ne dÃ©tient directement aucune donnÃ©e relative aux utilisateurs.';
+$string['privacy:metadata'] = 'Le composant VMoodle Example ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['pluginname'] = 'Echantillons de commandes VMoodle';

@@ -21,7 +21,7 @@
  */
 
 // Privacy.
-$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Roles ne détient directement aucune donnée relative aux utilisateurs.';
+$string['privacy:metadata'] = 'Le composant VMoodle Roles ne détient directement aucune donnée relative aux utilisateurs.';
 
 $string['backtocomparison'] = 'Retour à la comparaison du rôle';
 $string['capabilityparamsyncdesc'] =  'La capacité à synchroniser';

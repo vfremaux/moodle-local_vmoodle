@@ -88,8 +88,12 @@ class Command_CopyFileArea extends Command {
         $label = get_string('filearea_desc', 'vmoodleadminset_generic');
         $fileareaparam = new Command_Parameter('fileareaid', 'enum', $label, null, $fileareasmenu);
 
+        // Creating platform parameter. This is the source platform.
+        $label = get_string('skipfiles_desc', 'vmoodleadminset_generic');
+        $skipfilesparam = new Command_Parameter('skipfiles', 'text', $label, null);
+
         // Creating Command.
-        parent::__construct($cmdname, $cmddesc, array($platformparam, $fileareaparam), $rpcommand);
+        parent::__construct($cmdname, $cmddesc, array($platformparam, $fileareaparam, $skipfilesparam), $rpcommand);
     }
 
     /**
@@ -125,7 +129,7 @@ class Command_CopyFileArea extends Command {
 
         debug_trace('Running CopyFileArea : get hosts');
 
-        // Creating peers for all targe hosts.
+        // Creating peers for all target hosts.
         $mnethosts = array();
         foreach ($hosts as $host => $name) {
 
@@ -148,6 +152,9 @@ class Command_CopyFileArea extends Command {
 
         // Resolve file source and get a remote file if remote.
         $source = $this->get_parameter('platform')->get_value();
+
+        // Skip n files if required
+        $skipfiles = 0 + $this->get_parameter('skipfiles')->get_value(true);
 
         if (empty($source) || $source === 0) {
             $fs = get_file_storage();
@@ -234,15 +241,27 @@ class Command_CopyFileArea extends Command {
             debug_trace('Running CopyFileArea : Copying '.$filestosend.' files from source '.$source);
             mtrace('Running CopyFileArea : Copying '.$filestosend.' files from source '.$source);
             $i = 0;
+            $j = 0;
             foreach ($filedescs as $fileordesc) {
+
                 if (defined('CLI_SCRIPT')) {
-                    echo '.';
+                    if ($j < $skipfiles) {
+                        echo '-';
+                    } else {
+                        echo '.';
+                    }
                     $i++;
+                    $j++;
                     if ($i > 99) {
                         $i = 0;
-                        echo "\n";
+                        echo " $j \n";
                     }
                 }
+
+                if ($j < $skipfiles) {
+                    continue;
+                }
+
                 if ($source) {
                     // Creating XMLRPC client to get the remote customisation language pack.
                     $rpcclient = new \local_vmoodle\XmlRpc_Client();
