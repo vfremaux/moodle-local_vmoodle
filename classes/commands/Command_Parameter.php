@@ -77,8 +77,11 @@ class Command_Parameter {
      * @param $choices array Parameter's choices (in case of enum).
      */
     public function __construct($name, $type, $description, $default = null, $choices = null, $attrs = null) {
+        global $SESSION;
+
         // Checking parameter's name.
         if (empty($name)) {
+            unset($SESSION->vmoodle_sa['command']);
             throw new Command_Exception('parameteremptyname');
         } else {
             $this->name = $name;
@@ -86,6 +89,7 @@ class Command_Parameter {
 
         // Checking parameter's type.
         if (!in_array($type, explode('|', self::PARAMETER_TYPES_ALLOWED))) {
+            unset($SESSION->vmoodle_sa['command']);
             throw new Command_Exception('parameterforbiddentype', $this->name);
         } else {
             $this->type = $type;
@@ -93,6 +97,7 @@ class Command_Parameter {
 
         // Checking parameter's description.
         if ($this->type != 'internal' && empty($description)) {
+            unset($SESSION->vmoodle_sa['command']);
             throw new Command_Exception('parameteremptydescription', $this->name);
         } else {
             $this->description = $description;
@@ -100,6 +105,7 @@ class Command_Parameter {
 
         // Checking parameter's values.
         if (($this->type == 'enum' || $this->type == 'menum' || $this->type == 'mhenum') && !is_array($choices)) {
+            unset($SESSION->vmoodle_sa['command']);
             throw new Command_Exception('parameterallowedvaluesnotgiven', $this->name);
         } else {
             $this->choices = $choices;
@@ -109,6 +115,7 @@ class Command_Parameter {
 
         // Checking parameter's default value.
         if (!is_null($default) && $this->type == 'enum' && (!is_string($default) || !array_key_exists($default, $this->choices))) {
+            unset($SESSION->vmoodle_sa['command']);
             throw new Command_Exception('parameterwrongdefaultvalue', $this->name);
         } else {
             $this->default = $default;
@@ -168,9 +175,14 @@ class Command_Parameter {
      * @return mixed Parameter's value.
      * @throws Command_Exception
      */
-    public function get_value() {
+    public function get_value($readonly = false) {
+        global $SESSION;
+
         if (is_null($this->value)) {
-            throw new Command_Exception('parametervaluenotdefined', $this->name);
+            if (!$readonly) {
+                unset($SESSION->vmoodle_sa['command']);
+                throw new Command_Exception('parametervaluenotdefined', $this->name);
+            }
         }
         return $this->value;
     }

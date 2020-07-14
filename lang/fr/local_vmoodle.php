@@ -95,6 +95,7 @@ $string['cliusingtemplate'] = 'Construction sur le modèle {$a}';
 $string['closewindow'] = 'Fermer cette fenêtre';
 $string['checkmnetkeys'] = 'Vérifier les clefs MNET';
 $string['commanddescription'] = 'Description';
+$string['commandcli'] = 'Syntaxe CLI';
 $string['commandemptydescription'] = 'La description de la commande est vide.';
 $string['commandemptyname'] = 'Le nom de la commande est vide.';
 $string['commandformnotlinked'] = 'Aucune commande liée au formulaire.';
@@ -229,6 +230,7 @@ $string['name'] = 'Nom';
 $string['newvmoodle'] = 'Nouvelle plate-forme virtuelle';
 $string['newplatformregistered'] = 'Un nouvelle instance de moodle a été enregistrée';
 $string['nextstep'] = 'Continuer';
+$string['noexecutionfor'] = 'L\'opération sur base de données a échoué.<br/>SQL : {$a->sql}<br/>Raison: {$a->error}';
 $string['nomnet'] = 'Pas de réseau Moodle';
 $string['none'] = 'Aucune';
 $string['noplatformchosen'] = 'Aucune plate-forme choisie.';
@@ -246,6 +248,8 @@ $string['operation'] = 'Opération';
 $string['organization'] = 'Organisation';
 $string['organizationmail'] = 'Email';
 $string['organizationunit'] = 'Unité';
+$string['oldversionsuffix'] = 'Suffixe de l\'ancienne version (générateur de scripts de migration)';
+$string['oldversionsuffix_desc'] = 'Suffixe alternatif pour la version antérieure. Habituellement, un suffixe -moodleXX est généré pour les urls des anciennes versions. Le suffixe sera moodle-[suffix] s\'il est non vide.';
 $string['parameterallowedvaluesnotgiven'] = 'Les valeurs autorisées de l\'énumération {$a} ne sont pas données.';
 $string['parameteremptydescription'] = 'La description du paramètre {$a} est vide.';
 $string['parameteremptyname'] = 'Le nom du paramètre est vide.';
@@ -282,8 +286,11 @@ $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
 $string['restart'] = 'Redémarrer la procédure';
+$string['responseerror'] = 'Erreur dans la réponse RPC de {$a}';
+$string['sendfailure'] = 'Erreur d\'invocation RPC sur {$a}';
 $string['restorebackup'] = 'Restaurer des bases de sauvegarde';
 $string['retrieveplatforms'] = 'Récupérer les plates-formes';
+$string['retrievefiles'] = 'Récupérer les fichiers';
 $string['rpcstatus100'] = 'Commande en mode test.';
 $string['rpcstatus200'] = 'Commande exécutée avec succès.';
 $string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée. Erreur 404.';
@@ -315,6 +322,7 @@ $string['snapshothost'] = 'Capturer la configuration';
 $string['snapshotmaster'] = 'Capturer la plate-forme principale';
 $string['sqlcommand'] = 'Commande SQL';
 $string['sqlfile'] = 'Fichier SQL';
+$string['sqlparam'] = 'Paramètre SQL';
 $string['startingstate'] = 'Etat initial :';
 $string['status'] = 'Etat';
 $string['subscribe'] = 'Souscription';
@@ -582,6 +590,20 @@ sous-répertoires du domaine principal.
 
 $string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enregistrer les journaux d\'exécution des VCrons. Le motif
 accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
+';
+
+$string['generatescripts'] = 'Générateur de scripts';
+$string['generatescripts_help'] = '
+Generère tout type de script en scannant la base de registre de virtualisation vmoodle et en instanciant le bloc de script pour chaque hôte du registre.
+
+Balises d\'injection :
+
+- %WWWROOT%
+- %DBHOST%
+- %DBNAME%
+- %DBUSER%
+- %DBPASS%
+- %DATAROOT%
 ';
 
 $string['plugindist_desc'] = '

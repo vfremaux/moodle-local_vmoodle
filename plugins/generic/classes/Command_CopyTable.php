@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Describes meta-administration plugin's command for Maintenance setup.
+ * Describes meta-administration plugin's command for copying a full table from a source to a set of targets.
  * 
  * @package local_vmoodle
  * @category local
@@ -29,7 +29,7 @@ use \local_vmoodle\commands\Command_Parameter;
 use \StdClass;
 use \context_system;
 
-class Command_CopyFile extends Command {
+class Command_CopyTable extends Command {
 
     /**
      * If command's result should be returned.
@@ -49,38 +49,38 @@ class Command_CopyFile extends Command {
         global $vmcommandconstants, $DB;
 
         // Getting command description.
-        $cmdname = vmoodle_get_string('cmdcopyfile', 'vmoodleadminset_generic');
-        $cmddesc = vmoodle_get_string('cmdcopyfile_desc', 'vmoodleadminset_generic');
+        $cmdname = vmoodle_get_string('cmdcopytable', 'vmoodleadminset_generic');
+        $cmddesc = vmoodle_get_string('cmdcopytable_desc', 'vmoodleadminset_generic');
 
         $platforms = get_available_platforms();
 
-        $platforms = array_merge(array('0' => get_string('localfile', 'vmoodleadminset_generic')), $platforms);
+        $platforms = array_merge(array('0' => get_string('localtable', 'vmoodleadminset_generic')), $platforms);
 
         // Creating platform parameter.
-        $label = get_string('platformparamfile_desc', 'vmoodleadminset_generic');
+        $label = get_string('platformparamtable_desc', 'vmoodleadminset_generic');
         $platformparam = new Command_Parameter('platform', 'enum', $label, null, $platforms);
 
         // Get all system level files that are true files.
         $params = array('contextid' => context_system::instance()->id);
-        $select = " contextid = ? AND filename <> '.' ";
-        $files = $DB->get_records_select('files', $select, $params, 'component,filearea,itemid,filepath,filename');
+        $tables = $DB->get_tables(); // Come without prefix. Note that only tables installed in main moodle can be moved.
 
-        $filesmenu = array();
-        if (!empty($files)) {
-            foreach($files as $fid => $file) {
-                if ($file->filearea == 'preview') {
-                    continue;
-                }
-                $filesmenu[$fid] = "[{$file->component}@{$file->filearea}§{$file->itemid} {$file->filepath}{$file->filename}";
+        $tablesmenu = array();
+        if (!empty($tables)) {
+            foreach($tables as $table) {
+                $tablesmenu[$table] = $table;
             }
         }
 
         // Creating platform parameter. This is the source platform.
-        $label = get_string('file_desc', 'vmoodleadminset_generic');
-        $fileparam = new Command_Parameter('fileid', 'enum', $label, null, $filesmenu);
+        $label = get_string('tableparam_desc', 'vmoodleadminset_generic');
+        $tableparam = new Command_Parameter('table', 'enum', $label, null, $tablesmenu);
+
+        // Creating platform parameter. This is the source platform.
+        $label = get_string('selectparam_desc', 'vmoodleadminset_generic');
+        $selectparam = new Command_Parameter('select', 'text', $label, null);
 
         // Creating Command.
-        parent::__construct($cmdname, $cmddesc, array($platformparam, $fileparam), $rpcommand);
+        parent::__construct($cmdname, $cmddesc, array($platformparam, $tableparam, $selectparam), $rpcommand);
     }
 
     /**
@@ -101,7 +101,7 @@ class Command_CopyFile extends Command {
 
         // Set Config. Checking capabilities.
         if (!has_capability('local/vmoodle:execute', \context_system::instance())) {
-            throw new Command_CopyFile_Exception('insuffisantcapabilities');
+            throw new Command_CopyTable_Exception('insuffisantcapabilities');
         }
 
         // Set Config. Initializing responses.
@@ -121,18 +121,18 @@ class Command_CopyFile extends Command {
         // Set Config. Getting command.
         $command = $this->is_returned();
 
-        // Get file descriptor from locally defined files.
-        // We cannot transfer or copy a file the master does not knwow about.
-        $fileid = $this->get_parameter('fileid')->get_value();
-        $fs = get_file_storage();
-        $file = $fs->get_file_by_id($fileid);
+        // Get table name.
+        $table = $this->get_parameter('table')->get_value();
 
-        // Resolve file source and get a remote file if remote.
+        // Get the select clause
+        $select = $this->get_parameter('select')->get_value();
+
+        // Resolve table source and get a remote table content if remote.
         $source = $this->get_parameter('platform')->get_value();
 
         if ($source) {
             // Creating peer to read plugins configuration from the designated peer.
-            $mnethost = new mnet_peer();
+            $mnethost = new \mnet_peer();
             if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
                 $response = (object) array(
                     'status' => MNET_FAILURE,
@@ -146,15 +146,15 @@ class Command_CopyFile extends Command {
                 return;
             }
 
-            debug_trace('Launching get_local_langs on source ');
+            // debug_trace('Launching get_table_data on source ');
             // Creating XMLRPC client to get the remote customisation language pack.
             $rpcclient = new \local_vmoodle\XmlRpc_Client();
-            $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_remote_file');
-            $rpcclient->add_param($file->get_component(), 'string'); // plugins.
-            $rpcclient->add_param($file->get_filearea(), 'string'); // languages.
-            $rpcclient->add_param($file->get_itemid(), 'string'); // languages.
-            $rpcclient->add_param($file->get_filepath().$file->get_filename(), 'string'); // languages.
-            $rpcclient->add_param(true, 'string'); // Not jsonrequired.
+            $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_table_data');
+            $rpcclient->add_param($table, 'string'); // tablename.
+            $rpcclient->add_param($select, 'string'); // filtering select clause.
+            $rpcclient->add_param(true, 'string'); // jsonrequired.
+
+            // debug_trace($rpcclient->response);
 
             // Checking result.
             if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
@@ -178,23 +178,21 @@ class Command_CopyFile extends Command {
                 return;
             } else {
                 // We have a remote file.
-                $filecontent = $response->filecontent;
+                $tablecontent = $response->tablecontent;
             }
         } else {
-            // If file is local use the local content of the file.
-            $filecontent = $file->get_content();
+            // If data is local use the local content of the given table.
+            $tablecontent = json_encode($DB->get_records($table));
         }
 
         // Creating XMLRPC client.
         $rpc_client = new \local_vmoodle\XmlRpc_Client();
-        $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_import_file');
-        $rpc_client->add_param($file->get_component(), 'string');
-        $rpc_client->add_param($file->get_filearea(), 'string');
-        $rpc_client->add_param($file->get_itemid(), 'string');
-        $rpc_client->add_param($file->get_filepath(), 'string');
-        $rpc_client->add_param($file->get_filename(), 'string');
-        $rpc_client->add_param(base64_encode($filecontent), 'string');
+        $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_import_table_content');
+        $rpc_client->add_param($table, 'string');
+        $rpc_client->add_param($tablecontent, 'string');
         $rpc_client->add_param(true, 'boolean');
+
+        // debug_trace("VMOODLE import_table_content : Sending table $table content as\n$tablecontent");
 
         // Set Config. Sending requests.
         foreach($mnet_hosts as $mnet_host) {

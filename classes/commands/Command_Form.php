@@ -115,6 +115,9 @@ class Command_Form extends \moodleform {
         // Adding command's description.
         $mform->addElement('static', 'description', get_string('commanddescription', 'local_vmoodle'), $command->get_description());
 
+        // Adding command's description for CLI invocation.
+        $mform->addElement('static', 'descriptioncli', get_string('commandcli', 'local_vmoodle'), '<div id="command-cli">'.$command->get_cli_form().'</div>');
+
         // Adding elements depending on command's parameter.
         if (!is_null($parameters)) {
             foreach ($parameters as $parameter) {
@@ -131,9 +134,16 @@ class Command_Form extends \moodleform {
                     case 'enum': {
                         $label = $parameter->get_name();
                         $desc = $parameter->get_description();
-                        $options = $parameter->get_choices();
                         $attrs = $parameter->get_attributes();
-                        $mform->addElement('select', $label, $desc, $options, $attrs);
+                        if ($this->mode != self::MODE_DISPLAY_COMMAND) {
+                            $options = $parameter->get_choices();
+                            $mform->addElement('select', $label, $desc, $options, $attrs);
+                        } else {
+                            // No need to build a select here.
+                            $attrs['size'] = 120;
+                            $mform->addElement('text', $label, $desc, $attrs);
+                            $mform->setType($label, PARAM_TEXT);
+                        }
                         break;
                     }
 

@@ -865,8 +865,13 @@ function vmoodle_create_database($vmoodledata) {
 
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-    if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
+    try {
+        $DB->execute($sql);
+    } catch (Exception $ex) {
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
         die;
     }
 }
@@ -1068,7 +1073,10 @@ function vmoodle_destroy($vmoodledata) {
     try {
         $DB->execute($sql);
     } catch (Exception $e) {
-        echo $OUTPUT->notification('noexecutionfor', 'local_vmoodle', $sql);
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
     }
 
     // Destroy moodledata.
@@ -1224,7 +1232,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     $pgm = str_replace("/", DIRECTORY_SEPARATOR, $pgm);
 
     if (!is_executable($phppgm)) {
-        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', $phppgm);
+        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', '', $phppgm);
         return false;
     }
 
@@ -1847,4 +1855,18 @@ function vmoodle_del_subpath(&$vmoodle) {
     } else {
         mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
     }
+}
+
+function vmoodle_load_command($plugin, $commandname) {
+    global $CFG;
+
+    if (!in_array($plugin, array('generic', 'roles', 'plugins', 'courses'))) {
+        throw new Exception("Unsupported or unkown plugin $plugin");
+    }
+
+    $commandclassfile = $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/classes/Command_'.$commandname.'.php';
+    include_once($commandclassfile);
+    $commandclass = 'vmoodleadminset_'.$plugin.'\\Command_'.$commandname;
+    $command = new $commandclass();
+    return $command;
 }

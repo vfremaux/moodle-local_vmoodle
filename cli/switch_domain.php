@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script creates config.php file and prepares database.
+ * This script operate local operations when changing a local running domain.
  *
  * @package    local_vmoodle
  * @category local
@@ -50,11 +50,13 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array('host'              => false,
+          'domain'          => false,
           'help'              => false,
           'debug'             => false,
           ),
     array('h' => 'help',
           'H' => 'host',
+          'D' => 'domain',
           'd' => 'debug',
           )
 );
@@ -66,16 +68,17 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help = "
-Command line Moodle MNET install.
+Command line for switching domain name.
 Please note you must execute this script with the same uid as apache!
 
 Options:
-    -H, --host                Switches to this host virtual configuration before processing.
+    --host                Switches to this host virtual configuration before processing.
+    -D, --domain          the target domain.
     -h, --help            Print out this help.
     -d, --debug           Turn on debug mode.
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/start_mnet.php --host=http://my.virtual.moodle.org
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/switch_domain.php --host=http://my.virtual.moodle.org
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -98,26 +101,35 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 echo 'Config check : playing for '.$CFG->wwwroot."\n";
 
+require($CFG->dirroot.'/mnet/environment.php');
+
 if (!empty($options['debug'])) {
     $CFG->debug = E_ALL;
 }
 
-require_once($CFG->dirroot.'/mnet/environment.php');
-require_once($CFG->dirroot.'/mnet/lib.php');
+if (empty($options['domain'])) {
+    die("Domain  option is mandatory.\n");
+}
 
-echo "Starting MNET environment\n";
+$sql = "
+    UPDATE
+        {mnet_host}
+    SET
+        wwwroot = REPLACE(wwwroot, '".$olddomain."', '".$newdomain."')
+";
 
-global $MNET;
+$DB->execute($sql);
 
-set_config('mnet_dispatcher_mode', 'strict');
+$sql = "
+    UPDATE
+        {local_vmoodle}
+    SET
+        vhostname = REPLACE(vhostname, '".$olddomain."', '".$newdomain."')
+";
+
+$DB->execute($sql);
+// Renew local ssh key.
 $MNET = new mnet_environment();
-$MNET->init();
-// Ensure we have a fresh key ourself.
 $MNET->replace_keys();
 
-cache_helper::invalidate_by_definition('core', 'config');
-
-echo "MNET initialised with public key:\n----------------------\n";
-echo $MNET->get_public_key();
-echo "\n----------------------------------------------\n\n";
 exit(0);
