@@ -15,16 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description of Generic plugin library.
- *
- * @package     local_vmoodle
- * @category    local
- * @author      Valery Fremaux (valery.fremaux@gmail.com)
+ * Exception about Command_CopyFile.
+ * 
+ * @package local_vmoodle
+ * @category local
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
+namespace vmoodleadminset_generic;
+Use \Exception;
 
-$plugin = new StdClass();
-$plugin->version = 2019072501;
-$plugin->requires = 2016051900;
-$plugin->component = 'vmoodleadminset_generic';
-$plugin->release = '3.5.0 (build 2019072501)';
-$plugin->dependencies = array('local_vmoodle' => 2017090100);
+class Command_CopyTable_Exception extends Exception {
+
+    /**
+     * Constructor with localized message.
+     * @param string $identifier The key identifier for the localized string.
+     * @param mixed $a An object, string or number that can be used (optional).
+    */
+    public function __construct($identifier, $a=null) {
+        parent::__construct(vmoodle_get_string($identifier, 'vmoodleadminset_generic', $a));
+    }
+}

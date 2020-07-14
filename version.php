@@ -33,6 +33,6 @@ $plugin->maturity = MATURITY_RC;
 $plugin->release = '3.5.0 (Build 2019012700)';
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.5.0003';
+$plugin->codeincrement = '3.5.0005';
 $plugin->privacy = 'dualrelease';
 $plugin->devprotectedfiles = array('vconfig.php');

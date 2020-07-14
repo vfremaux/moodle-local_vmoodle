@@ -16,7 +16,7 @@
 
 /**
  * Describes set_plugins enable state command.
- * for all 2 states plugins.
+ * for all 3 states plugins. (filters)
  * 
  * @package local_vmoodle
  * @category local
@@ -35,7 +35,7 @@ require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/rpclib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/plugins/lib.php');
 
-class Command_Plugin_Set_State extends Command {
+class Command_Plugin_Set_Filter_State extends Command {
 
     /**
      * The plugintype
@@ -60,8 +60,8 @@ class Command_Plugin_Set_State extends Command {
         global $DB, $STANDARD_PLUGIN_TYPES;
 
         // Getting command description.
-        $cmdname = get_string('cmdpluginsetupname', 'vmoodleadminset_plugins');
-        $cmddesc = get_string('cmdpluginsetupdesc', 'vmoodleadminset_plugins');
+        $cmdname = get_string('cmd3statepluginsetupname', 'vmoodleadminset_plugins');
+        $cmddesc = get_string('cmd3statepluginsetupdesc', 'vmoodleadminset_plugins');
 
         $pm = \core_plugin_manager::instance();
 
@@ -69,7 +69,7 @@ class Command_Plugin_Set_State extends Command {
 
         $pluginlist = array();
         foreach ($allplugins as $type => $plugins) {
-            if ($type == 'filter') {
+            if ($type != 'filter') {
                 continue;
             }
             foreach ($plugins as $p) {
@@ -86,6 +86,7 @@ class Command_Plugin_Set_State extends Command {
 
         $states = array();
         $states['enable'] = vmoodle_get_string('enable', 'vmoodleadminset_plugins');
+        $states['available'] = vmoodle_get_string('available', 'vmoodleadminset_plugins');
         $states['disable'] = vmoodle_get_string('disable', 'vmoodleadminset_plugins');
         $label = get_string('pluginstateparamdesc', 'vmoodleadminset_plugins');
         $stateparam = new Command_Parameter('state', 'enum', $label, null, $states);
@@ -115,11 +116,7 @@ class Command_Plugin_Set_State extends Command {
         // Getting the state.
         $state = $this->get_parameter('state')->get_value();
 
-        $stateval = 0;
-        if ($state == 'enable') {
-            $stateval = 1;
-        }
-        $plugininfos = array($plugin => $stateval);
+        $plugininfos = array($plugin => $state);
 
         // Creating XMLRPC client to change remote configuration.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();

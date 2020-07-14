@@ -35,6 +35,32 @@ class Command_Exception extends \Exception {
      * @param $a mixed An object, string or number that can be used (optional).
      */
     public function __construct($identifier, $a = null) {
-        parent::__construct(get_string($identifier, 'local_vmoodle', $a));
+        global $CFG;
+
+        $message = '';
+        if ($CFG->debug == DEBUG_DEVELOPER) {
+            $message = '<br/>';
+            $trace = debug_backtrace();
+            // array_shift($trace);
+            if ($tracepoint = array_shift($trace)) {
+                $f = @$tracepoint['file'];
+                $l = @$tracepoint['line'];
+                $func = @$tracepoint['function'];
+                $message .= "\nAt : {$f} line {$l} calling to {$func}";
+            } else {
+                $message .= "\nAt : <unknown file> line <unknown line> calling to <unknown function> ";
+            }
+
+            $i = 1;
+            while ($tracepoint = array_shift($trace)) {
+                $f = @$tracepoint['file'];
+                $l = @$tracepoint['line'];
+                $func = @$tracepoint['function'];
+                $message .= "<br/>\n$i) : {$f} line {$l} calling to {$func}";
+                $i++;
+            }
+        }
+
+        parent::__construct(get_string($identifier, 'local_vmoodle', $a).$message);
     }
 }

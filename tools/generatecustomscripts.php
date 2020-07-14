@@ -61,7 +61,7 @@ if ($data = $mform->get_data()) {
                     $script .= '# Process script for '.$vh->name."\n#------------\n";
                     break;
                 case 'sql':
-                    $script .= '// Process script for '.$vh->name."\n//\n";
+                    $script .= '/* Process script for '.$vh->name." */\n";
                     break;
                 default:
                     $script .= '<!-- Process script for '.$vh->name." -->\n";
