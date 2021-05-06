@@ -161,7 +161,7 @@ if (!empty($options['collation'])) {
     if ($dbcollation->value !== $collation || $dbcharset->value !== $charset) {
         // Try to convert the DB.
         echo "Converting database to '$collation' for $CFG->wwwroot:\n";
-        $sql = "ALTER DATABASE $CFG->dbname DEFAULT CHARACTER SET $charset DEFAULT COLLATE = $collation";
+        $sql = "ALTER DATABASE `{$CFG->dbname}` DEFAULT CHARACTER SET $charset DEFAULT COLLATE = $collation";
         try {
             $DB->change_database_structure($sql);
         } catch (exception $e) {

@@ -62,11 +62,13 @@ foreach ($pluginlibs as $lib) {
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-function local_vmoodle_supports_feature($feature) {
+function local_vmoodle_supports_feature($feature = null, $getsupported = false) {
     global $CFG;
     static $supports;
 
-    $config = get_config('local_vmoodle');
+    if (!during_initial_install()) {
+        $config = get_config('local_vmoodle');
+    }
 
     if (!isset($supports)) {
         $supports = array(
@@ -77,6 +79,10 @@ function local_vmoodle_supports_feature($feature) {
             ),
         );
         $prefer = array();
+    }
+
+    if ($getsupported) {
+        return $supports;
     }
 
     // Check existance of the 'pro' dir in plugin.
@@ -91,6 +97,11 @@ function local_vmoodle_supports_feature($feature) {
         }
     } else {
         $versionkey = 'community';
+    }
+
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
     }
 
     list($feat, $subfeat) = explode('/', $feature);
@@ -865,8 +876,13 @@ function vmoodle_create_database($vmoodledata) {
 
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-    if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
+    try {
+        $DB->execute($sql);
+    } catch (Exception $ex) {
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
         die;
     }
 }
@@ -1068,7 +1084,10 @@ function vmoodle_destroy($vmoodledata) {
     try {
         $DB->execute($sql);
     } catch (Exception $e) {
-        echo $OUTPUT->notification('noexecutionfor', 'local_vmoodle', $sql);
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
     }
 
     // Destroy moodledata.
@@ -1224,7 +1243,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     $pgm = str_replace("/", DIRECTORY_SEPARATOR, $pgm);
 
     if (!is_executable($phppgm)) {
-        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', $phppgm);
+        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', '', $phppgm);
         return false;
     }
 

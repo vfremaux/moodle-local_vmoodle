@@ -20,6 +20,9 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'Le composant d\'administration de Moodle Test ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['pluginname'] = 'Tests unitaires administration réseau VMoodle';
 $string['test'] = 'Catégorie test';
 $string['value1'] = 'Valeur 1';

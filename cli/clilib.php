@@ -375,3 +375,42 @@ function vmoodle_check_headers($headers, $optional, $optionaldefaults, $required
 
     return true;
 }
+
+function vmoodle_print_cli_progress($i, $total) {
+
+    $scale = 50;
+
+    $done = round($i / $total * $scale);
+    $donepercent = round($i / $total * 100);
+    if ($done > 0) {
+        echo str_repeat('#', $done).str_repeat('-', $scale - $done)." ($donepercent %)\r";
+    } else {
+        echo ''.str_repeat('-', $scale - $done)." ($donepercent %)\r";
+    }
+}
+
+function vmoodle_send_cli_progress($numhosts, $i, $operation = '') {
+    global $CFG, $SITE;
+    static $progressmem = 0;
+
+    $sitename = (is_object($SITE)) ? $SITE->shortname : 'unknown';
+
+    $progress = floor($i / $numhosts * 10) * 10;
+    if ($progressmem != $progress) {
+        $progressmem = $progress;
+        vmoodle_cli_notify_admin("[$sitename] {$operation} : progress : $progress %");
+    }
+}
+
+function vmoodle_cli_notify_admin($msg) {
+    global $SITE, $DB, $CFG;
+    static $admin;
+
+    if (!isset($admin)) {
+        // Here we are sure to get one.
+        $admin = $DB->get_record('user', ['username' => 'admin', 'menthostid' => $CFG->mnet_localhost_id]);
+    }
+
+    // Do NOT use email_to_user here because of possible nomailever restriction
+    mail($admin->email, $msg, '');
+}
