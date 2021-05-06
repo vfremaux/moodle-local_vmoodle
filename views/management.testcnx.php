@@ -26,14 +26,15 @@ require('../../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 // Retrieve parameters for database connection test.
-$database = new stdClass;
-$database->vdbtype = required_param('vdbtype', PARAM_TEXT);
-$database->vdbhost = required_param('vdbhost', PARAM_TEXT);
-$database->vdblogin = required_param('vdblogin', PARAM_TEXT);
-$database->vdbpass = required_param('vdbpass', PARAM_TEXT);
+$vmaster = new StdClass();
+$vmaster->vdbtype = $CFG->vmasterdbtype;
+$vmaster->vdbhost = $CFG->vmasterdbhost;
+$vmaster->vdblogin = $CFG->vmasterdblogin;
+$vmaster->vdbpass = $CFG->vmasterdbpass;
+$vmaster->vdbname = $CFG->vmasterdbname;
 
 // Works, but need to improve the style...
-if (vmoodle_make_connection($database, false)) {
+if (vmoodle_make_connection($vmaster, false)) {
     echo(get_string('connectionok', 'local_vmoodle'));
 } else {
     echo(get_string('badconnection', 'local_vmoodle'));

@@ -33,6 +33,7 @@ $publishes = array(
         'filename'   => 'rpclib.php',
         'methods'    => array(
             'mnetadmin_rpc_upgrade',
+            'mnetadmin_rpc_checkstatus',
         ),
     ),
 );
@@ -40,5 +41,6 @@ $publishes = array(
 $subscribes = array(
     'mnetadmin' => array(
         'mnetadmin_rpc_upgrade' => 'local/vmoodle/plugins/upgrade/rpclib.php/mnetadmin_rpc_upgrade',
+        'mnetadmin_rpc_checkstatus' => 'local/vmoodle/plugins/upgrade/rpclib.php/mnetadmin_rpc_checkstatus',
     ),
 );

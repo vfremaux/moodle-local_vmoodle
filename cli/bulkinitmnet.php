@@ -76,7 +76,7 @@ if (!empty($options['debug'])) {
 // Start updating.
 // Linux only implementation.
 
-echo "Starting binding mnet....\n";
+echo "Starting binding mnet {$options['withmaster']}....\n";
 
 if (!empty($options['withmaster'])) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} --bindhost=subs";
@@ -98,7 +98,7 @@ if (!empty($options['withmaster'])) {
     }
 }
 
-if (@$options['withmaster'] == 'mainonly') {
+if (!empty($options['withmaster']) && ($options['withmaster'] === 'mainonly')) {
     die("Requested only for master moodle. Exiting\n");
 }
 

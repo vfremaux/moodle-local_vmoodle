@@ -70,7 +70,7 @@ Command line Moodle MNET install.
 Please note you must execute this script with the same uid as apache!
 
 Options:
-    --host                Switches to this host virtual configuration before processing.
+    -H, --host                Switches to this host virtual configuration before processing.
     -h, --help            Print out this help.
     -d, --debug           Turn on debug mode.
 

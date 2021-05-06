@@ -69,6 +69,7 @@ $string['platformparamsyncdesc'] = 'Plate-forme source pour les modifications du
 $string['pluginname'] = 'Fonctions génériques';
 $string['pluginparamdesc'] = 'Composant(s)';
 $string['plugin'] = 'Plugin';
+$string['skipfiles_desc'] = 'Sauter n fichiers';
 
 $string['mnetadmin_description'] = 'En publiant ce service, vous autorisez la plate-forme à être administrée par la
 méta-administration du site maître.<br/><br/>En vous abonnant à ce service, vous pouvez administrer les autres plates-formes
