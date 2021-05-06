@@ -23,6 +23,7 @@
 // Privacy.
 $string['privacy:metadata'] = 'Le composant VMoodle Plugins ne détient directement aucune donnée relative aux utilisateurs.';
 
+$string['available'] = 'Disponible';
 $string['backtocomparison'] = 'Retour à la comparaison des plugins';
 $string['cmdcomparedesc'] = 'Compare l\'équipement en plugins.';
 $string['cmdcomparename'] = 'Comparaison de plugins';
@@ -31,6 +32,8 @@ $string['cmdsyncname'] = 'Synchronisation des plugins';
 $string['compareplugins'] = 'Comparaison des plugins "{$a}"';
 $string['cmdpluginsetupdesc'] = 'Active ou désactive les plugins à distance.';
 $string['cmdpluginsetupname'] = 'Activation de plugin';
+$string['cmd3statepluginsetupname'] = 'Activation 3 états de plugin';
+$string['cmd3statepluginsetupdesc'] = 'Active ou désactive ou rend disponible les plugins à distance.';
 $string['errorblockdoesnotexit'] = 'Le bloc {$a} n\'est pas trouvé.';
 $string['mnetadmin_name'] = 'Meta Administration Réseau Moodle';
 $string['mnetadmin_description'] = 'Fournit des fonctions pour exécuter des commandes d\'administration à travers le réseau MNET, telles que la synchronisation de configuration ou de roles.';

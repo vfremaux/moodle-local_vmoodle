@@ -25,6 +25,8 @@ namespace local_vmoodle;
 
 defined('MOODLE_INTERNAL') || die();
 
+use StdClass;
+
 require_once($CFG->libdir.'/formslib.php');
 
 class Host_Form extends \moodleform {
@@ -241,13 +243,14 @@ class Host_Form extends \moodleform {
         $errors = parent::validation($data, null);
 
         // Checks database connection again, after Javascript test.
-        $database = new \stdClass;
-        $database->vdbtype = $data['vdbtype'];
-        $database->vdbhost = $data['vdbhost'];
-        $database->vdblogin = $data['vdblogin'];
-        $database->vdbpass = $data['vdbpass'];
+        $vmaster = new StdClass();
+        $vmaster->vdbtype = $CFG->vmasterdbtype;
+        $vmaster->vdbhost = $CFG->vmasterdbhost;
+        $vmaster->vdblogin = $CFG->vmasterdblogin;
+        $vmaster->vdbpass = $CFG->vmasterdbpass;
+        $vmaster->vdbname = $CFG->vmasterdbname;
 
-        if (!vmoodle_make_connection($database, false)) {
+        if (!vmoodle_make_connection($vmaster, false)) {
             $errors['vdbhost'] = get_string('badconnection', 'local_vmoodle');
             $errors['vdblogin'] = get_string('badconnection', 'local_vmoodle');
             $errors['vdbpass'] = get_string('badconnection', 'local_vmoodle');

@@ -25,8 +25,11 @@ $string['privacy:metadata'] = 'The local plugin vmoodeladminset Upgrade does not
 
 $string['pluginname'] = 'Distributed code upgrade';
 $string['upgrade'] = 'Code upgrade notifications';
+$string['upgradetodo'] = 'Upgrade pending from {$a->old} to {$a->new} with plugins';
 $string['cmdupgradename'] = 'Command name for upgrade';
 $string['cmdupgradedesc'] = 'Command name for upgrade';
+$string['cmdcheckname'] = 'Command name for upgrade checks';
+$string['cmdcheckdesc'] = 'Command name for upgrade checks';
 $string['maxrequestupgradedesc'] = 'Max request bounces for upgrade';
 $string['maxcurlexecution'] = 'Max url bounce reached';
 $string['isuptodate'] = 'Remote is up to date';

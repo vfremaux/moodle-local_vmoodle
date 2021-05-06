@@ -95,9 +95,6 @@ class Command_RestoreCourse extends Command {
             null,
             array('size' => 80));
 
-        $yesnooptions = array(0 => get_string('no'),
-                              1 => get_string('yes'));
-
         // Set visbility at creation time.
         $parameters[] = new Command_Parameter(
             'visible',
@@ -105,6 +102,21 @@ class Command_RestoreCourse extends Command {
             vmoodle_get_string('coursevisible', 'vmoodleadminset_courses'),
             1,
             null);
+
+        $choices = [
+            '' => get_string('noenrol', 'vmoodleadminset_courses'),
+            'managers' => get_string('managersonly', 'vmoodleadminset_courses'),
+            'siteadmins' => get_string('siteadmins', 'vmoodleadminset_courses'),
+            'adminsandmanagers' => get_string('bothadminsandmanagers', 'vmoodleadminset_courses'),
+        ];
+
+        // Enrol all admins.
+        $parameters[] = new Command_Parameter(
+            'enroladmins',
+            'enum',
+            vmoodle_get_string('enroladmins', 'vmoodleadminset_courses'),
+            'managers',
+            $choices);
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, null);
@@ -154,6 +166,7 @@ class Command_RestoreCourse extends Command {
         $rpcclient->add_param($this->get_parameter('idnumber')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('catidnumber')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('location')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('enroladmins')->get_value(), 'string');
         $rpcclient->add_param(true, 'boolean'); // Json required.
 
         // Maintenance. Sending requests.

@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Describes a role comparison command.
+ * Describes set_plugins enable state command.
+ * for all 2 states plugins.
  * 
  * @package local_vmoodle
  * @category local
@@ -68,6 +69,9 @@ class Command_Plugin_Set_State extends Command {
 
         $pluginlist = array();
         foreach ($allplugins as $type => $plugins) {
+            if ($type == 'filter') {
+                continue;
+            }
             foreach ($plugins as $p) {
                 if (array_key_exists($type, $STANDARD_PLUGIN_TYPES)) {
                     $pluginlist[$type.'/'.$p->name] = $STANDARD_PLUGIN_TYPES[$type].' : '.$p->displayname;
