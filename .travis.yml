@@ -1,6 +1,6 @@
 language: php
 
-sudo: false
+sudo: true
 
 addons:
   firefox: "47.0.1"
@@ -10,8 +10,7 @@ addons:
       - openjdk-8-jre-headless
 
 services:
-   - mysql
-   - postgresql
+  - mysql
 
 cache:
   directories:
@@ -19,14 +18,15 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.2
+ - 7.3
 
 env:
-  global:
-    - MOODLE_BRANCH=MOODLE_37_STABLE
-  matrix:
-    - DB=mariadb
-    - DB=pgsql
+ global:
+  - MOODLE_BRANCH=MOODLE_37_STABLE
+  - PLUGINS_BRANCH=MOODLE_37_WORKING
+ matrix:
+  - DB=pgsql
+  - DB=mariadb
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -46,8 +46,8 @@ script:
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
-#  - moodle-plugin-ci mustache
 #  - moodle-plugin-ci phpdoc
+#  - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
   - moodle-plugin-ci phpunit
 #  - moodle-plugin-ci behat

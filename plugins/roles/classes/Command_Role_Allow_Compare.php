@@ -192,7 +192,7 @@ class Command_Role_Allow_Compare extends Command {
         $host_labels = get_available_platforms();
 
         // Getting local roles.
-        $roles = $DB->get_records('role', null, '', 'sortorder');
+        $allroles = $DB->get_records('role', null, '', 'sortorder');
 
         /*
          * processing results
@@ -203,7 +203,7 @@ class Command_Role_Allow_Compare extends Command {
         $help = help_button_vml('rolelib', 'allowcompare', 'vmoodleadminset_roles');
         $this->report = '<h3>'.get_string('allowcompare', 'vmoodleadminset_roles', $label.$help).'</h3>';
         // Adding edit role link.
-        $params = array('roleid' => $role->id, 'action' => 'edit');
+        $params = array('action' => 'edit');
         $buttonurl = new moodle_url('/admin/roles/allow.php?mode='.$table, $params);
         $label = get_string('editallowtable', 'vmoodleadminset_roles');
         $this->report.= '<center><p>'.$OUTPUT->single_button($buttonurl, $label, 'get').'</p></center>';

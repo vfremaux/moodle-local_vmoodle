@@ -23,6 +23,7 @@
 // Privacy.
 $string['privacy:metadata'] = 'The local plugin vmoodeladminset Roles does not directly store any personal data about any user.';
 
+$string['allowcompare'] = 'Role Allow tables comparison : {$a}';
 $string['backtocomparison'] = 'Back to role comparison';
 $string['capabilityparamsyncdesc'] =  'The capacity to synchronize';
 $string['cmdcomparedesc'] = 'Compare role capabilities.';

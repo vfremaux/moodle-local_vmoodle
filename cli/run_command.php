@@ -49,6 +49,7 @@ list($options, $unrecognized) = cli_get_params(
           'exclude'          => false,
           'command'          => true,
           'attributes'       => true,
+          'test'             => false,
           'help'             => true),
     array('f' => 'fromhost',
           't' => 'tohosts',
@@ -56,6 +57,7 @@ list($options, $unrecognized) = cli_get_params(
           'e' => 'exclude',
           'c' => 'command',
           'a' => 'attributes',
+          'T' => 'test',
           'h' => 'help')
 );
 
@@ -75,6 +77,7 @@ Options:
 -e, --exclude         a regexp pattern to exclude specifically some hosts in the candidate set.
 -c, --command         the command name, as pluginname/command
 -a, --attributes      the attributes as a QUERYSTRING formatted string.
+-T, --test            Test attributes decoding.
 -h, --help            Print out this help
 
 Example:
@@ -123,6 +126,7 @@ if ($options['command'] != 'showtargets') {
             if (empty($key)) {
                 die("Empty attribute key error\n");
             }
+            mtrace("Registering attribute $key as $value\n");
             $param = new Cli_Command_Parameter($key, urldecode($value));
             $commandobj->set_parameter($key, $param);
         }
@@ -137,10 +141,10 @@ if (!empty($options['tohosts'])) {
     if ($options['tohosts'] != '*') {
         mtrace("Using explicit HostList...\n");
         $tohostsarr = explode(',', $options['tohosts']);
-        foreach ($tohostsarr as $vhost) {
-            if ($vhost != $options['fromhost']) {
+        foreach ($tohostsarr as $vhostname) {
+            if ($vhostname !== $options['fromhost']) {
                 // Avoid on ourself.
-                $tohostsmap[$vhost] = $vhost; // Make an assoc array of hosts as required by commands.
+                $tohostsmap[$vhostname] = $vhostname; // Make an assoc array of hosts as required by commands.
             }
         }
     } else {
@@ -197,7 +201,14 @@ if ($options['command'] == 'showtargets') {
     die;
 }
 
-mtrace("About to run command...\n");
+mtrace("About to run command on...\n");
+print_object($tohostsmap);
+
+if (!empty($options['test'])) {
+    mtrace("Test mode. Not executing.\n");
+    die;
+}
+
 $commandobj->run($tohostsmap);
 
 foreach (array_keys($tohostsmap) as $targethost) {

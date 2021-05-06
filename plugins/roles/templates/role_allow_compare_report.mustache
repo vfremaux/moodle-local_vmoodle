@@ -1,0 +1,38 @@
+
+<!-- vmoodleadminset_roles/role_allow_compare_report -->
+<h3>{{#str}}allowcompare, vmoodleadminset_roles {{/str}}</h3>
+
+<center>
+    {{{editallowtablebutton}}}
+</center>
+
+<form action="'.$actionurl.'" method="post" onsubmit="return validate_syncrole()">
+<input id="target" type="hidden" name="target" value=""/>
+<input id="role" type="hidden" name="role" value=""/>
+<input id="source_platform" type="hidden" name="source_platform" value=""/>
+
+<table id="allowcompare" class="generaltable boxaligncenter" style="min-width: 75%;"><tbody>
+<tr>
+    <th scope="col" class="header c0" style="vertical-align: bottom; text-align: left;">&nbsp</th>
+
+    {{#hosts}}
+    <th id="cap_{{col}}" scope="col" class="header c{{col}}" style="vertical-align: bottom; text-align: center;">
+        <label class="" for="platform_{{col}}">{{hostname}}</label><br/>
+        <input id="platform_{{col}}" type="checkbox" name="platforms[]" value="{{hostwwwroot}}" disabled="disabled" />
+    </th>
+    {{/hosts}}
+
+    <tr valign="top">
+        <td>
+        {{#sourceroles}}
+        {{{displayrole}}}
+        {{#localroles}}
+
+    </tboby>
+</table><br/>
+
+<center><input type="submit" value="'.vmoodle_get_string('synchronize', 'vmoodleadminset_roles').'"/>
+<div id="allowcompare_validation_message"></div></center></form>
+<br/>
+<br/>
+<!-- /vmoodleadminset_roles/role_allow_compare_report -->

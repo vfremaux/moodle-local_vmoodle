@@ -238,7 +238,9 @@ class Command_CopyFileArea extends Command {
         if (!empty($filedescs)) {
             $filestosend = count($filedescs);
             $sendstatus = array();
-            debug_trace('Running CopyFileArea : Copying '.$filestosend.' files from source '.$source);
+            if (function_exists('debug_trace')) {
+                debug_trace('Running CopyFileArea : Copying '.$filestosend.' files from source '.$source);
+            }
             mtrace('Running CopyFileArea : Copying '.$filestosend.' files from source '.$source);
             $i = 0;
             $j = 0;
@@ -315,12 +317,26 @@ class Command_CopyFileArea extends Command {
 
                 // Import file. Sending requests.
                 foreach ($mnethosts as $mnethost) {
+
+                    if (empty($sendstatus[$mnethost->wwwroot]['mneterrors'])) {
+                        $sendstatus[$mnethost->wwwroot]['mneterrors'] = 0;
+                    }
+
+                    if (empty($sendstatus[$mnethost->wwwroot]['success'])) {
+                        $sendstatus[$mnethost->wwwroot]['success'] = 0;
+                    }
+
+                    if (empty($sendstatus[$mnethost->wwwroot]['failures'])) {
+                        $sendstatus[$mnethost->wwwroot]['failures'] = 0;
+                    }
+
                     // Sending request.
                     if (!$rpc_client->send($mnethost)) {
-                        @$sendstatus[$mnethost->wwwroot]['mneterrors']++;
+                        $sendstatus[$mnethost->wwwroot]['mneterrors']++;
                     } else {
                         $response = json_decode($rpc_client->response);
                     }
+
                     // Recording response and check remote status.
                     if ($response->status == RPC_SUCCESS) {
                         @$sendstatus[$mnethost->wwwroot]['success']++;

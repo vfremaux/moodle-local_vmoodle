@@ -187,6 +187,12 @@ if ($hassiteconfig) {
         $desc = get_string('sudoer_desc', 'local_vmoodle');
         $settings->add(new admin_setting_configtext($key, $label, $desc, ''));
 
+        $key = 'local_vmoodle/oldversionsuffix';
+        $label = get_string('oldversionsuffix', 'local_vmoodle');
+        $desc = get_string('oldversionsuffix_desc', 'local_vmoodle');
+        $default = '';
+        $settings->add(new admin_setting_configtext($key, $label, $desc, $default));
+
         $settings->add(new admin_setting_heading('massdeployment', get_string('massdeployment', 'local_vmoodle'), ''));
 
         $encodingopts[0] = 'UTF-8';

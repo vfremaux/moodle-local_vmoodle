@@ -79,7 +79,16 @@ class Command_MultiSql extends Command {
             $this->sqls = $sqls;
         }
 
-        $this->values = array();
+        // Populate with incoming params.
+        if (!isset($this->values)) {
+            $this->values = array();
+            if (!empty($parameters)) {
+                foreach ($parameters as $commandparam) {
+                    $this->values[$commandparam->get_name()] = $commandparam->get_value();
+                }
+            }
+        }
+
     }
 
     /**

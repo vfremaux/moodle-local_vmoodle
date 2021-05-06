@@ -35,6 +35,8 @@ $publishes = array(
         'methods'    => array(
             'mnetadmin_rpc_get_role_capabilities',
             'mnetadmin_rpc_set_role_capabilities',
+            'mnetadmin_rpc_get_role_allow_table',
+            'mnetadmin_rpc_set_role_allow',
             'mnetadmin_rpc_has_role',
             'mnetadmin_rpc_assign_role',
             'mnetadmin_rpc_user_exists',
@@ -43,10 +45,13 @@ $publishes = array(
         ),
     ),
 );
+
 $subscribes = array(
     'mnetadmin' => array(
         'mnetadmin_rpc_get_role_capabilities' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_capabilities',
         'mnetadmin_rpc_set_role_capabilities' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_capabilities',
+        'mnetadmin_rpc_get_role_allow_table' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table',
+        'mnetadmin_rpc_set_role_allow' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_allow',
         'mnetadmin_rpc_has_role' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_has_role',
         'mnetadmin_rpc_assign_role' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_assign_role',
         'mnetadmin_rpc_user_exists' => 'local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_user_exists',
