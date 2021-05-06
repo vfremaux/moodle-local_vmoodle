@@ -24,5 +24,5 @@
 $plugin->version = 2020110900;
 $plugin->component = 'vmoodleadminset_upgrade';
 $plugin->requires = 2016051900;
-$plugin->release = '3.8.0 (Build 2020110900)';
+$plugin->release = '3.9.0 (Build 2020110900)';
 $plugin->dependencies = array('local_vmoodle' => 2020110900);
