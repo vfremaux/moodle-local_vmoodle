@@ -65,7 +65,7 @@ Database names (dbname) are NOT affected (assuming not including domain name).
 
 if (empty($options['domain'])) {
     $wwwroot = $CFG->wwwroot;
-    $wwwroot = preg_replace('#https?://#', '', $wwwroot;
+    $wwwroot = preg_replace('#https?://#', '', $wwwroot);
     $parts = explode('.', $wwwroot);
     array_shift($parts);
     $domain = implode('.', $parts);
@@ -76,7 +76,7 @@ if (empty($options['domain'])) {
 if (empty($options['fromdomain'])) {
     if (!empty($CFG->oldwwwroot)) {
         $oldwwwroot = $CFG->oldwwwroot;
-        $oldwwwroot = preg_replace('#https?://#', '', $oldwwwroot;
+        $oldwwwroot = preg_replace('#https?://#', '', $oldwwwroot);
         $parts = explode('.', $oldwwwroot);
         array_shift($parts);
         $olddomain = implode('.', $parts);

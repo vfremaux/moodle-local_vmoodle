@@ -140,7 +140,7 @@ class Command_Role_Allow_Sync extends Command {
         }
 
         // Cleaning up some memory.
-        unset($response);
+        $allowtable = $response->value;
 
         $responses = array();
 
@@ -160,10 +160,10 @@ class Command_Role_Allow_Sync extends Command {
 
         // Creating XMLRPC client.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
-        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_get_role_allow_table');
+        $rpcclient->set_method('local/vmoodle/plugins/roles/rpclib.php/mnetadmin_rpc_set_role_allow');
         $rpcclient->add_param($table, 'string');
-        $rpcclient->add_param($role, 'string');
-        $rpcclient->add_param(true, 'boolean');
+        $rpcclient->add_param($allowtable, 'array'); // Allow table to send
+        $rpcclient->add_param(true, 'boolean'); // Json return.
 
         // Sending requests.
         foreach ($mnethosts as $mnethost) {
@@ -180,6 +180,7 @@ class Command_Role_Allow_Sync extends Command {
                     echo '</pre>';
                 }
             } else {
+                // Expecting empty string. Just SUCCESS signal.
                 $response = json_decode($rpcclient->response);
             }
             // Recording response.

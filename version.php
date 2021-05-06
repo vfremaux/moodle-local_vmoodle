@@ -26,13 +26,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2019012700; // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version = 2020110901; // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2019111200; // Requires this Moodle version.
 $plugin->component = 'local_vmoodle'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-$plugin->release = '3.8.0 (Build 2019012700)';
+$plugin->release = '3.8.0 (Build 2020110901)';
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.8.0004';
+$plugin->codeincrement = '3.8.0006';
 $plugin->privacy = 'dualrelease';
 $plugin->devprotectedfiles = array('vconfig.php');

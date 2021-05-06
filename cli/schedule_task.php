@@ -31,7 +31,9 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 list($options, $unrecognized) = cli_get_params(array('help' => false,
                                                      'list' => false,
                                                      'execute' => false,
-                                                     'host' => false),
+                                                     'host' => false,
+                                                     'debugging' => false,
+                                                     'isfixture' => false),
                                                array('h' => 'help',
                                                      'H' => 'host'));
 
@@ -47,6 +49,7 @@ Scheduled cron tasks.
 Options:
 --execute=\\\\some\\\\task  Execute scheduled task manually
 --list                List all scheduled tasks
+--debugging           Turns in debug mode
 -H, --host            Virtual root to run for
 -h, --help            Print out this help
 
@@ -75,6 +78,17 @@ echo('Config check : playing for '.$CFG->wwwroot."\n");
 require_once($CFG->dirroot.'/lib/cronlib.php');
 
 $CFG->debug = E_ALL;
+
+if (!empty($options['debugging'])) {
+    $CFG->debug = E_ALL;
+    $CFG->debugdisplay = true;
+}
+
+global $isfixture;
+$isfixture = false;
+if (!empty($options['isfixture'])) {
+    $isfixture = true;
+}
 
 if ($options['list']) {
     cli_heading("List of scheduled tasks ($CFG->wwwroot)");

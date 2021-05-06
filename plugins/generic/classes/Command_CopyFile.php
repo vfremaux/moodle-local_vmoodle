@@ -63,7 +63,7 @@ class Command_CopyFile extends Command {
         // Get all system level files that are true files.
         $params = array('contextid' => context_system::instance()->id);
         $select = " contextid = ? AND filename <> '.' ";
-        $files = $DB->get_records_select('files', $select, $params);
+        $files = $DB->get_records_select('files', $select, $params, 'component,filearea,itemid,filepath,filename');
 
         $filesmenu = array();
         if (!empty($files)) {
@@ -191,7 +191,8 @@ class Command_CopyFile extends Command {
         $rpc_client->add_param($file->get_component(), 'string');
         $rpc_client->add_param($file->get_filearea(), 'string');
         $rpc_client->add_param($file->get_itemid(), 'string');
-        $rpc_client->add_param($file->get_filepath().$file->get_filename(), 'string');
+        $rpc_client->add_param($file->get_filepath(), 'string');
+        $rpc_client->add_param($file->get_filename(), 'string');
         $rpc_client->add_param(base64_encode($filecontent), 'string');
         $rpc_client->add_param(true, 'boolean');
 

@@ -92,19 +92,20 @@ if (!empty($options['shorten'])) {
 $search = '';
 if (!empty($options['search'])) {
     $shsearch = escapeshellarg($options['search']);
-    $shorten = ' --search=$shsearch" ';
+    $search = " --search={$shsearch} ";
 }
 
 $replace = '';
 if (!empty($options['replace'])) {
-    $shreplace = escapeshellarg($options['replace']);
-    $replace = ' --replace="$shreplace" ';
+    $shreplace = preg_replace('/["\']$/', '', $options['replace']);
+    $shreplace = escapeshellarg($shreplace);
+    $replace = " --replace={$shreplace} ";
 }
 
 $i = 1;
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/replace.php --host=\"{$h->vhostname}\" {$shorten} ";
-    $workercmd .= "{$search} {$replace} --non-interactive ";
+    $workercmd .= "{$search} {$replace} {$debug} --non-interactive ";
 
     mtrace("Executing $workercmd\n######################################################\n");
 

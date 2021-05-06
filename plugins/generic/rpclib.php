@@ -100,7 +100,7 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
 
     if ($message != 'OFF') {
         if (function_exists('debug_trace')) {
-            debug_trace('RPC : Setting maintenance on');
+            debug_trace('VMoodle : Setting maintenance on', TRACE_NOTICE);
         }
         $file = fopen($filename, 'w');
         fwrite($file, stripslashes($message));
@@ -109,7 +109,7 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
         set_config('maintenance_message', $message);
     } else {
         if (function_exists('debug_trace')) {
-            debug_trace('RPC : Setting maintenance off');
+            debug_trace('VMoodle : Setting maintenance off', TRACE_NOTICE);
         }
         unlink($filename);
         set_config('maintenance_enabled', 0);
@@ -145,6 +145,7 @@ function mnetadmin_rpc_set_config($user, $key, $value, $plugin, $jsonrequired = 
     $response = new stdClass;
     $response->status = RPC_SUCCESS;
 
+    debug_trace("VMoodle : Setting config $key, $value, $plugin", TRACE_NOTICE);
     set_config($key, $value, $plugin);
 
     // Returns response (success or failure).
@@ -180,6 +181,7 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
             continue;
         }
         // Invalidates cache.
+        debug_trace("VMoodle : Setting config $key, $value, $plugin", TRACE_NOTICE);
         set_config($key, $value, $plugin);
     }
 

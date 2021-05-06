@@ -160,6 +160,8 @@ ob_end_flush();
 
 // Including contents.
 
+$renderer = $PAGE->get_renderer('local_vmoodle');
+
 switch($view) {
     case 'management': {
         include($CFG->dirroot.'/local/vmoodle/views/management.main.php');
