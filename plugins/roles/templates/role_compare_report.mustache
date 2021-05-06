@@ -1,0 +1,67 @@
+
+
+
+<!-- vmoodleadminset_roles/role_compare_report -->
+<h3>{{#str}}allowcompare, vmoodleadminset_roles, {{rolename}}{{/str}} {{helpbutton}}</h3>
+
+<center>
+<p>{{{editrolebutton}}}</p>
+</center>
+
+{{#str}}capfilter, local_vmoodle{{/str}}: <input type="text" name="capfilter" value="" onchange="filtercapabilitytable(this)" />
+
+<form action="{{{rolecapsyncurl}}}" method="post" onsubmit="return validate_syncrole()">
+<input id="capability" type="hidden" name="capability" value="" />
+<input id="source_platform" type="hidden" name="source_platform" value="" />
+
+<table id="rolecompare" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter" style="min-width: 75%;">
+<tbody>
+    <tr>
+        <th scope="col" class="header c0" style="vertical-align: bottom; text-align: left;">
+            &nbsp
+        </th>
+        {{#hosts}}
+            <th id="cap_{{col}}" scope="col" class="header c{{col}}" style="vertical-align: bottom; text-align: center;">
+                <label for="platform_{{col}}"><img src="{{{drawhosturl}}}" alt="{{hostlabel}}"/></label><br/>
+                <input id="platform_{{col}}" type="checkbox" name="platforms[]" value="{{host}}" disabled="disabled"/>
+            </th>
+        {{/hosts}}
+    </tr>
+
+    {{#capabilities}}
+    <tr class="r{{rowparity}} capabilityrow" id="{{capabilityname}}">
+        {{#componentlevelchanged}}
+            <tr class="capabilityrow" id="{{rowtitleids}}">
+                <td colspan="{{span}}" class="header">
+                    <strong>{{capabilitytitle}}</strong>
+                </td>
+            </tr>
+        {{/componentlevelchanged}}
+        <td id="cap_0_{{row}}" class="cell c0" style="vertical-align: middle; text-align: left;">
+            <a onclick="this.target=\'docspopup\'" href="{{{capabilityurl}}}">{{capabilitydesc}}</a><br/>
+            {{capabilityname}}
+        </td>
+
+        {{#hosts}}
+        <td id="cap_{{col}}_{{row}}" class="cell c{{col}} {{extraclass}}" style="vertical-align: middle; text-align: center;" onmouseout="cellOut({{col}},{{row}});" onmouseover="cellOver({{col}},{{row}});">
+            <img src="{{{iconurl}}}" alt="{{alt}}" title="{{title}}" onclick="{{{jshandler}}}" />
+        </td>
+        {{/hosts}}
+
+    </tr>
+    {{/capabilities}}
+
+
+    </tboby>
+</table>
+<br/>
+
+<center>
+<input type="submit" value="{{#str}}synchronize, vmoodleadminset_roles{{/str}}" />
+<div id="rolecompare_validation_message"></div>
+</center>
+
+</form>
+<br/>
+<br/>
+<!-- /vmoodleadminset_roles/role_compare_report -->
