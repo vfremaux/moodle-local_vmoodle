@@ -223,7 +223,8 @@ if ($hassiteconfig) {
 
         if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
             include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
-            \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+            $promanager = local_vmoodle\pro_manager::instance();
+            $promanager->add_settings($ADMIN, $settings);
         } else {
             $label = get_string('plugindist', 'local_vmoodle');
             $desc = get_string('plugindist_desc', 'local_vmoodle');
