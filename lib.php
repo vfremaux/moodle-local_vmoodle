@@ -73,7 +73,8 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
     if (!isset($supports)) {
         $supports = array(
             'pro' => array(
-                'admin' => array('pro'),
+                'admin' => array('sadmin', 'mnetinit'),
+                'vcron' => array('clustering'),
             ),
             'community' => array(
             ),
@@ -130,6 +131,23 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
 }
 
 /**
+ * Provides an adequate renderer depending on distribution possibilities.
+ */
+function local_vmoodle_get_renderer() {
+    global $PAGE, $CFG;
+
+    if (local_vmoodle_supports_feature() == 'pro') {
+        include_once($CFG->dirroot.'/local/vmoodle/pro/locallib.php');
+        include_once($CFG->dirroot.'/local/vmoodle/pro/renderer.php');
+        $renderer = new local_vmoodle_renderer_extended();
+        $renderer->set_output($OUTPUT);
+        return $renderer;
+    }
+
+    return $PAGE->get_renderer('local/vmoodle');
+}
+
+/**
  * get the list of available vmoodles
  * @return an array of vmoodle objects
  */
@@ -177,189 +195,11 @@ function vmoodle_get_vmoodleset($clusters = 1, $clusterix = 1) {
 
     return $vhostset;
 }
-/**
- * setup and configure a mnet environment that describes this vmoodle
- * @uses $USER for generating keys
- * @uses $CFG
- * @param object $vmoodle
- * @param handle $cnx a connection
- */
-function vmoodle_setup_mnet_environment($vmoodle, $cnx) {
-    global $USER, $CFG;
-
-    $config = get_config('local_vmoodle');
-
-    // Make an empty mnet environment.
-    $mnetenv = new mnet_environment();
-
-    $mnetenv->wwwroot              = $vmoodle->vhostname;
-    $mnetenv->ip_address           = $config->vmoodleip;
-    $mnetenv->keypair              = array();
-    $mnetenv->keypair              = mnet_generate_keypair(null);
-    $mnetenv->public_key           = $mnetenv->keypair['certificate'];
-    $details                        = openssl_x509_parse($mnetenv->public_key);
-    $mnetenv->public_key_expires   = $details['validTo_time_t'];
-
-    return $mnetenv;
-}
-
-/**
- * setup services for a given mnet environment in a database
- * @uses $CFG
- * @param object $mnet_env an environment with valid id
- * @param handle $cnx a connection to the target bdd
- * @param object $services an object that holds service setup data
- */
-function vmoodle_add_services(&$vmoodle, $mnetenv, $cnx, $services) {
-    if (!$mnetenv->id) {
-        return false;
-    }
-
-    if ($services) {
-        foreach ($services as $service => $keys) {
-            $sql = "
-               INSERT INTO
-                  {$vmoodle->vdbprefix}mnet_host2service(
-                  hostid,
-                  serviceid,
-                  publish,
-                  subscribe)
-               VALUES (
-                  {$mnetenv->id},
-                  $service,
-                  {$keys['publish']},
-                  {$keys['subscribe']}
-               )
-            ";
-            vmoodle_execute_query($vmoodle, $sql, $cnx);
-        }
-    }
-}
-
-/**
- * get available services in the master
- * @return array of service descriptors.
- */
-function vmoodle_get_service_desc() {
-    global $DB;
-
-    $services = $DB->get_records('mnet_service', array('offer' => 1));
-
-    $servicedescriptor = array();
-
-    if ($services) {
-        foreach ($services as $service) {
-            $servicedescriptor[$service->id]['publish'] = 1;
-            $servicedescriptor[$service->id]['subscribe'] = 1;
-        }
-    }
-    return $servicedescriptor;
-}
-
-/**
- * given a complete mnet_environment record, and a connection
- * record this mnet host in remote database. If the record is
- * a new one, gives back a completed env with valid remote id.
- * @param object $mnet_env
- * @param handle $cnx
- * @return the inserted mnet_env object
- */
-function vmoodle_register_mnet_peer(&$vmoodle, $mnetenv, $cnx) {
-    $mnetarray = get_object_vars($mnetenv);
-    if (empty($mnetenv->id)) {
-        foreach ($mnetarray as $key => $value) {
-            if ($key == 'id') {
-                continue;
-            }
-            $keylist[] = $key;
-            $valuelist[] = "'$value'";
-        }
-        $keyset = implode(',', $keylist);
-        $valueset = implode(',', $valuelist);
-        $sql = "
-            INSERT INTO
-               {$vmoodle->vdbprefix}mnet_host(
-                {$keyset}
-                )
-            VALUES(
-                {$valueset}
-            )
-        ";
-        $mnetenv->id = vmoodle_execute_query($vmoodle, $sql, $cnx);
-    } else {
-        foreach ($mnetarray as $key => $value) {
-            $valuelist[] = "$key = '$value'";
-        }
-        unset($valuelist['id']);
-        $valueset = implode(',', $valuelist);
-        $sql = "
-            UPDATE
-               {$vmoodle->vdbprefix}mnet_host
-            SET
-                {$valueset}
-            WHERE
-                id = {$mnetarray['id']}
-        ";
-        vmoodle_execute_query($vmoodle, $sql, $cnx);
-    }
-    return $mnetenv;
-}
-
-/**
- * get the mnet_env record for an host
- * @param object $vmoodle
- * @return object a mnet_host record
- */
-function vmoodle_get_mnet_env(&$vmoodle) {
-    global $DB;
-
-    $mnetenv = $DB->get_record('mnet_host', array('wwwroot' => $vmoodle->vhostname));
-    return $mnetenv;
-}
-
-/**
- * unregister a vmoodle from the whole remaining network
- * @uses $CFG
- * $param object $vmoodle
- * @param handle $cnx
- * @param object $fromvmoodle
- */
-function vmoodle_unregister_mnet(&$vmoodle, $fromvmoodle ) {
-    global $CFG;
-
-    if ($fromvmoodle) {
-        $vdbprefix = $fromvmoodle->vdbprefix;
-    } else {
-        $vdbprefix = $CFG->prefix;
-    }
-    $cnx = vmoodle_make_connection($fromvmoodle, true);
-    // Cleanup all services for the deleted host.
-    $sql = "
-        DELETE FROM
-            {$vmoodle->vdbprefix}mnet_host2service
-        WHERE
-            hostid = (SELECT
-                        id
-                     FROM
-                        {$vdbprefix}mnet_host
-                     WHERE
-                        wwwroot = '{$vmoodle->vhostname}')
-    ";
-    vmoodle_execute_query($vmoodle, $sql, $cnx);
-    // Delete the host.
-    $sql = "
-        DELETE FROM
-            {$vmoodle->vdbprefix}mnet_host
-         WHERE
-            wwwroot = '{$vmoodle->vhostname}'
-     ";
-    vmoodle_execute_query($vmoodle, $sql, $cnx);
-}
 
 /**
  * drop a vmoodle database
- * @param object $vmoodle
- * @param handle $side_cnx
+ * @param objectref $vmoodle
+ * @param handle $cnx
  */
 function vmoodle_drop_database(&$vmoodle, $cnx = null) {
     // Try to delete database.
@@ -399,6 +239,7 @@ function vmoodle_drop_database(&$vmoodle, $cnx = null) {
 }
 
 /**
+ * DEPRECATED / Not used any more.
  * load a bulk template in databse
  * @param object $vmoodle
  * @param string $bulfile a bulk file of queries to process on the database
@@ -631,10 +472,19 @@ function vmoodle_make_this() {
  * @param handle $cnx The connection to the Vmoodle database.
  * @return boolean true if the request is well-executed, false otherwise.
  */
-function vmoodle_execute_query(&$vmoodle, $sql, $cnx) {
+function vmoodle_execute_query($vmoodle, $sql, $cnx) {
 
     // If database is MySQL typed.
-    if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
+    if (($vmoodle->vdbtype == 'mysql')) {
+        if (!($res = mysql_query($sql, $cnx))) {
+            echo "vmoodle_execute_query() : ".mysql_error($cnx)."<br/>";
+            return false;
+        }
+        if ($newid = mysql_insert_id($cnx)) {
+            // Get the last insert id in case of an INSERT.
+            $res = $newid;
+        }
+    } else if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         if (!($res = mysqli_query($sql, $cnx))) {
             echo "vmoodle_execute_query() : ".mysqli_error($cnx)."<br/>";
             return false;
@@ -797,6 +647,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
     global $CFG, $DB;
 
     // Gets the HTTP adress scheme (http, https, etc...) if not specified.
+    // Use the main site scheme as default.
     if (is_null(parse_url($vmoodledata->vhostname, PHP_URL_SCHEME))) {
         $vmoodledata->vhostname = parse_url($CFG->wwwroot, PHP_URL_SCHEME).'://'.$vmoodledata->vhostname;
     }
@@ -805,8 +656,6 @@ function vmoodle_load_database_from_template($vmoodledata) {
     $hostname = mnet_get_hostname_from_uri($CFG->wwwroot);
     $description = $DB->get_field('course', 'fullname', array('id' => SITEID));
     $cfgipaddress = gethostbyname($hostname);
-
-    vmoodle_create_database($vmoodledata);
 
     // SQL files paths.
     $templatesqlfilepath = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_master.sql';
@@ -857,34 +706,30 @@ function vmoodle_load_database_from_template($vmoodledata) {
 }
 
 /**
- * Creates a database for Moodle.
+ * Creates a database for Moodle. Database will be created on host given for the vmoodle instance.
+ * Check that user/passwrod couple has database creation permissions on that host.
  * @param object $vmoodledata
  */
 function vmoodle_create_database($vmoodledata) {
     global $DB;
 
+    // Don't bind to db, it might not yet exist.
+    $sidecnx = vmoodle_make_connexion($vmoodledata, false);
+
     // Availability of SQL commands.
 
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
-        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
+        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ';
     } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
-        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ';
+        $createstatement = 'CREATE DATABASE IF NOT EXISTS %DATABASE% DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ';
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $createstatement = 'CREATE SCHEMA IF NOT EXISTS %DATABASE% ';
     }
 
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-    try {
-        $DB->execute($sql);
-    } catch (Exception $ex) {
-        $e = new StdClass;
-        $e->sql = $sql;
-        $e->error = $DB->get_last_error();
-        print_error('noexecutionfor', 'local_vmoodle', '', $e);
-        die;
-    }
+    vmoodle_execute_query($vmoodledata, $sql, $sidecnx);
 }
 
 /**
@@ -1247,6 +1092,9 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
         return false;
     }
 
+    /*
+    OLD WAY, restricts to main db host the command targetting.
+
     // Retrieves the host configuration (more secure).
     $thisvmoodle = vmoodle_make_this();
     if (strstr($thisvmoodle->vdbhost, ':') !== false) {
@@ -1270,6 +1118,40 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $sqlcmd    = $pgm.' -Fc -h '.$thisvmoodle->vdbhost.(isset($thisvmoodle->vdbport) ? ' -p '.$thisvmoodle->vdbport.' ' : ' ');
         $sqlcmd .= '-U '.$thisvmoodle->vdblogin.' ';
+        $sqlcmd .= '-d '.$vmoodledata->vdbname.' -f ';
+    }
+    return $sqlcmd;
+    */
+
+    // NEW WAY, use the requested instance vdbhost.
+    // TODO : let db port be configurable in vmoodle form and added to local_vmoodle record.
+    if (empty($vmoodledata->vdbport) && in_array($vmoodledata->vdbtype, ['mysql', 'mysqli', 'mariadb'])) {
+        $vmoodledata->vdbport = '3306';
+    }
+
+
+    // Retrieves the host configuration (more secure).
+    if (strstr($vmoodledata->vdbhost, ':') !== false) {
+        list($vmoodledata->vdbhost, $vmoodledata->vdbport) = split(':', $vmoodledata->vdbhost);
+    }
+
+    // Password.
+    if (!empty($vmoodledata->vdbpass)) {
+        $vmoodledata->vdbpass = '-p'.escapeshellarg($vmoodledata->vdbpass).' ';
+    }
+
+    // Making the command line (see 'vconfig.php' file for defining the right paths).
+    if ($vmoodledata->vdbtype == 'mysql') {
+        $sqlcmd = $pgm.' -h'.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -P'.$vmoodledata->vdbport.' ' : ' ');
+        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vmoodledata->vdbpass;
+        $sqlcmd .= $vmoodledata->vdbname.' < ';
+    } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
+        $sqlcmd = $pgm.' -h'.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -P'.$vmoodledata->vdbport.' ' : ' ');
+        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vmoodledata->vdbpass;
+        $sqlcmd .= $vmoodledata->vdbname.' < ';
+    } else if ($vmoodledata->vdbtype == 'postgres') {
+        $sqlcmd    = $pgm.' -Fc -h '.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -p '.$vmoodledata->vdbport.' ' : ' ');
+        $sqlcmd .= '-U '.$vmoodledata->vdblogin.' ';
         $sqlcmd .= '-d '.$vmoodledata->vdbname.' -f ';
     }
     return $sqlcmd;

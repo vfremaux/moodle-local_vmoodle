@@ -115,9 +115,10 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
  * @param string $idnumber the target course idnumber. It must not be used already.
  * @param string $catidnumber the idnumber of the course category to restore in. It must exist.
  * @param string $location an absolute pat in the file system where to find an .mbz archive file.
+ * @param string $enroladmins soem enrolment options. Empty if no enrol, or managers (site level) or site admins, or both.
  * @param boolean $jsonrequired Asks for json return
  */
-function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $jsonrequired = true) {
+function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $enroladmins = '', $jsonrequired = true) {
     global $CFG, $USER, $DB;
 
     debug_trace("VMOODLE : Starting Restore course");

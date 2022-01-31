@@ -220,7 +220,7 @@ if ($action == 'doadd') {
         vmoodle_create_database($submitteddata);
 
         if (function_exists('debug_trace')) {
-            debug_trace('Vnode simple reactivation');
+            debug_trace('Vnode simple reactivation', TRACE_DEBUG);
         }
 
         if ($interactive) {

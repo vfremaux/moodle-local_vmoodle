@@ -20,7 +20,7 @@
  *
  * @package local_vmoodle
  * @category local
- * @author Valery fremaux (valery.fremaux@club-internet.fr)
+ * @author Valery fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 define('CLI_SCRIPT', true);

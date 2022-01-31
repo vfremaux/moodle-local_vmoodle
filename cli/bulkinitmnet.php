@@ -31,12 +31,14 @@ list($options, $unrecognized) = cli_get_params(
         'withmaster'       => false,
         'fullstop'         => false,
         'debug'            => false,
+        'newkey'            => false,
         'verbose'          => false,
     ),
     array(
         'h' => 'help',
         'm' => 'withmaster',
         'd' => 'debug',
+        'n' => 'newkey',
         'v' => 'verbose',
         's' => 'fullstop',
     )
@@ -56,6 +58,7 @@ Note : Mnet must be started on all nodes for this script being able to proceed.
     Options:
     -m, --withmaster        Init mnet also on main host. If set to 'mainonly', will only init master host.
     -h, --help              Print out this help
+    -n, --newkey            Ask for key renewal.
     -d, --debug             Turns on debug mode on workers.
     -v, --verbose           Outputs workers output.
     -s, --fullstop          If present stops on first error.
@@ -73,13 +76,18 @@ if (!empty($options['debug'])) {
     $debug = ' --debug ';
 }
 
+$newkey = '';
+if (!empty($options['newkey'])) {
+    $newkey = ' --newkey ';
+}
+
 // Start updating.
 // Linux only implementation.
 
 echo "Starting binding mnet {$options['withmaster']}....\n";
 
 if (!empty($options['withmaster'])) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} --bindhost=subs";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} {$newkey} --bindhost=subs";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
@@ -105,7 +113,7 @@ if (!empty($options['withmaster']) && ($options['withmaster'] === 'mainonly')) {
 $i = 1;
 if ($allhosts) {
     foreach ($allhosts as $h) {
-        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} --host=\"{$h->vhostname}\" --bindhost=\"{$CFG->mainwwwroot}\" ";
+        $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/init_mnet_node.php {$debug} {$newkey} --host=\"{$h->vhostname}\" --bindhost=\"{$CFG->mainwwwroot}\" ";
 
         mtrace("Executing $workercmd\n######################################################\n");
         $output = array();

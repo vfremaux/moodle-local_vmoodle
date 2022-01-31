@@ -112,14 +112,17 @@ if ($action != '') {
                 $result = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
             }
             break;
+
             case 'sadmin': {
                 $result = include($CFG->dirroot.'/local/vmoodle/controller.sadmin.php');
             }
             break;
+
             case 'services': {
                 $result = include($CFG->dirroot.'/local/vmoodle/controller.services.php');
             }
             break;
+
             default: {
                 $result = -1;
             }
@@ -145,14 +148,8 @@ echo $OUTPUT->heading(get_string('vmoodleadministration', 'local_vmoodle'));
 
 // Adding tabs.
 
-$tabname = get_string('tabpoolmanage', 'local_vmoodle');
-$row[] = new tabobject('management', new moodle_url('/local/vmoodle/view.php', array('view' => 'management')), $tabname);
-$tabname = get_string('tabpoolsadmin', 'local_vmoodle');
-$row[] = new tabobject('sadmin', new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')), $tabname);
-$tabname = get_string('tabpoolservices', 'local_vmoodle');
-$row[] = new tabobject('services', new moodle_url('/local/vmoodle/view.php', array('view' => 'services')), $tabname);
-$tabrows[] = $row;
-print_tabs($tabrows, $view);
+$renderer = local_vmoodle_get_renderer();
+echo $renderer->tabs($view);
 
 // Displaying headers.
 
