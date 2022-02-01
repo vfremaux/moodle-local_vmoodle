@@ -46,6 +46,10 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         return $CFG->wwwroot.'/local/vmoodle/plugins/'.$plugin.'/pix/'.$parts['filename'].'.'.$parts['extension'];
     }
 
+    public function tabs($view) {
+        assert(true);
+    }
+
     /**
      * Checks if file with any image extension exists.
      *

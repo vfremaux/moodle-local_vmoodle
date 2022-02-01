@@ -15,19 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Install and upgrade Exemple library for the local Vmoodle.
- *
- * @package local_vmoodle
- * @category local
- * @author Valery Fremaux (valery.fremaux@gmail.com)
- * @version Moodle 2.2
+ * @package   local_courseindex
+ * @category  local
+ * @copyright 2006 Valery Fremaux
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-function xmldb_vmoodleadminset_courses_upgrade($oldversion = 0) {
-    // The function name must match with library name.
-    // Initializing.
-    $result = true;
 
-    // Moodle 2.0 breakline.
+defined('MOODLE_INTERNAL') || die();
 
-    return $result;
-}
+$definitions = array(
+    'pro' => array(
+        'mode' => cache_store::MODE_APPLICATION
+    )
+);

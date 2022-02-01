@@ -30,19 +30,7 @@ if (get_config('local_vmoodle', 'late_install')) {
     xmldb_local_vmoodle_late_install();
 }
 
-$systemcontext = context_system::instance();
-$hasadmin = false;
-if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // This is AdminSettings driven administration.
-    if (has_capability('local/adminsettings:nobody', $systemcontext)) {
-        $hasadmin = true;
-    }
-} else {
-    // This is Moodle Standard.
-    $hasadmin = has_capability('moodle/site:config', $systemcontext);
-}
-
-if ($hasadmin) {
+if ($hassiteconfig) {
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');
@@ -233,23 +221,10 @@ if ($hasadmin) {
         $desc = '';
         $settings->add(new admin_setting_configtext($key, $label, $desc, 'www-data', PARAM_TEXT));
 
-        $settings->add(new admin_setting_heading('clustering', get_string('clustering', 'local_vmoodle'), ''));
-        $ixs = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        $ixoptions = array_combine($ixs, $ixs);
-
-        $key = 'local_vmoodle/clusters';
-        $label = get_string('configclusters', 'local_vmoodle');
-        $desc = get_string('configclusters_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
-
-        $key = 'local_vmoodle/clusterix';
-        $label = get_string('configclusterix', 'local_vmoodle');
-        $desc = get_string('configclusterix_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
-
         if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
             include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
-            \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+            $promanager = local_vmoodle\pro_manager::instance();
+            $promanager->add_settings($ADMIN, $settings);
         } else {
             $label = get_string('plugindist', 'local_vmoodle');
             $desc = get_string('plugindist_desc', 'local_vmoodle');
