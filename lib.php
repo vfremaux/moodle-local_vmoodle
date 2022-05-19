@@ -134,12 +134,12 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
  * Provides an adequate renderer depending on distribution possibilities.
  */
 function local_vmoodle_get_renderer() {
-    global $PAGE, $CFG;
+    global $PAGE, $CFG, $OUTPUT;
 
     if (local_vmoodle_supports_feature() == 'pro') {
         include_once($CFG->dirroot.'/local/vmoodle/pro/locallib.php');
         include_once($CFG->dirroot.'/local/vmoodle/pro/renderer.php');
-        $renderer = new local_vmoodle_renderer_extended();
+        $renderer = new local_vmoodle_renderer_extended($PAGE, 'html');
         $renderer->set_output($OUTPUT);
         return $renderer;
     }
@@ -967,97 +967,6 @@ function vmoodle_destroy($vmoodledata) {
 }
 
 /**
- * get the service strategy and peer mirror strategy to apply to new host, depending on
- * settings. If no settings were made, use a simple peer to peer SSO binding so that users
- * can just roam.
- * @param object $vmoodledata the new host definition
- * @param array reference $services the service scheme to apply to new host
- * @param array reference $peerservices the service scheme to apply to new host peers
- * @param array $domain
- */
-function vmoodle_get_service_strategy($vmoodlerec, &$services, &$peerservices, $domain = 'peer') {
-    global $DB, $CFG;
-
-    // We will mix in order to an single array of configurated service here.
-    $servicesstrategy = unserialize(get_config('local_vmoodle', 'services_strategy'));
-    $servicerecs = $DB->get_records('mnet_service', array());
-    $servicesstrategy = (array)$servicesstrategy;
-
-    if (!empty($servicerecs)) {
-        // Should never happen; standard services are always there.
-        if (@$vmoodlerec->services == 'subnetwork' && !empty($servicesstrategy)) {
-            /*
-             * $vmoodledata may not exist when binding to a master host.
-             */
-            foreach ($servicerecs as $key => $service) {
-                $services[$service->name] = new StdClass();
-                $peerservices[$service->name] = new StdClass();
-                $services[$service->name]->publish       = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_publish'];
-                $peerservices[$service->name]->subscribe = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_publish'];
-                $services[$service->name]->subscribe     = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_subscribe'];
-                $peerservices[$service->name]->publish   = 0 + @$servicesstrategy[$domain.'_'.$service->name.'_subscribe'];
-            }
-        } else {
-            // If no strategy has been recorded, use default SSO binding.
-            foreach ($servicerecs as $key => $service) {
-                $services[$service->name] = new StdClass();
-                $peerservices[$service->name] = new StdClass();
-                $services[$service->name]->publish = 0;
-                $peerservices[$service->name]->subscribe = 0;
-                $services[$service->name]->subscribe = 0;
-                $peerservices[$service->name]->publish = 0;
-            }
-            $services['sso_sp']->publish = 1;
-            $services['sso_sp']->subscribe = 1;
-            $services['sso_idp']->publish = 1;
-            $services['sso_idp']->subscribe = 1;
-            $peerservices['sso_sp']->publish = 1;
-            $peerservices['sso_sp']->subscribe = 1;
-            $peerservices['sso_idp']->publish = 1;
-            $peerservices['sso_idp']->subscribe = 1;
-        }
-    }
-
-    // With main force mnet admin whatever is said in defaults.
-    if ($domain == 'main') {
-        // This would be the main strategy regaring its subs.
-        $services['sso_sp']->publish = 1;
-        $services['sso_idp']->subscribe = 1;
-        $services['mnetadmin']->subscribe = 1;
-        $services['dataexchange']->publish = 1;
-
-        // Peer is main and this is our peer strategy. We need publish mnet admin functions to it.
-        $peerservices['sso_sp']->subscribe = 1;
-        $peerservices['sso_idp']->publish = 1;
-        $peerservices['mnetadmin']->publish = 1;
-        $peerservices['dataexchange']->subscribe = 1;
-
-        if (is_dir($CFG->dirroot.'/mod/sharedresource')) {
-            // Bind sharedresource librairies.
-            /*
-             * We open the main site as a provider and
-             * all the subs as consumers.
-             */
-            $services['sharedresourceservice'] = new StdClass();
-            $services['sharedresourceservice']->publish = 1;
-
-            $peerservices['sharedresourceservice'] = new StdClass();
-            $peerservices['sharedresourceservice']->subscribe = 1;
-        }
-
-        if (is_dir($CFG->dirroot.'/blocks/publishflow')) {
-            $services['publishflow'] = new StdClass();
-            $services['publishflow']->publish = 1;
-            $services['publishflow']->subscribe = 1;
-
-            $peerservices['publishflow'] = new Stdclass();
-            $peerservices['publishflow']->publish = 1;
-            $peerservices['publishflow']->subscribe = 1;
-        }
-    }
-}
-
-/**
  * get a proper SQLDump command
  * @param object $vmoodledata the complete new host information
  * @return string the shell command 
@@ -1175,118 +1084,6 @@ function vmoodle_dump_files_from_template($templatename, $destpath) {
     filesystem_copy_tree($templatefilespath, $destpath, '');
 }
 
-/**
- * @param object $submitteddata
- *
- */
-function vmoodle_bind_to_network($submitteddata, &$newmnethost) {
-    global $USER, $CFG, $DB, $OUTPUT;
-
-    // Getting services schemes to apply.
-    vmoodle_get_service_strategy($submitteddata, $services, $peerservices, 'peer');
-
-    $idnewblock = $DB->get_field('local_vmoodle', 'id', array('vhostname' => $submitteddata->vhostname));
-
-    // Last mnet has been raised by one at step 3 so we add to network if less.
-    if ($submitteddata->mnet < vmoodle_get_last_subnetwork_number()) {
-        // Retrieves the subnetwork member(s).
-        $subnetworkhosts = array();
-        $select = 'id != ? AND mnet = ? AND enabled = 1';
-        $subnetworkmembers = $DB->get_records_select('local_vmoodle', $select, array($idnewblock, $submitteddata->mnet));
-
-        if (!empty($subnetworkmembers)) {
-            foreach ($subnetworkmembers as $subnetworkmember) {
-                $temphost = new stdClass();
-                $temphost->wwwroot = $subnetworkmember->vhostname;
-                $temphost->name = utf8_decode($subnetworkmember->name);
-                $subnetworkhosts[] = $temphost;
-            }
-        }
-
-        // Member(s) of the subnetwork add the new host.
-        if (!empty($subnetworkhosts)) {
-            $rpcclient = new \local_vmoodle\XmlRpc_Client();
-            $rpcclient->reset_method();
-            $rpcclient->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
-            // Authentication params.
-            $rpcclient->add_param($USER->username, 'string');
-            $userhostroot = $DB->get_field('mnet_host', 'wwwroot', array('id' => $USER->mnethostid));
-            $rpcclient->add_param($userhostroot, 'string');
-            $rpcclient->add_param($CFG->wwwroot, 'string');
-            // Peer to bind to.
-            $rpcclient->add_param((array)$newmnethost, 'array');
-            $rpcclient->add_param($peerservices, 'array');
-
-            foreach ($subnetworkhosts as $subnetwork_host) {
-                $tempmember = new \local_vmoodle\Mnet_Peer();
-                $tempmember->set_wwwroot($subnetwork_host->wwwroot);
-                if (!$rpcclient->send($tempmember)) {
-                    echo $OUTPUT->notification(implode('<br />', $rpcclient->get_errors($tempmember)));
-                }
-
-                $rpcclient2 = new \local_vmoodle\XmlRpc_Client();
-                $rpcclient2->reset_method();
-                $rpcclient2->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
-                // Authentication params.
-                $rpcclient2->add_param($USER->username, 'string');
-                $userhostroot = $DB->get_field('mnet_host', 'wwwroot', array('id' => $USER->mnethostid));
-                $rpcclient2->add_param($userhostroot, 'string');
-                $rpcclient2->add_param($CFG->wwwroot, 'string');
-                // Peer to bind to.
-                $rpcclient2->add_param((array)$tempmember, 'array');
-                $rpcclient2->add_param($services, 'array');
-
-                if (!$rpcclient2->send($newmnethost)) {
-                    echo $OUTPUT->notification(implode('<br />', $rpcclient2->get_errors($newmnethost)));
-                }
-                unset($rpcclient2); // Free some resource.
-            }
-        }
-    }
-
-    // Getting services schemes to apply to main.
-    vmoodle_get_service_strategy($submitteddata, $services, $peerservices, 'main');
-
-    $mainhost = new \local_vmoodle\Mnet_Peer(); // This is us.
-    $mainhost->set_wwwroot($CFG->wwwroot);
-
-    vmoodle_bind_services($newmnethost, $peerservices);
-
-    $rpcclient = new \local_vmoodle\XmlRpc_Client();
-    $rpcclient->reset_method();
-    $rpcclient->set_method('local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer');
-    $rpcclient->add_param($USER->username, 'string');
-    $userhostroot = $DB->get_field('mnet_host', 'wwwroot', array('id' => $USER->mnethostid));
-    $rpcclient->add_param($userhostroot, 'string');
-    $rpcclient->add_param($CFG->wwwroot, 'string');
-    // Peer to bind to : this is us.
-    $rpcclient->add_param((array)$mainhost, 'array');
-    $rpcclient->add_param($services, 'array');
-
-    $rpcclient->send($newmnethost);
-}
-
-function vmoodle_bind_services($newmnethost, $services) {
-    global $DB;
-
-    // Bind the local service strategy to new host.
-    if (!empty($services)) {
-        // Eventually deletes something on the way.
-        $DB->delete_records('mnet_host2service', array('hostid' => $newmnethost->id));
-        foreach ($services as $servicename => $servicestate) {
-            $service = $DB->get_record('mnet_service', array('name' => $servicename));
-            if (!$service) {
-                throw(new Exception("Services Binding : Uninstalled required service $servicename\n"));
-            }
-            $host2service = new stdclass();
-            $host2service->hostid = $newmnethost->id;
-            $host2service->serviceid = $service->id;
-            $host2service->publish = 0 + @$servicestate->publish;
-            $host2service->subscribe = 0 + @$servicestate->subscribe;
-            $DB->insert_record('mnet_host2service', $host2service);
-        }
-    }
-}
 
 /**
  * Checks existence and consistency of a full template.

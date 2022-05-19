@@ -27,21 +27,16 @@ unset($options);
 list($options, $unrecognized) = cli_get_params(
     array(
         'help'      => false,
-        'password'  => false,
-        'firstname'  => false,
-        'lastname'  => false,
-        'email'  => false,
-        'enabled'   => false,
+        'userscheme'   => false,
+        'withmnetadmins'   => false,
+        'fixguest' => false,
         'fullstop'   => false,
     ),
     array(
         'h' => 'help',
-        'p' => 'password',
-        'f' => 'firtname',
-        'l' => 'lastname',
-        'm' => 'email',
-        'e' => 'enabled',
-        's' => 'fullstop',
+        'u' => 'userscheme',
+        'm' => 'withmnetadmins',
+        'g' => 'fixguest',
     )
 );
 
@@ -52,16 +47,14 @@ if ($unrecognized) {
 
 if ($options['help']) {
     $help = "
-Resets primary local admin account 'admin'.
+Fix site admin registrations.
 
     Options:
     -h, --help              Print out this help
-    -e, --enabled           If present reset only enabled instances
-    -p, --password          admin Password
-    -f, --firstname         admin Firstname
-    -l, --lastname          admin Lastname
-    -m, --email             admin Email
+    -u, --userscheme        SQK LIKE pattern for finding users to add to admins by username
     -s, --fullstop          If set, stops on first failure, otherwise attempt all instances.
+    -m, --withmnetadmins    If set, fetch mnet 'admin' account and restore it.
+    -g, --fixguest          If set, also fix guest record registration in config.
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -69,30 +62,19 @@ Resets primary local admin account 'admin'.
     die;
 }
 
-if (!empty($options['enabled'])) {
-    $params = array('enabled' => 1);
-} else {
-    $params= array();
+$withmnetadmins = '';
+if (!empty($options['withmnetadmins'])) {
+    $withmnetadmins = ' --withmnetadmins ';
 }
 
-$password = '';
-if (!empty($options['password'])) {
-    $password = '--password='.$options['password'];
+$userscheme = '';
+if (!empty($options['userscheme'])) {
+    $userscheme = '--userscheme='.$options['userscheme'];
 }
 
-$firstname = '';
-if (!empty($options['firstname'])) {
-    $firstname = '--firstname='.$options['firstname'];
-}
-
-$lastname = '';
-if (!empty($options['lastname'])) {
-    $lastname = '--lastname='.$options['lastname'];
-}
-
-$email = '';
-if (!empty($options['email'])) {
-    $email = '--email='.$options['email'];
+$fixguest = '';
+if (!empty($options['fixguest'])) {
+    $fixguest = ' --fixguest ';
 }
 
 $allhosts = $DB->get_records('local_vmoodle', $params);
@@ -104,8 +86,8 @@ echo "Starting resetting admins....\n";
 
 $i = 1;
 foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/reset_admin.php {$password} {$firstname} {$lastname} ";
-    $workercmd .= "{$email} --host=\"{$h->vhostname}\" ";
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/fix_site_admins.php {$withmnetadmins} {$userscheme} {$fixguest} ";
+    $workercmd .= " --host=\"{$h->vhostname}\" ";
 
     mtrace("Executing $workercmd\n######################################################\n");
 

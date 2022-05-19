@@ -37,7 +37,7 @@ if ($hassiteconfig) {
         $viewurl = new moodle_url('/local/vmoodle/view.php');
         $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
 
-        $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
+        $settings = new admin_settingpage('localsettingvmoodle', get_string('pluginname', 'local_vmoodle'));
         $ADMIN->add('localplugins', $settings);
 
         $yesnoopts[0] = get_string('no');

@@ -430,4 +430,9 @@ function vmoodle_cli_notify_admin($msg) {
 
     // Do NOT use email_to_user here because of possible nomailever restriction
     mail($admin->email, $msg, '');
+
+    // Additionnaly send mail to an extra techoperator, in case of delegated operations.
+    if (!empty($CFG->techoperator)) {
+        mail($CFG->techoperator, $msg, '');
+    }
 }

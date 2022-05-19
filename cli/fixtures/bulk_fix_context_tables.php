@@ -76,6 +76,8 @@ if (!empty($options['host'])) {
 require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot);
 
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // CLI more functions.
+
 $debug = '';
 if (!empty($options['debugging'])) {
     $debug = ' --debugging ';
@@ -83,6 +85,8 @@ if (!empty($options['debugging'])) {
 
 $allhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
 
+$i = 0;
+$numhosts = count($allhosts);
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/schedule_task.php {$debug} --isfixture --host=\"{$h->vhostname}\" --execute='\\core\\task\\context_cleanup_task' ";
 
@@ -104,4 +108,11 @@ foreach ($allhosts as $h) {
             echo "\n";
         }
     }
+
+    $i++;
+    vmoodle_send_cli_progress($numhosts, $i, 'bulkfixcontexttables');
 }
+
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulk_fix_contexts_tables done.");
+echo "Done.\n";
+exit(0);
