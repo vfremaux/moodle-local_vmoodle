@@ -46,6 +46,7 @@ list($options, $unrecognized) = cli_get_params(
         'debug' => false,
         'withmnetadmins' => false,
         'userscheme' => false,
+        'fixguest' => false,
     ),
     array(
         'h' => 'help',
@@ -53,6 +54,7 @@ list($options, $unrecognized) = cli_get_params(
         'd' => 'debug',
         'u' => 'userscheme',
         'm' => 'withmnetadmins',
+        'g' => 'fixguest',
     )
 );
 
@@ -70,9 +72,10 @@ Options:
 -H, --host           the virtual host you are working for
 -u, --userscheme     A SQL LIKE expression (eg : nx%) to mach additional admins
 -m, --withmnetadmins Also regisqter non deleted mnetadmins
+-g, --fixguest       Also fix guest record in config
 
 Example:
-\$ /usr/bin/php admin/cli/fix_site_admins.php [--withmnetadmins] --host=http://myvmoodle.moodlearray.com
+\$ /usr/bin/php admin/cli/fix_site_admins.php [--withmnetadmins] [--fixguest] --host=http://myvmoodle.moodlearray.com
 "; //TODO: localize - to be translated later when everything is finished
 
     echo $help;
@@ -99,7 +102,9 @@ if (!empty($options['debug'])) {
 }
 
 function add_to_siteadmins($userid) {
-    $siteadminstr = get_config('siteadmins');
+    global $CFG;
+
+    $siteadminstr = $CFG->siteadmins;
     $siteadmins = explode(',', $siteadminstr);
     if (!in_array($userid, $siteadmins)) {
         echo "Adding user $userid to admins\n";
@@ -132,7 +137,7 @@ if (!$user = $DB->get_record('user', $params)) {
         add_to_siteadmins($deletedadmin->id);
     }
 } else {
-    echo "Adding local admin to admins\n";
+    echo "Adding local admin {$user->id} to admins\n";
     add_to_siteadmins($user->id);
 }
 
@@ -142,7 +147,7 @@ if (!empty($options['withmnetadmins'])) {
 
     if (!empty($CFG->mainhostprefix)) {
 
-        $mainhost = $DB->get_record_select('mnet_hosts', 'wwwroot LIKE ?', [$CFG->mainhostprefix.'%']);
+        $mainhost = $DB->get_record_select('mnet_host', 'wwwroot LIKE ?', [$CFG->mainhostprefix.'%']);
 
         if ($mainhost) {
 
@@ -152,7 +157,7 @@ if (!empty($options['withmnetadmins'])) {
                             'deleted' => 0);
 
             if ($user = $DB->get_record('user', $params)) {
-                echo "Adding mnet admin to admins\n";
+                echo "Adding mnet admin {$user->id} to admins\n";
                 add_to_siteadmins($user->id);
             }
         }
@@ -164,15 +169,32 @@ if (!empty($options['withmnetadmins'])) {
 if (!empty($options['userscheme'])) {
     $expectedadmins = $DB->get_records_select('user', ' username LIKE ? AND deleted = 0 ', [$options['userscheme']]);
     if (count($expectedadmins) > 20) {
-        die("Seems there are really many admins, probably too many... check your userscheme");
-    }
-    if (!empty($expectedadmins)) {
-        foreach ($expectedadmins as $expectedadmin) {
-            echo "Adding {$expectedadmin->username} to admins\n";
-            add_to_siteadmins($expectedadmin->id);
+        echo("Seems there are really many admins, probably too many... check your userscheme\n");
+    } else {
+        if (!empty($expectedadmins)) {
+            foreach ($expectedadmins as $expectedadmin) {
+                echo "Adding {$expectedadmin->username} to admins\n";
+                add_to_siteadmins($expectedadmin->id);
+            }
         }
     }
 }
 
+if (!empty($options['fixguest'])) {
+    $guestuser = $DB->get_record('user', ['username' => 'guest']);
+    if (!empty($guestuser)) {
+        echo "Fixing guest configured account as ".$guestuser->id."\n";
+        set_config('siteguest', $guestuser->id, 'moodle');
+    }
+}
+
+echo "Final site admins as : ".$CFG->siteadmins."\n";
+$admins = explode(',', $CFG->siteadmins);
+foreach ($admins as $adminid) {
+    $adminuser = $DB->get_record('user', ['id' => $adminid], 'firstname,lastname,username');
+    echo "\t".$adminuser->lastname.' '.$adminuser->firstname.' ('.$adminuser->username.")\n";
+}
+
+echo "Done.\n";
 
 exit(0); // 0 means success.

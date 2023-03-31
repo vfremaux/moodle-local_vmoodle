@@ -127,7 +127,7 @@ class Host_Form extends \moodleform {
         $mform->setType('vdblogin', PARAM_TEXT);
 
         // Database password.
-        $mform->addElement('password', 'vdbpass', get_string('vdbpass', 'local_vmoodle'));
+        $mform->addElement('passwordunmask', 'vdbpass', get_string('vdbpass', 'local_vmoodle'));
         $mform->setType('vdbpass', PARAM_RAW);
 
         // Button for testing database connection.
@@ -250,6 +250,11 @@ class Host_Form extends \moodleform {
         $vmaster->vdbpass = $CFG->vmasterdbpass;
         $vmaster->vdbname = $CFG->vmasterdbname;
 
+        $config = get_config('local_vmoodle');
+        if (!preg_match('/'.$config->vmoodleinstancepattern.'/', $data['name'])) {
+            $errors['name'] = get_string('errorinvalidnameform', 'local_vmoodle', $config->vmoodleinstancepattern);
+        }
+
         if (!vmoodle_make_connection($vmaster, false)) {
             $errors['vdbhost'] = get_string('badconnection', 'local_vmoodle');
             $errors['vdblogin'] = get_string('badconnection', 'local_vmoodle');
@@ -349,7 +354,7 @@ class Host_Form extends \moodleform {
             }
 
             // Checks 'vdatapath', if not already used.
-            if ($this->is_equal_to_another_dataroot($data['vdatapath'])) {
+            if ($this->is_equal_to_another_dataroot($data['vhostname'], $data['vdatapath'])) {
                 if (!empty($data['vtemplate'])) {
                     $errors['vdatapath'] = get_string('badmoodledatapathalreadyused', 'local_vmoodle');
                 }
@@ -407,7 +412,7 @@ class Host_Form extends \moodleform {
      * @param  string $vdatapath The datapath to check.
      * @return bool If TRUE, the chosen datapath is already used, else FALSE.
      */
-    private function is_equal_to_another_dataroot($vdatapath) {
+    private function is_equal_to_another_dataroot($vhostname, $vdatapath) {
         global $DB;
 
         $vmoodles = $DB->get_records('local_vmoodle', array('enabled' => 1));
@@ -415,6 +420,10 @@ class Host_Form extends \moodleform {
             // Retrieves all the vmoodles datapaths.
             $vdatapaths = array();
             foreach ($vmoodles as $vmoodle) {
+                if ($vmoodle->vhostname == $vhostname) {
+                    // an existing datapath for ourself is legitimous.
+                    continue;
+                }
                 $vdatapaths[] = $vmoodle->vdatapath;
             }
 

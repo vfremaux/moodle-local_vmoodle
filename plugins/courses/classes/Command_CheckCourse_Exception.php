@@ -15,29 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The alternative first step of wizard.
- * Input a SQL command.
+ * Exception about Check_Course command.
  * 
  * @package local_vmoodle
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
-defined('MOODLE_INTERNAL') || die();
+namespace vmoodleadminset_courses;
 
-require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Form.php');
-require_once($CFG->dirroot.'/local/vmoodle/classes/commands/AdvancedCommand_Upload_Form.php');
+use \Exception;
 
-use \local_vmoodle\AdvancedCommand_Form;
-use \local_vmoodle\AdvancedCommand_Upload_Form;
+class Command_CheckCourse_Exception extends Exception {
 
-// Display forms.
-if (!isset($advancedcommand_form)) {
-    $advancedcommand_form = new AdvancedCommand_Form();
+    /**
+     * Constructor with localized message.
+     * @param string $identifier The key identifier for the localized string.
+     * @param mixed $a An object, string or number that can be used (optional).
+     */
+    public function __construct($identifier, $a = null) {
+        parent::__construct(vmoodle_get_string($identifier, 'vmoodleadminset_courses', $a));
+    }
 }
-$advancedcommand_form->display();
-
-if (!isset($advancedcommand_upload_form)) {
-    $advancedcommand_upload_form = new AdvancedCommand_Upload_Form();
-}
-$advancedcommand_upload_form->display();

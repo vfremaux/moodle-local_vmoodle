@@ -277,6 +277,7 @@ $string['reactiveorregistertemplate'] = 'Réactiver la plateforme ou enregistrer
 $string['regexp'] = 'exp reg';
 $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
+$string['renewmnetkey'] = 'Renouveller la clef';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
 $string['restart'] = 'Redémarrer la procédure';
 $string['responseerror'] = 'Erreur dans la réponse RPC de {$a}';
@@ -367,6 +368,9 @@ $string['vmoodledoadd1'] = 'ETAPE 1 de 4 : La base de données de la nouvelle pl
 $string['vmoodledoadd2'] = 'ETAPE 2 de 4 : La base de données a été convertie. La prochaine étape va charger les fichiers de données.';
 $string['vmoodledoadd3'] = 'ETAPE 3 de 4 : Les fichiers de données sont disponibles. La prochaine étape enregistre l\'existance de la nouvelle plate-forme.';
 $string['vmoodledoadd4'] = 'ETAPE 4 de 4 : La plate-forme est enregistrée. Son URL est activée. La dernière étape établit la politique du réseau Moodle.';
+$string['vmoodleinstancepattern'] = 'Pattern de test du nom d\'instance';
+$string['vmoodleinstancepattern_desc'] = 'Une expression régulière pour tester la forme du nom des nouvelles instances. Par défaut "^.*$" valant de passe-tout. Vous pouvez ajouter une expression restrictive pour sécuriser la saisie des nouveaux noms.';
+$string['errorinvalidnameform'] = 'Le nom ne respecte pas les règles de nommages établie par le motif {$a} dans la configuration centrale.';
 $string['vmoodlehost'] = 'Hôte virtuel';
 $string['vmoodleip'] = 'Adresse IP';
 $string['vmoodlemanager'] = 'Gestionnaire de plates-formes virtuelles';
@@ -382,6 +386,8 @@ $string['withoutmessage'] = 'sans message';
 $string['withselection'] = 'Avec la sélection: ';
 $string['wrongplugin'] = 'Plugin incorrect.';
 $string['wwwrootexceedscsrlimits'] = 'Le nom d\'hôte choisi dépasse 64 caractères. Ceci n\'est pas compatible avec les règles de construction des certificats SSL (MNET).';
+$string['instancebasenotexists'] = 'La base de données d\'instance n\'existe pas encore.';
+$string['instancebaseexists'] = 'La base de données d\'instance existe';
 
 /*** Help Strings ***/
 $string['name_help'] = '
