@@ -24,6 +24,9 @@
 
 namespace vmoodleadminset_upgrade;
 
+require_once($CFG->dirroot.'/local/vmoodle/plugins/upgrade/classes/Command_Upgrade.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/upgrade/classes/Command_CheckStatus.php');
+
 defined('MOODLE_INTERNAL') || die;
 
 use \local_vmoodle\commands\Command_Category;
@@ -34,6 +37,10 @@ $category = new Command_Category('upgrade');
 $category->add_command(new Command_Upgrade(
     'Upgrade databases',
     'Drives the logical upgrade of all Moodles in the network'));
+
+$category->add_command(new Command_CheckStatus(
+    'Check Upgrade Status',
+    'Performs remote checks for upgrading conditions.'));
 
 return $category;
 

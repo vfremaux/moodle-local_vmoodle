@@ -40,6 +40,6 @@ $publishes = array(
 $subscribes = array(
     'mnetadmin' => array(
         'mnetadmin_rpc_bind_peer' => 'local/vmoodle/rpclib.php/mnetadmin_rpc_bind_peer',
-        'mnetadmin_rpc_unbind_peer' => 'local/vmoodle/rpclib.php/mnetadmin_rpc_unbind_peer',
+        'mnetadmin_rpc_unbind_peer' => 'local/vmoodle/rpclib.php/mnetadmin_rpc_unbind_peer'
     ),
 );

@@ -19,7 +19,7 @@
  *
  * @package local_vmoodle
  * @category local
- * @author Valery Fremaux (valery.fremaux@club-internet.fr)
+ * @author Valery Fremaux (valery.fremaux@gmail.com)
  * @version Moodle 2.2
  */
 function xmldb_vmoodleadminset_courses_upgrade($oldversion = 0) {

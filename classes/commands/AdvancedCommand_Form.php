@@ -58,6 +58,27 @@ class AdvancedCommand_Form extends \moodleform {
         $mform->setType('sqlcommand', PARAM_TEXT);
         $mform->addRule('sqlcommand', null, 'required', null, 'client');
 
+        $group = array();
+        $group[0] = &$mform->createElement('text', 'sqlparam1name', '', $attrs);
+        $mform->setType('sqlparam1name', PARAM_TEXT);
+        $group[1] = &$mform->createElement('text', 'sqlparam1value', '', $attrs);
+        $mform->setType('sqlparam1value', PARAM_TEXT);
+        $mform->addGroup($group, 'sqlparam1', get_string('sqlparam', 'local_vmoodle').' 1', array(' => '), false);
+
+        $group = array();
+        $group[0] = &$mform->createElement('text', 'sqlparam2name', '', $attrs);
+        $mform->setType('sqlparam2name', PARAM_TEXT);
+        $group[1] = &$mform->createElement('text', 'sqlparam2value', '', $attrs);
+        $mform->setType('sqlparam2value', PARAM_TEXT);
+        $mform->addGroup($group, 'sqlparam2', get_string('sqlparam', 'local_vmoodle').' 2', array(' => '), false);
+
+        $group = array();
+        $group[0] = &$mform->createElement('text', 'sqlparam3name', '', $attrs);
+        $mform->setType('sqlparam3name', PARAM_TEXT);
+        $group[1] = &$mform->createElement('text', 'sqlparam3value', '', $attrs);
+        $mform->setType('sqlparam3value', PARAM_TEXT);
+        $mform->addGroup($group, 'sqlparam3', get_string('sqlparam', 'local_vmoodle').' 3', array(' => '), false);
+
         // Adding buttons.
         $buttonarray = array();
         $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('nextstep', 'local_vmoodle'));

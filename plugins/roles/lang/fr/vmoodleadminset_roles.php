@@ -20,6 +20,10 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'Le composant VMoodle Roles ne détient directement aucune donnée relative aux utilisateurs.';
+
+$string['allowcompare'] = 'Comparaison de tables d\'autorisations de rôles : {$a}';
 $string['backtocomparison'] = 'Retour à la comparaison du rôle';
 $string['capabilityparamsyncdesc'] =  'La capacité à synchroniser';
 $string['cmdcomparedesc'] = 'Compare les capacités d\'un rôle.';

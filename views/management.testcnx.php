@@ -26,15 +26,33 @@ require('../../../config.php');
 require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 // Retrieve parameters for database connection test.
-$database = new stdClass;
-$database->vdbtype = required_param('vdbtype', PARAM_TEXT);
-$database->vdbhost = required_param('vdbhost', PARAM_TEXT);
-$database->vdblogin = required_param('vdblogin', PARAM_TEXT);
-$database->vdbpass = required_param('vdbpass', PARAM_TEXT);
+$vmaster = new StdClass();
+/*
+$vmaster->vdbtype = $CFG->vmasterdbtype;
+$vmaster->vdbhost = $CFG->vmasterdbhost;
+$vmaster->vdblogin = $CFG->vmasterdblogin;
+$vmaster->vdbpass = $CFG->vmasterdbpass;
+$vmaster->vdbname = $CFG->vmasterdbname;
+*/
+
+$vmaster->vdbtype = required_param('vdbtype', PARAM_TEXT);
+$vmaster->vdbhost = required_param('vdbhost', PARAM_TEXT);
+$vmaster->vdblogin = required_param('vdblogin', PARAM_RAW);
+$vmaster->vdbpass = required_param('vdbpass', PARAM_RAW);
+$vmaster->vdbname = required_param('vdbname', PARAM_TEXT);
 
 // Works, but need to improve the style...
-if (vmoodle_make_connection($database, false)) {
+if (vmoodle_make_connection($vmaster, false, true)) {
     echo(get_string('connectionok', 'local_vmoodle'));
 } else {
     echo(get_string('badconnection', 'local_vmoodle'));
+}
+
+echo '<br/><br/>';
+
+// Retry and bind to vdbname to check it exists.
+if (vmoodle_make_connection($vmaster, true, true)) {
+    echo(get_string('instancebaseexists', 'local_vmoodle'));
+} else {
+    echo(get_string('instancebasenotexists', 'local_vmoodle'));
 }

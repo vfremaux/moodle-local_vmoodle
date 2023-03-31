@@ -112,14 +112,21 @@ if ($action != '') {
                 $result = include($CFG->dirroot.'/local/vmoodle/controller.management.php');
             }
             break;
+
             case 'sadmin': {
-                $result = include($CFG->dirroot.'/local/vmoodle/controller.sadmin.php');
+                include_once($CFG->dirroot.'/local/vmoodle/pro/controller.sadmin.php');
+                $controller = new \local_vmoodle\pro\sadmin_controller();
+                $result = $controller->process($action);
             }
             break;
+
             case 'services': {
-                $result = include($CFG->dirroot.'/local/vmoodle/controller.services.php');
+                include_once($CFG->dirroot.'/local/vmoodle/pro/controller.services.php');
+                $controller = new \local_vmoodle\pro\services_controller();
+                $result = $controller->process($action);
             }
             break;
+
             default: {
                 $result = -1;
             }
@@ -145,14 +152,9 @@ echo $OUTPUT->heading(get_string('vmoodleadministration', 'local_vmoodle'));
 
 // Adding tabs.
 
-$tabname = get_string('tabpoolmanage', 'local_vmoodle');
-$row[] = new tabobject('management', new moodle_url('/local/vmoodle/view.php', array('view' => 'management')), $tabname);
-$tabname = get_string('tabpoolsadmin', 'local_vmoodle');
-$row[] = new tabobject('sadmin', new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin')), $tabname);
-$tabname = get_string('tabpoolservices', 'local_vmoodle');
-$row[] = new tabobject('services', new moodle_url('/local/vmoodle/view.php', array('view' => 'services')), $tabname);
-$tabrows[] = $row;
-print_tabs($tabrows, $view);
+$renderer = local_vmoodle_get_renderer();
+debug_trace(get_class($renderer), TRACE_DEBUG);
+echo $renderer->tabs($view);
 
 // Displaying headers.
 
@@ -160,17 +162,19 @@ ob_end_flush();
 
 // Including contents.
 
+$renderer = $PAGE->get_renderer('local_vmoodle');
+
 switch($view) {
     case 'management': {
         include($CFG->dirroot.'/local/vmoodle/views/management.main.php');
     }
     break;
     case 'sadmin': {
-        include($CFG->dirroot.'/local/vmoodle/views/sadmin.main.php');
+        include($CFG->dirroot.'/local/vmoodle/pro/views/sadmin.main.php');
     }
     break;
     case 'services': {
-        include($CFG->dirroot.'/local/vmoodle/views/services.main.php');
+        include($CFG->dirroot.'/local/vmoodle/pro/views/services.main.php');
     }
     break;
 }

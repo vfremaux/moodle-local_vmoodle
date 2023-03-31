@@ -32,6 +32,7 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_USER', 501);
     define('RPC_FAILURE_CONFIG', 502);
     define('RPC_FAILURE_DATA', 503);
+    define('RPC_FAILURE_SQL', 504);
     define('RPC_FAILURE_CAPABILITY', 510);
     define('MNET_FAILURE', 511);
     define('RPC_FAILURE_RECORD', 520);
@@ -101,7 +102,8 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
     $response->status = RPC_SUCCESS;
 
     // Split multiple, non return commands, or save unique as first of array.
-    if ($multiple == true && !$return){
+    if (($multiple == true) && !$return) {
+        $command = preg_replace('/;\\n?$/', '', $command);
         $commands = explode(";\n", $command);
     } else {
         $commands[] = $command;
@@ -129,8 +131,12 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
                 $DB->execute($command, $params);
                 $failed = false;
             } catch(Exception $e) {
-                $response->errors[] = $DB->get_last_error();
-                $response->error = $DB->get_last_error();
+                $error = $e->getMessage();
+                $error .= '<br>'."SQL Failure : ".$DB->get_last_error();
+                $response->errors[] = $error;
+                $response->error = $error;
+                $response->status = RPC_FAILURE;
+                return json_encode($response);
             }
         }
     }

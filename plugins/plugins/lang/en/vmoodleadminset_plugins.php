@@ -20,6 +20,10 @@
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Plugins does not directly store any personal data about any user.';
+
+$string['available'] = 'Available';
 $string['backtocomparison'] = 'Back to plugins comparison';
 $string['cmdcomparedesc'] = 'Compare plugins equipement.';
 $string['cmdcomparename'] = 'Plugins comparison';
@@ -27,6 +31,8 @@ $string['cmdsyncdesc'] = 'Synchronize a plugin equipement.';
 $string['cmdsyncname'] = 'Synchronization of the plugin equipement';
 $string['cmdpluginsetupdesc'] = 'Enables disables remote plugins.';
 $string['cmdpluginsetupname'] = 'Plugin control';
+$string['cmd3statepluginsetupname'] = '3 State plugin control';
+$string['cmd3statepluginsetupdesc'] = 'Enables, disables or makes pluging available';
 $string['compareplugins'] = 'Comparing plugins "{$a}"';
 $string['errorblockdoesnotexit'] = 'The block {$a} is not found';
 $string['manageplugins'] = 'Manage plugins "{$a}"';

@@ -25,6 +25,8 @@ namespace local_vmoodle;
 
 defined('MOODLE_INTERNAL') || die();
 
+use StdClass;
+
 require_once($CFG->libdir.'/formslib.php');
 
 class Host_Form extends \moodleform {
@@ -125,13 +127,12 @@ class Host_Form extends \moodleform {
         $mform->setType('vdblogin', PARAM_TEXT);
 
         // Database password.
-        $mform->addElement('password', 'vdbpass', get_string('vdbpass', 'local_vmoodle'));
+        $mform->addElement('passwordunmask', 'vdbpass', get_string('vdbpass', 'local_vmoodle'));
         $mform->setType('vdbpass', PARAM_RAW);
 
         // Button for testing database connection.
         $label = get_string('testconnection', 'local_vmoodle');
-        $attrs = 'onclick="opencnxpopup(\''.$CFG->wwwroot.'\'); return true;"';
-        $mform->addElement('button', 'testconnection', $label, $attrs);
+        $mform->addElement('button', 'testconnection', $label);
 
         // Database name.
         $mform->addElement('text', 'vdbname', get_string('vdbname', 'local_vmoodle'));
@@ -161,7 +162,7 @@ class Host_Form extends \moodleform {
 
         // Button for testing datapath.
         $elmname = get_string('testdatapath', 'local_vmoodle');
-        $mform->addElement('button', 'testdatapath', $elmname, 'onclick="opendatapathpopup(\''.$CFG->wwwroot.'\'); return true;"');
+        $mform->addElement('button', 'testdatapath', $elmname);
 
         // MultiMNET.
         $subnetworks = array('-1' => get_string('nomnet', 'local_vmoodle'));
@@ -189,7 +190,7 @@ class Host_Form extends \moodleform {
         }
         $subnetworks[$newsubnetwork] = $newsubnetwork.' ('.get_string('mnetnew', 'local_vmoodle').')';
         $label = get_string('multimnet', 'local_vmoodle');
-        $attrs = 'onchange="switcherServices(\''.$newsubnetwork.'\'); return true;"';
+        $attrs = ['data-subnet' => $newsubnetwork];
         $mform->addElement('select', 'mnet', $label, $subnetworks, $attrs);
         $mform->addHelpButton('mnet', 'mnet', 'local_vmoodle');
         $mform->setType('mnet', PARAM_TEXT);
@@ -242,13 +243,19 @@ class Host_Form extends \moodleform {
         $errors = parent::validation($data, null);
 
         // Checks database connection again, after Javascript test.
-        $database = new \stdClass;
-        $database->vdbtype = $data['vdbtype'];
-        $database->vdbhost = $data['vdbhost'];
-        $database->vdblogin = $data['vdblogin'];
-        $database->vdbpass = $data['vdbpass'];
+        $vmaster = new StdClass();
+        $vmaster->vdbtype = $CFG->vmasterdbtype;
+        $vmaster->vdbhost = $CFG->vmasterdbhost;
+        $vmaster->vdblogin = $CFG->vmasterdblogin;
+        $vmaster->vdbpass = $CFG->vmasterdbpass;
+        $vmaster->vdbname = $CFG->vmasterdbname;
 
-        if (!vmoodle_make_connection($database, false)) {
+        $config = get_config('local_vmoodle');
+        if (!preg_match('/'.$config->vmoodleinstancepattern.'/', $data['name'])) {
+            $errors['name'] = get_string('errorinvalidnameform', 'local_vmoodle', $config->vmoodleinstancepattern);
+        }
+
+        if (!vmoodle_make_connection($vmaster, false)) {
             $errors['vdbhost'] = get_string('badconnection', 'local_vmoodle');
             $errors['vdblogin'] = get_string('badconnection', 'local_vmoodle');
             $errors['vdbpass'] = get_string('badconnection', 'local_vmoodle');
@@ -347,15 +354,17 @@ class Host_Form extends \moodleform {
             }
 
             // Checks 'vdatapath', if not already used.
-            if ($this->is_equal_to_another_dataroot($data['vdatapath'])) {
-                if ($data['vtemplate'] !== 0) {
+            if ($this->is_equal_to_another_dataroot($data['vhostname'], $data['vdatapath'])) {
+                if (!empty($data['vtemplate'])) {
                     $errors['vdatapath'] = get_string('badmoodledatapathalreadyused', 'local_vmoodle');
                 }
             }
 
             // Checks 'vdbname', if not already used.
-            if ($this->is_equal_to_another_database_name($data['vdbname']) && $data['vtemplate'] != 0) {
-                $errors['vdbname'] = get_string('baddatabasenamealreadyused', 'local_vmoodle');
+            if ($this->is_equal_to_another_database_name($data['vdbname'])) {
+                if (!empty($data['vtemplate'])) {
+                    $errors['vdbname'] = get_string('baddatabasenamealreadyused', 'local_vmoodle');
+                }
             }
         }
 
@@ -399,18 +408,22 @@ class Host_Form extends \moodleform {
     }
 
     /**
-     * Checks if the new virtual host's datapath is already used.
+     * Checks if the new virtual host's datapath is already used by an enabled vmoodle.
      * @param  string $vdatapath The datapath to check.
      * @return bool If TRUE, the chosen datapath is already used, else FALSE.
      */
-    private function is_equal_to_another_dataroot($vdatapath) {
+    private function is_equal_to_another_dataroot($vhostname, $vdatapath) {
         global $DB;
 
-        $vmoodles = $DB->get_records('local_vmoodle');
+        $vmoodles = $DB->get_records('local_vmoodle', array('enabled' => 1));
         if (!empty($vmoodles)) {
             // Retrieves all the vmoodles datapaths.
             $vdatapaths = array();
             foreach ($vmoodles as $vmoodle) {
+                if ($vmoodle->vhostname == $vhostname) {
+                    // an existing datapath for ourself is legitimous.
+                    continue;
+                }
                 $vdatapaths[] = $vmoodle->vdatapath;
             }
 

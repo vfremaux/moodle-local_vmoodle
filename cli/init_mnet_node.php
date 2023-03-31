@@ -50,13 +50,13 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array('bindhost'          => false,
-          'subnet'            => false,
+          'newkey'            => false,
           'debug'             => false,
           'host'              => false,
           'test'              => false,
           'help'              => false),
     array('b' => 'bindhost',
-          's' => 'subnet',
+          'n' => 'newkey',
           'd' => 'debug',
           'h' => 'help',
           'H' => 'host')
@@ -77,16 +77,16 @@ Site defaults may be changed via local/defaults.php.
 Options:
     -b, --bindhost        Remote host to bind to. If bind host is 'subs', then we perform a master to child binding. If set to a vmoodle wwwroot
                           , will bind the child to the master and it's subnet peers.
-    -s, --subnet          An optional vmoodle subnet number. If given, changes the host vmoodle subnet.
+    -n, --newkey          New key.
     -H, --host            Switches to this host virtual configuration before processing.
     -h, --help            Print out this help.
     -d, --debug           Turns on debug mode.
 
 Example:
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/init_mnet_node.php --host=http://my.virtual.moodle.org ---bind=http://my.master.moodle.org
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/init_mnet_node.php --host=http://my.virtual.moodle.org ---bindhost=http://my.master.moodle.org
 
 Binding master to subs :
-\$sudo -u www-data /usr/bin/php local/vmoodle/cli/init_mnet_node.php --host=http://my.virtual.moodle.org ---bind=subs
+\$sudo -u www-data /usr/bin/php local/vmoodle/cli/init_mnet_node.php ---bindhost=subs
 
 "; // TODO: localize - to be translated later when everything is finished.
 
@@ -117,24 +117,27 @@ echo "Starting MNET environment\n";
 
 global $MNET;
 
-$mnetstate = get_config('moodle', 'mnet_dispatcher_mode');
-if ($mnetstate != 'strict') {
-    set_config('mnet_dispatcher_mode', 'strict');
+if (!empty($options['newkey'])) {
+    $mnetstate = get_config('moodle', 'mnet_dispatcher_mode');
+    if ($mnetstate != 'strict') {
+        set_config('mnet_dispatcher_mode', 'strict');
+    }
     $MNET = new mnet_environment();
     $MNET->init();
     // Ensure we have a fresh key ourself.
+    echo "Replacing local keys\n";
     $MNET->replace_keys();
+    cache_helper::invalidate_by_definition('core', 'config');
 }
-cache_helper::invalidate_by_definition('core', 'config');
 
 if ($options['bindhost'] == 'subs') {
     $subs = $DB->get_records('local_vmoodle', array('enabled' => 1));
     foreach ($subs as $sub) {
-        bind($MNET, $sub);
+        bindme($MNET, $sub);
     }
     echo "Mnet binding service successful (main to subs).\n";
 } else {
-    bind($MNET, null, $options['bindhost']);
+    bindme($MNET, null, $options['bindhost']);
     echo "Mnet binding service successful (sub to main).\n";
 }
 
@@ -145,8 +148,8 @@ exit(0); // 0 means success.
  * Binds a vmoodle definition or an external url to us.
  *
  */
-function bind($mnet, $vmoodlesub, $url = '') {
-    global $DB, $MNET;
+function bindme($mnet, $vmoodlesub, $url = '') {
+    global $DB, $MNET, $CFG;
     static $application;
 
     if (empty($application)) {
@@ -165,8 +168,15 @@ function bind($mnet, $vmoodlesub, $url = '') {
 
     $mnetpeer = new mnet_peer();
     $mnetpeer->wwwroot = $remoteurl;
+    echo "Bootstrapping to $remoteurl.\n";
     $mnetpeer->bootstrap($mnetpeer->wwwroot, null, $application->id, true);
     $mnetpeer->commit();
+    /*
+    if ($CFG->debug == E_ALL) {
+        echo "Is Boostrapped : {$mnetpeer->bootstrapped}\n";
+        echo "Mnet Public key : {$mnetpeer->public_key}\n";
+    }
+    */
     cache_helper::invalidate_by_definition('core', 'config');
 
     /*

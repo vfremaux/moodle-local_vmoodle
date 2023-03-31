@@ -20,10 +20,17 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
  
+
+// Privacy.
+$string['privacy:metadata'] = 'Le composant VMoodle Upgrade ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['pluginname'] = 'Mises à jour distribuées';
 $string['upgrade'] = 'Notifications de mise à jour';
-$string['cmdupgradename'] = 'Command name for upgrade';
-$string['cmdupgradedesc'] = 'Command name for upgrade';
+$string['upgradetodo'] = 'Mise à jour en attente de {$a->old} vers {$a->new} (plus plugins)';
+$string['cmdupgradename'] = 'Commande pour la mise à jour';
+$string['cmdupgradedesc'] = 'Command pour la mise à jour';
+$string['cmdcheckname'] = 'Commande pour la vérification de mise à jour';
+$string['cmdcheckdesc'] = 'Commande pour la vérification de mise à jour';
 $string['maxrequestupgradedesc'] = 'Réexécutions maximum pour la mise à jour';
 $string['maxcurlexecution'] = 'Le nombre maximum de réexécutions est atteint';
 $string['isuptodate'] = 'La plate forme distante est à jour';

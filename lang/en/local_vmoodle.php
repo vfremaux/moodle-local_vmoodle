@@ -99,6 +99,7 @@ $string['clistart'] = 'Starting cli =';
 $string['cliusingtemplate'] = 'Make Node using template {$a}';
 $string['closewindow'] = 'Close the window';
 $string['commanddescription'] = 'Description';
+$string['commandcli'] = 'CLI command syntax';
 $string['commandemptydescription'] = 'The command\'s description is empty.';
 $string['commandemptyname'] = 'The command\'s name is empty.';
 $string['commandformnotlinked'] = 'No command linked to the form.';
@@ -165,8 +166,6 @@ $string['details'] = 'Details:';
 $string['disableinstances'] = 'disable instances ';
 $string['donotopenservices'] = 'Do not open MNET services';
 $string['dropbackup'] = 'Drop backup';
-$string['emulatecommunity'] = 'Emulate the community version.';
-$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['edithost'] = 'Edit the configuration';
 $string['editvmoodle'] = 'Edit a virtual host definition';
 $string['elements'] = 'element(s)';
@@ -200,13 +199,11 @@ $string['insuffisantcapabilities'] = 'Insufficient capabilities';
 $string['key_autorenew_parms'] = 'Aumated MNET key renewal';
 $string['lastcron'] = 'Last cron';
 $string['lastcrongap'] = '&Delta;';
-$string['licenseprovider'] = 'Pro License provider';
-$string['licenseprovider_desc'] = 'Input here your provider key';
-$string['licensekey'] = 'Pro license key';
-$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['maindb'] = 'Main db';
 $string['mainpath'] = 'Main path';
 $string['mainservicesformselection'] = 'Services pattern to master Moodle<br/>This pattern is applied to the new node. the mirrored pattern is applied to the master node (this moodle)';
+$string['managersonly'] = 'Managers only';
+$string['managersandadminsonly'] = 'Managers and site administrators';
 $string['makebackup'] = 'Make backup';
 $string['manualcommand'] = 'Manual command';
 $string['massdeployment'] = 'Massive deployment';
@@ -236,6 +233,7 @@ $string['mysqldumpcmd'] = 'Mysqldump command location';
 $string['newvmoodle'] = 'New virtual host';
 $string['newplatformregistered'] = 'A new moodle instance has been registered.';
 $string['nextstep'] = 'Next';
+$string['noexecutionfor'] = 'Database operation failed.<br/>SQL : {$a->sql}<br/>Raison: {$a->error}';
 $string['nomnet'] = 'No Moodle Net';
 $string['none'] = 'None';
 $string['noplatformchosen'] = 'No platform chosen.';
@@ -253,6 +251,8 @@ $string['operation'] = 'Operation';
 $string['organization'] = 'Organization';
 $string['organizationmail'] = 'foo@organization';
 $string['organizationunit'] = 'Unit';
+$string['oldversionsuffix'] = 'Old versions suffix (migration script generators)';
+$string['oldversionsuffix_desc'] = 'Alternate old version url suffix. Usually a -moodleXX is generated for old moodle versions. Use moodle-[suffix] if defined.';
 $string['parameterallowedvaluesnotgiven'] = 'The allowed values of enum {$a} aren\'t given.';
 $string['parameteremptydescription'] = 'The description of parameter {$a} is empty.';
 $string['parameteremptyname'] = 'The parameter\'s name is empty.';
@@ -271,7 +271,6 @@ $string['platformname'] = 'Platform name';
 $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Plugin is disabled.';
 $string['pluginenabled'] = 'Plugin is enabled.';
-$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'VMoodle'; // @CORE
 $string['pluginnotdisabled'] = 'Plugin were not disabled.';
 $string['pluginnotenabled'] = 'Plugin were not enabled.';
@@ -288,8 +287,12 @@ $string['regexp'] = 'regexp';
 $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
 $string['renewallbindings'] = 'Renew all bindings';
+$string['renewmnetkey'] = 'Renew mnet key';
+$string['responseerror'] = 'Error in RPC response from source {$a}';
+$string['sendfailure'] = 'RPC Send to source {$a} error';
 $string['restorebackup'] = 'Restore backup';
 $string['restart'] = 'Restart process';
+$string['retrievefiles'] = 'Retrieve generated files';
 $string['retrieveplatforms'] = 'Retrieve platforms';
 $string['rpcstatus'] = 'Undefined status.';
 $string['rpcstatus100'] = 'Test command.';
@@ -323,6 +326,7 @@ $string['snapshothost'] = 'Snapshot the configuration';
 $string['snapshotmaster'] = 'Snapshot master Moodle';
 $string['sqlcommand'] = 'SQL command';
 $string['sqlfile'] = 'SQL file';
+$string['sqlparam'] = 'SQL Parameter';
 $string['startingstate'] = 'Starting state';
 $string['status'] = 'Status';
 $string['subscribe'] = 'Subscribe';
@@ -382,8 +386,10 @@ $string['vmoodledoadd1'] = 'STEP 1 on 4 : The new virtual platform database is b
 $string['vmoodledoadd2'] = 'STEP 2 on 4 : The database has been converted. Next step will load data files.';
 $string['vmoodledoadd3'] = 'STEP 3 on 4 : Data Files are available. Next step will register the virtual platform.';
 $string['vmoodledoadd4'] = 'STEP 4 on 4 : Platform registration complete. Platform URL has been activated. Last step will enable Mnet protocols.';
+$string['vmoodleinstancepattern'] = 'Virtual Moodle instance check pattern';
+$string['vmoodleinstancepattern_desc'] = 'A regexp to secure the instance naming. Defaults to ".*" as pass-all pattern. You can add a restritive pattern that secures what can be given as name.';
+$string['errorinvalidnameform'] = 'Name is not complying the naming conventions given by the pattern {$a} in site config.';
 $string['vmoodlehost'] = 'Virtual Moodle Host name scheme';
-$string['vmoodlehost'] = 'Virtual Moodle host';
 $string['vmoodlehost_desc'] = 'Any http(s):// scheme where <%%INSTANCE%%> will be replaced by host shortname.';
 $string['vmoodleip'] = 'IP Address';
 $string['vmoodlemanager'] = 'Virtual Moodle instances manager';
@@ -399,6 +405,8 @@ $string['withoutmessage'] = 'without message';
 $string['withselection'] = 'With the selection: ';
 $string['wrongplugin'] = 'Wrong plugin.';
 $string['wwwrootexceedscsrlimits'] = 'The choosen wwwroot exceeds 64 chars length. This is not compatible with MNET openssl CSR requirements.';
+$string['instancebasenotexists'] = 'Instance base does no exists yet.';
+$string['instancebaseexists'] = 'Instance base exists';
 
 /*** Help Strings ***/
 $string['name'] = 'Name';
@@ -577,10 +585,18 @@ $string['systempath_desc'] = 'Absolute system path to executable';
 
 $string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
 
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
+$string['generatescripts'] = 'Script generator';
+$string['generatescripts_help'] = '
+Generates all type of scripts scanning the vmoodle register and instanciating the script text for each vmoodle.
+
+Injection placeholders:
+
+- %WWWROOT%
+- %DBHOST%
+- %DBNAME%
+- %DBUSER%
+- %DBPASS%
+- %DATAROOT%
+';
+
+include(__DIR__.'/pro_additional_strings.php');

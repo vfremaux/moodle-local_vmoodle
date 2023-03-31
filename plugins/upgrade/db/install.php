@@ -15,34 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Displays default services strategy.
- *
  * @package local_vmoodle
  * @category local
- * @author Moheissen Fabien (fabien.moheissen@gmail.com)
+ * @author Bruce Bujon (bruce.bujon@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/local/vmoodle/classes/ServicesStrategy_Form.php');
+require_once($CFG->dirroot.'/local/vmoodle/db/install.php');
 
-$defaultservices = $DB->get_records('mnet_service', array('offer' => 1), 'name');
+/**
+ * We must capture the old block_vmoodle table records and remove the old table
+ *
+ */
+function xmldb_vmoodleadminset_upgrade_install() {
+    global $DB;
 
-$config = get_config('local_vmoodle');
-
-// Displays the form.
-$services_form = new \local_vmoodle\ServicesStrategy_Form();
-if ($services = unserialize(@$config->services_strategy)) {
-    $services_form->set_data($services);
+    set_config('late_install', 1, 'vmoodleadminset_upgrade');
+    set_config('late_install', 1, 'local_vmoodle');
+    return true;
 }
 
-echo $OUTPUT->box_start();
-$services_form->display();
+/**
+ * this function is called when viewing the vmoodle register to 
+ * fix some mispositionned rpc registration (Moodle bug in upgradelib.php)
+ */
+function xmldb_vmoodleadminset_upgrade_late_install() {
+    global $USER, $DB;
 
-echo $OUTPUT->heading(get_string('rawstrategy', 'local_vmoodle'));
-echo $OUTPUT->box(get_string('rawstrategy_desc', 'local_vmoodle'));
-echo '<pre>';
-echo @$config->services_strategy;
-echo '</pre>';
+    xmldb_local_vmoodle_late_install();
 
-echo $OUTPUT->box_end();
+    set_config('late_install', null, 'vmoodleadminset_upgrade');
+    return true;
+}

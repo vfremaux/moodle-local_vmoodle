@@ -42,11 +42,17 @@ if (!empty($controllerresult)) {
 }
 
 $page = optional_param('vpage', 0, PARAM_INT);
+$namefilter = optional_param('namefilter', '', PARAM_TEXT);
 $perpage = 35;
 
 // Retrieves all virtuals hosts.
 $totalcount = $DB->count_records('local_vmoodle', array());
-$vmoodles = $DB->get_records('local_vmoodle', null, 'name,enabled', '*', $page * $perpage, $perpage);
+if (empty($namefilter)) {
+    $vmoodles = $DB->get_records('local_vmoodle', null, 'name,enabled', '*', $page * $perpage, $perpage);
+} else {
+    $select = ' name LIKE ? OR shortname LIKE ? OR vhostname LIKE ? ';
+    $vmoodles = $DB->get_records_select('local_vmoodle', $select, ['%'.$namefilter.'%', '%'.$namefilter.'%', '%'.$namefilter.'%'], 'name,enabled', '*', $page * $perpage, $perpage);
+}
 
 // If one or more virtual hosts exists.
 if ($vmoodles) {
@@ -97,6 +103,32 @@ if ($vmoodles) {
         $snapurl = new moodle_url('/local/vmoodle/view.php', $params);
         $pixicon = $OUTPUT->pix_icon('snapshot', get_string('snapshothost', 'local_vmoodle'), 'local_vmoodle');
         $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'">'.$pixicon.'</a>';
+
+        // Check current host key and report if something wrong.
+        $mnet_peer = new mnet_peer();
+        $mnetstate = 'unbound';
+        $hostid = $DB->get_field('mnet_host', 'id', ['wwwroot' => $vmoodle->vhostname]);
+        if ($hostid) {
+            // Too heavy to be done in direct query.
+            /*
+            $mnet_peer->set_id($hostid);
+            $mnet_peer->currentkey = mnet_get_public_key($mnet_peer->wwwroot, $mnet_peer->application);
+            // Secures the comparison.
+            $mnet_peer->currentkey = str_replace("\r", '', trim($mnet_peer->currentkey));
+            $mnet_peer->public_key = str_replace("\r", '', trim($mnet_peer->public_key));
+            if ($mnet_peer->currentkey == $mnet_peer->public_key) {
+                $mnetstate = 'good';
+            } else {
+                $mnetstate = 'bad';
+            }
+            */
+        }
+
+        $params = array('view' => 'management', 'what' => 'renewkey', 'id' => $vmoodle->id);
+        $renewkeyurl = new moodle_url('/local/vmoodle/view.php', $params);
+        $pixicon = $OUTPUT->pix_icon('i/key', get_string('renewmnetkey', 'local_vmoodle'), 'moodle');
+        $vmoodlecmd .= '&nbsp;<a href="'.$renewkeyurl.'" data-mnetid="'.$hostid.'" class="mnet-key-query mnet-key-'.$mnetstate.'">'.$pixicon.'</a>';
+
         $vmoodlestatus = vmoodle_print_status($vmoodle, true);
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {
@@ -131,6 +163,7 @@ if ($vmoodles) {
 
     echo '<center>';
     echo '<p>'.$OUTPUT->paging_bar($totalcount, $page, $perpage, $returnurl, 'vpage').'</p>';
+    echo $renderer->namefilter($namefilter);
     echo '<form name="vmoodlesform" action="'.$returnurl.'" method="POST" >';
     echo html_writer::table($table);
 
@@ -147,6 +180,7 @@ if ($vmoodles) {
     echo '</form>';
     echo '</center>';
 } else {
+    echo $renderer->namefilter($namefilter);
     echo $OUTPUT->notification(get_string('novmoodles', 'local_vmoodle'));
 }
 
