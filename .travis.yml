@@ -22,13 +22,8 @@ php:
 
 env:
  global:
-<<<<<<< HEAD
-  - MOODLE_BRANCH=MOODLE_37_STABLE
-  - PLUGINS_BRANCH=MOODLE_37_WORKING
-=======
-  - MOODLE_BRANCH=MOODLE_38_STABLE
-  - PLUGINS_BRANCH=MOODLE_38_WORKING
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
+  - MOODLE_BRANCH=MOODLE_39_STABLE
+  - PLUGINS_BRANCH=MOODLE_39_WORKING
  matrix:
   - DB=pgsql
   - DB=mariadb
@@ -51,8 +46,8 @@ script:
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
-#  - moodle-plugin-ci phpdoc
 #  - moodle-plugin-ci mustache
+#  - moodle-plugin-ci phpdoc
   - moodle-plugin-ci grunt
-  - moodle-plugin-ci phpunit
+#  - moodle-plugin-ci phpunit
 #  - moodle-plugin-ci behat

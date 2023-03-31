@@ -149,6 +149,7 @@ echo $OUTPUT->heading(get_string('vmoodleadministration', 'local_vmoodle'));
 // Adding tabs.
 
 $renderer = local_vmoodle_get_renderer();
+debug_trace(get_class($renderer), TRACE_DEBUG);
 echo $renderer->tabs($view);
 
 // Displaying headers.

@@ -62,14 +62,6 @@ foreach ($pluginlibs as $lib) {
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-<<<<<<< HEAD
-<<<<<<< HEAD
-function local_vmoodle_supports_feature($feature) {
-    global $CFG;
-    static $supports;
-
-    $config = get_config('local_vmoodle');
-=======
 function local_vmoodle_supports_feature($feature = null, $getsupported = false) {
     global $CFG;
     static $supports;
@@ -77,16 +69,6 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
     if (!during_initial_install()) {
         $config = get_config('local_vmoodle');
     }
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
-function local_vmoodle_supports_feature($feature = null, $getsupported = false) {
-    global $CFG;
-    static $supports;
-
-    if (!during_initial_install()) {
-        $config = get_config('local_vmoodle');
-    }
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 
     if (!isset($supports)) {
         $supports = array(
@@ -100,19 +82,10 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
         $prefer = array();
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     if ($getsupported) {
         return $supports;
     }
 
-<<<<<<< HEAD
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     // Check existance of the 'pro' dir in plugin.
     if (is_dir(__DIR__.'/pro')) {
         if ($feature == 'emulate/community') {
@@ -127,20 +100,11 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
         $versionkey = 'community';
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     if (empty($feature)) {
         // Just return version.
         return $versionkey;
     }
 
-<<<<<<< HEAD
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     list($feat, $subfeat) = explode('/', $feature);
 
     if (!array_key_exists($feat, $supports[$versionkey])) {
@@ -765,24 +729,7 @@ function vmoodle_create_database($vmoodledata) {
 
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
-<<<<<<< HEAD
-<<<<<<< HEAD
-    if (!$DB->execute($sql)) {
-        print_error('noexecutionfor', 'local_vmoodle', '', $sql);
-=======
-    try {
-        $DB->execute($sql);
-    } catch (Exception $ex) {
-        $e = new StdClass;
-        $e->sql = $sql;
-        $e->error = $DB->get_last_error();
-        print_error('noexecutionfor', 'local_vmoodle', '', $e);
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-        die;
-    }
-=======
     vmoodle_execute_query($vmoodledata, $sql, $sidecnx);
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 }
 
 /**
@@ -1599,8 +1546,6 @@ function vmoodle_del_subpath(&$vmoodle) {
         mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
     }
 }
-<<<<<<< HEAD
-=======
 
 function vmoodle_load_command($plugin, $commandname) {
     global $CFG;
@@ -1615,4 +1560,3 @@ function vmoodle_load_command($plugin, $commandname) {
     $command = new $commandclass();
     return $command;
 }
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31

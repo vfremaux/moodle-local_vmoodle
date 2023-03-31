@@ -182,14 +182,6 @@ function vmoodle_boot_configuration() {
          * Setup will additionnaly apply a local/defaults.php file if exists.
          */
         if (!empty($CFG->vmoodlehardchildsdefaults)) {
-<<<<<<< HEAD
-            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardchildsdefaults.'.php';
-            if (file_exists($default)) {
-                include($default);
-            } else {
-                if ($CFG->debug == E_ALL) {
-                    throw new Exception("Trying to load an inexistant or unreacheable child defaults file\n");
-=======
             $exclude = false;
             if (!empty($CFG->vmoodlehardchildsdefaultsexclude)) {
                 if (preg_match('/'.$CFG->vmoodlehardchildsdefaultsexclude.'/', $CFG->vmoodleroot)) {
@@ -206,7 +198,6 @@ function vmoodle_boot_configuration() {
                     if ($CFG->debug == E_ALL) {
                         throw new Exception("Trying to load an inexistant or unreacheable child defaults file\n");
                     }
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
                 }
             }
         }
@@ -224,11 +215,7 @@ function vmoodle_boot_configuration() {
             if (file_exists($default)) {
                 include($default);
             } else {
-<<<<<<< HEAD
-                if ($CFG->debug == E_ALL) {
-=======
                 if (@$CFG->debug == E_ALL) {
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
                     throw new Exception("Trying to load an inexistant or unreacheable master defaults file\n");
                 }
             }

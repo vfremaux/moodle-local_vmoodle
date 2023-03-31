@@ -170,14 +170,6 @@ $string['errorinvalidsessionorplatform'] = 'Les données de session VMoodle sont
 $string['errorplatformnotavailable'] = 'La plate-forme {$a} n\'est pas disponible.';
 $string['errorreactivetemplate'] = 'Le nom du chemin du moodle data et le nom de la base de données est introuvable pour réactiver la plateforme désirée.';
 $string['errorsetupdb'] = 'Erreur de mise en place de la base de données';
-<<<<<<< HEAD
-<<<<<<< HEAD
-$string['emulatecommunity'] = 'Emuler la version communautaire';
-$string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 $string['environment'] = 'Environment technique';
 $string['failedplatforms'] = 'Echec des plates-formes :';
 $string['fileschema'] = 'Position des fichiers';
@@ -287,11 +279,8 @@ $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
 $string['restart'] = 'Redémarrer la procédure';
-<<<<<<< HEAD
-=======
 $string['responseerror'] = 'Erreur dans la réponse RPC de {$a}';
 $string['sendfailure'] = 'Erreur d\'invocation RPC sur {$a}';
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['restorebackup'] = 'Restaurer des bases de sauvegarde';
 $string['retrieveplatforms'] = 'Récupérer les plates-formes';
 $string['retrievefiles'] = 'Récupérer les fichiers';
@@ -596,15 +585,6 @@ $string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enr
 accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
 ';
 
-<<<<<<< HEAD
-$string['plugindist_desc'] = '
-<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
-correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
-sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
-<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
-<p>Notez que les deux composant local_sharedresources et mod_sharedresource doivent fonctionner au même niveau de distribution</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
-=======
 $string['generatescripts'] = 'Générateur de scripts';
 $string['generatescripts_help'] = '
 Generère tout type de script en scannant la base de registre de virtualisation vmoodle et en instanciant le bloc de script pour chaque hôte du registre.
@@ -619,9 +599,4 @@ Balises d\'injection :
 - %DATAROOT%
 ';
 
-<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
-include(__DIR__.'/pro_additional_strings.php');
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc

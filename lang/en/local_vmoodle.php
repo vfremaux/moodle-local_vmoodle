@@ -291,10 +291,7 @@ $string['responseerror'] = 'Error in RPC response from source {$a}';
 $string['sendfailure'] = 'RPC Send to source {$a} error';
 $string['restorebackup'] = 'Restore backup';
 $string['restart'] = 'Restart process';
-<<<<<<< HEAD
-=======
 $string['retrievefiles'] = 'Retrieve generated files';
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['retrieveplatforms'] = 'Retrieve platforms';
 $string['rpcstatus'] = 'Undefined status.';
 $string['rpcstatus100'] = 'Test command.';
@@ -583,15 +580,6 @@ $string['systempath_desc'] = 'Absolute system path to executable';
 
 $string['vmoodleip_desc'] = 'A true XXX.XXX.XXX.XXX IP.';
 
-<<<<<<< HEAD
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
-=======
 $string['generatescripts'] = 'Script generator';
 $string['generatescripts_help'] = '
 Generates all type of scripts scanning the vmoodle register and instanciating the script text for each vmoodle.
@@ -606,9 +594,4 @@ Injection placeholders:
 - %DATAROOT%
 ';
 
-<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
-include(__DIR__.'/pro_additional_strings.php');
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc

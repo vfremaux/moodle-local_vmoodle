@@ -28,7 +28,7 @@ require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 $CFG->vmasterdbhost = 'localhost';
 $CFG->vmasterdbtype = 'mariadb';
-$CFG->vmasterdbname = 'moodle38_generic';
+$CFG->vmasterdbname = 'moodle39_generic';
 $CFG->vmasterdblogin = 'root';
 $CFG->vmasterdbpass = 'spr1ngb0ks';
 $CFG->vmasterdbpersist =  false;

@@ -21,8 +21,6 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
-<<<<<<< HEAD
-=======
 
 // Privacy.
 $string['privacy:metadata'] = 'Le composant VMoodle Courses ne détient directement aucune donnée relative aux utilisateurs.';
@@ -31,10 +29,6 @@ $string['noenrol'] = 'Pas d\'inscription';
 $string['managers'] = 'Gestionnaires uniquement';
 $string['siteadmins'] = 'Administrateurs de site uniquement';
 $string['adminsandmanagers'] = 'Gestionnaires et administrateurs de site';
-<<<<<<< HEAD
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 $string['cmdcreatecategory'] = 'Créer une catégorie de cours';
 $string['cmdcreatecategory_desc'] = 'Crée une catégorie de cours par son chemin (noms complets de catégorie)';
 $string['cmdrestorecourse'] = 'Restaurer un cours';
@@ -44,14 +38,7 @@ $string['cmddeletecourse_desc'] = 'Supprime un cours sur la base de son nom cour
 $string['mnetadmin_description'] = 'En publiant ce service, vous autorisez la plate-forme à être administrée par la méta-administration du site maître.<br/><br/>En vous abonnant à ce service, vous pouvez administrer les autres plates-formes du réseau à partir de cette plate-forme.<br/><br/>';
 $string['mnetadmin_name'] = 'Service de méta-administration';
 $string['pluginname'] = 'Fonctions relatives aux cours';
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 $string['enroladmins'] = 'Inscrire les administrateurs comme enseignants.';
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
-$string['enroladmins'] = 'Inscrire les administrateurs comme enseignants.';
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 $string['errornolocation'] = 'Il n\'y a pas de fichier à l\'emplacement donné ou ce fichier n\'est pas lisible.';
 $string['errornotamoodlearchive'] = 'L\'emplacement indiqué ne contient pas une archive Moodle.';
 $string['errornocategory'] = 'La catégorie cible n\'existe pas (par numéro d\'identification).';
@@ -60,15 +47,7 @@ $string['errorcourseidnumberexists'] = 'Un cours existe avec ce numéro d\'ident
 $string['errornopermission'] = 'Vous n\'avez pas les droits avec votre utilisateur distant pour restaurer.';
 $string['errorduringrestore'] = 'Une erreur est survenue lors de la restauration. . Exception : {$a}';
 $string['errorafterrestore'] = 'La restauration a abouti, mais aucun cours n\'a été créé.';
-<<<<<<< HEAD
-<<<<<<< HEAD
-$string['path'] = 'Chemin de noms de la catégorie';
-=======
 $string['path'] = 'Chemin complet de la catégorie (ex: "Année 2020/Histoire/Histoire contemporaine")';
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
-=======
-$string['path'] = 'Chemin complet de la catégorie (ex: "Année 2020/Histoire/Histoire contemporaine")';
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 $string['catidnumber'] = 'Numéro d\'identification de la nouvelle catégorie';
 $string['catvisible'] = 'Categorie visible initialement';
 $string['coursevisible'] = 'Cours initiallement visible';
