@@ -102,7 +102,8 @@ function mnetadmin_rpc_run_sql_command($user, $command, $params, $return = false
     $response->status = RPC_SUCCESS;
 
     // Split multiple, non return commands, or save unique as first of array.
-    if ($multiple == true && !$return){
+    if (($multiple == true) && !$return) {
+        $command = preg_replace('/;\\n?$/', '', $command);
         $commands = explode(";\n", $command);
     } else {
         $commands[] = $command;

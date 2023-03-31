@@ -84,7 +84,9 @@ $allhosts = $DB->get_records('local_vmoodle', $params);
 
 echo "Starting resetting admins....\n";
 
-$i = 1;
+$i = 0;
+$numhosts = count($allhosts);
+$fails = 0;
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/fix_site_admins.php {$withmnetadmins} {$userscheme} {$fixguest} ";
     $workercmd .= " --host=\"{$h->vhostname}\" ";
@@ -100,9 +102,14 @@ foreach ($allhosts as $h) {
             die("Worker ended with error");
         } else {
             mtrace("Worker failed for {$h->hostname}");
+            $fails++;
         }
     }
 
+    $i++;
+    vmoodle_send_cli_progress($numhosts, $i, 'bulkfixadmins');
 }
 
-echo "Done.\n";
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulkfixadmind done. $fails failures.");
+echo "Done with $fails failures.\n";
+exit(0);

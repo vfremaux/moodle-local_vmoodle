@@ -69,11 +69,7 @@ $param1 = new Command_Parameter(
     'mmode',
     'boolean',
     vmoodle_get_string('maintenancemode', 'vmoodleadminset_generic'),
-<<<<<<< HEAD
-    null,
-=======
     false,
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     null);
 $param1->set_value(false);
 
@@ -81,11 +77,7 @@ $param2 = new Command_Parameter(
     'mmessage',
     'ltext',
     vmoodle_get_string('maintenancemessage', 'vmoodleadminset_generic'),
-<<<<<<< HEAD
-    null,
-=======
     '',
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     null);
 $param2->set_value('');
 
@@ -160,12 +152,9 @@ $category->add_command($cmd);
 $cmd = new Command_CopyFileArea();
 $category->add_command($cmd);
 
-<<<<<<< HEAD
-=======
 $cmd = new Command_CopyTable();
 $category->add_command($cmd);
 
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $cmd = new Command_SyncLangCustomisation();
 $category->add_command($cmd);
 

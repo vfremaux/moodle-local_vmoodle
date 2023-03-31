@@ -43,6 +43,7 @@ Use \local_vmoodle\Mnet_Peer;
 // Includes the MNET library.
 require_once($CFG->dirroot.'/mnet/lib.php');
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
+require_once($CFG->dirroot.'/local/vmoodle/bootlib.php');
 
 // Add needed javascript here (because addonload() is needed before).
 
@@ -166,7 +167,7 @@ if ($action == 'doadd') {
     }
 
     if (empty($submitteddata->vtemplate)) {
-
+        // Creating new host from no template. 
         // Update potentially existing record.
         $sqlrequest = 'UPDATE
                             {mnet_host}
@@ -216,11 +217,7 @@ if ($action == 'doadd') {
             vmoodle_add_subpath($submitteddata);
         }
 
-<<<<<<< HEAD
-        // Ensure a database is created.
-=======
         // Ensure a database is created. Let the existing database play if already exists.
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         vmoodle_create_database($submitteddata);
 
         if (function_exists('debug_trace')) {
@@ -243,6 +240,7 @@ if ($action == 'doadd') {
         // Checks if the chosen template still exists.
         $templates = vmoodle_get_available_templates();
         if (empty($templates) || !vmoodle_exist_template($submitteddata->vtemplate)) {
+            // No templates available.
 
             if (function_exists('debug_trace')) {
                 debug_trace('Vnode no template. Exiting.');
@@ -308,6 +306,8 @@ if ($action == 'doadd') {
             if (function_exists('debug_trace')) {
                 debug_trace('Vnode STEP 0.');
             }
+
+            vmoodle_create_database($submitteddata);
 
             if (!vmoodle_load_database_from_template($submitteddata, $CFG->dataroot.'/vmoodle')) {
 
@@ -1089,6 +1089,7 @@ if (($action == 'delete') || ($action == 'fulldelete')) {
         }
         vmoodle_destroy($vmoodle);
     }
+
     if (empty($automation)) {
         redirect(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
     }
@@ -1115,60 +1116,20 @@ if ($action == 'destroy') {
     }
 }
 /* ******************** Run an interactive cronlike trigger forcing key renew on all vmoodle *********** */
-if ($action == 'renewall') {
+if ($action == 'renewkey') {
+    $id = required_param('id', PARAM_INT);
 
-    /*
-     * Important Note : Renewing relies on Web triggering of the mnetcron function
-     * on the pears, asking for key change. If you are using password to protect
-     * the Moodle cron by Web note that ALL sites should use the SAME cron password
-     * for renewall to be performed globally.
-     */
-
-    // Self renew.
-    echo $OUTPUT->header();
-    echo '<pre>';
-    $params = array('forcerenew' => 1);
-    if ($CFG->cronremotepassword) {
-        $params['password'] = $CFG->cronremotepassword;
-    }
-    $renewuri = new moodle_url('/local/vmoodle/mnetcron.php', $params);
-    echo "Running on : $renewuri\n";
-
-    echo "#############################\n";
-
-    $ch = curl_init($renewuri);
-
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, false);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-
-    $raw = curl_exec($ch);
-    echo $raw."\n\n";
-    echo '</pre>';
-
-    $sql = '
-        SELECT
-            *
-        FROM
-            {local_vmoodle}
-        WHERE
-            mnet > -1
-    ';
-    $vmoodles = $DB->get_records_sql($sql);
-
-    echo '<pre>';
-    foreach ($vmoodles as $vmoodle) {
+    $report = '';
+    // Unmarks the Vmoodle in everyplace (subnetwork, common).
+    if ($vmoodle = $DB->get_record('local_vmoodle', array('id' => $id))) {
+        $report .= '<pre>';
         $renewuri = $vmoodle->vhostname.'/local/vmoodle/mnetcron.php?forcerenew=1';
         if ($CFG->cronremotepassword) {
             $renewuri .= '&password='.$CFG->cronremotepassword;
         }
-        echo "Running on : $renewuri\n";
+        $report .= "Running interactive cron renew on : $renewuri\n";
 
-        echo "#############################\n";
+        $report .= "#############################\n";
 
         $ch = curl_init($renewuri);
 
@@ -1181,11 +1142,112 @@ if ($action == 'renewall') {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
         $raw = curl_exec($ch);
-        echo $raw."\n\n";
+        $report .= $raw."\n\n";
+
+        // Get the current remote key and refresh it if needed.
+        $mnet_peer = new \mnet_peer();
+        $report .= "Bootstrapping {$vmoodle->vhostname} ...\n";
+        $mnet_peer->bootstrap($vmoodle->vhostname, null, 'moodle', $force = true, $report);
+        $report .= "Bootstrapped.\n";
+        $report .= '</pre>';
+
+    } else {
+        // If the Vmoodle record doesn't exist in the block, because of a manual action.
+        $messageobject->message = get_string('novmoodle', 'local_vmoodle');
     }
-    echo '</pre>';
 
     if (empty($automation)) {
+        echo $OUTPUT->header();
+        echo $report;
+        echo '<center>';
+        echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
+        echo '</center>';
+        echo $OUTPUT->footer();
+    }
+    die;
+}
+if ($action == 'renewall') {
+
+    /*
+     * Important Note : Renewing relies on Web triggering of the mnetcron function
+     * on the pears, asking for key change. If you are using password to protect
+     * the Moodle cron by Web note that ALL sites should use the SAME cron password
+     * for renewall to be performed globally.
+     */
+
+    // Self renew.
+    if (empty($automation)) {
+        echo $OUTPUT->header();
+        echo '<pre>';
+    }
+
+    $params = array('forcerenew' => 1);
+    if ($CFG->cronremotepassword) {
+        $params['password'] = $CFG->cronremotepassword;
+    }
+    $renewuri = new moodle_url('/local/vmoodle/mnetcron.php', $params);
+    $report = "Running on : $renewuri\n";
+
+    $report .= "#############################\n";
+
+    $ch = curl_init($renewuri);
+
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+    $raw = curl_exec($ch);
+    $report .= $raw."\n\n";
+    $report .= '</pre>';
+
+    $sql = '
+        SELECT
+            *
+        FROM
+            {local_vmoodle}
+        WHERE
+            mnet > -1
+    ';
+    $vmoodles = $DB->get_records_sql($sql);
+
+    $report .= '<pre>';
+    foreach ($vmoodles as $vmoodle) {
+        $renewuri = $vmoodle->vhostname.'/local/vmoodle/mnetcron.php?forcerenew=1';
+        if ($CFG->cronremotepassword) {
+            $renewuri .= '&password='.$CFG->cronremotepassword;
+        }
+        $report .= "Running on : $renewuri\n";
+
+        $report .= "#############################\n";
+
+        $ch = curl_init($renewuri);
+
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+        $raw = curl_exec($ch);
+        $report .= $raw."\n\n";
+
+        // Get the current remote key and refresh it if needed.
+        $mnet_peer = new \mnet_peer();
+        $report .= "Bootstrapping {$vmoodle->vhostname} ...\n";
+        $public_key = clean_param(mnet_get_public_key($vmoodle->vhostname, null), PARAM_PEM);
+        $mnet_peer->bootstrap($vmoodle->vhostname, $public_key, 'moodle', $force = true, $report);
+        $report .= "Bootstrapped.\n";
+    }
+    $report .= '</pre>';
+
+    if (empty($automation)) {
+        echo $report;
         echo '<center>';
         echo $OUTPUT->continue_button(new moodle_url('/local/vmoodle/view.php', array('view' => 'management')));
         echo '</center>';

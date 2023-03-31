@@ -126,6 +126,7 @@ echo "Starting building for nodes....\n";
 
 $i = 0;
 $numhosts = count($allhosts);
+$fails = 0;
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/build_theme_css.php {$dir} {$themes} {$debug} {$verbose} --host=\"{$h->vhostname}\" ";
 
@@ -141,6 +142,7 @@ foreach ($allhosts as $h) {
             echo "Worker ended with error:\n";
             echo implode("\n", $output)."\n";
             echo "Pursuing anyway\n";
+            $fails++;
         }
     } else {
         if (!empty($options['verbose'])) {
@@ -152,6 +154,6 @@ foreach ($allhosts as $h) {
     vmoodle_send_cli_progress($numhosts, $i, 'bulkbuildthemes');
 }
 
-vmoodle_cli_notify_admin("[$SITE->shortname] Bulkbuildthemecss done. See logs for detailed result.");
-echo "Done.\n";
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulkbuildthemecss done with $fails failures.");
+echo "Done with $fails failures.\n";
 exit(0);

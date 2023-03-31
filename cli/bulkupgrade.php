@@ -137,6 +137,8 @@ echo "Starting upgrading nodes....\n";
 
 $i = 0;
 $numhosts = count($allhosts);
+$fails = 0;
+$failed = [];
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/upgrade.php --host=\"{$h->vhostname}\" ";
     if (empty($options['verbose']) || !empty($options['logroot'])) {
@@ -157,6 +159,8 @@ foreach ($allhosts as $h) {
             echo "Worker ended with error:\n";
             echo implode("\n", $output)."\n";
             echo "Pursuing anyway\n";
+            $fails++;
+            $failed[] = $h->vhostname;
         }
     } else {
         if (!empty($options['verbose'])) {
@@ -168,6 +172,6 @@ foreach ($allhosts as $h) {
     vmoodle_send_cli_progress($numhosts, $i, 'bulkupgrade');
 }
 
-vmoodle_cli_notify_admin("[$SITE->shortname] Bulkupgrades done. See logs for detailed result.");
-echo "Done.\n";
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulkupgrades done. See logs for detailed result. $fails failures.", implode("\n", $failed));
+echo "Done with $fails failures.\n";
 exit(0);

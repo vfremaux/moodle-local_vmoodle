@@ -112,6 +112,8 @@ if (empty($nodes)) {
 
 mtrace(get_string('clistart', 'local_vmoodle'));
 
+$i = 0;
+$numhosts = count($nodes);
 foreach ($nodes as $n) {
 
     mtrace(get_string('clisnapnode', 'local_vmoodle', $n->vhostname));
@@ -153,4 +155,10 @@ foreach ($nodes as $n) {
             }
         }
     }
+    $i++;
+    vmoodle_send_cli_progress($numhosts, $i, 'bulksnapshot');
 }
+
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulksnapshot done.");
+echo "Done.\n";
+exit(0);

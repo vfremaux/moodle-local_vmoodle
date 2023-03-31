@@ -5,21 +5,6 @@ Implements a packaged virtualization control feature for large "Moodle Arrays"
 
 Important requirements for VMoodling :
 
-Version 2015062000 summary
-=============================
-
-This is a key change in architecture. Main part of the VMoodle mechanism is
-transfered to the local/vmoodle component, as local component set is naturally
-core enabled for subplugins. 
-
-The original bloc is mostly conserved for quick access to VMoodles configurations
-
-Version 2014071301 summary
-=============================
-
-Essentially redraws the internal class organization to cope qit 
-core Moodle class loading strategy.
-
 version 2013020801 summary
 =============================
 
@@ -255,3 +240,13 @@ $CFG->vmoodleroot The computed effective wwwroot of the vmoodle instance. May co
 $CFG->vmoodlename The vmoodle server name (without protocol). Includes subdir if deploying as subdirectories.
 
 $CFG->vhost the host name (first token of the domain name).
+
+2022060700 (X.X.0009)
+##############################################
+
+Add registration to report_zabbix senders.
+
+2023030200 (X.X.0010)
+##############################################
+
+Add new course mnetadmin function mnetadmin_check_course
