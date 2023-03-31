@@ -40,7 +40,7 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 define('ROUND_ROBIN', 0);
 define('LOWEST_POSSIBLE_GAP', 1);
-define('RUN_PER_TURN', 1);
+define('RUN_PER_TURN', 16);
 
 global $vcron;
 
@@ -56,7 +56,7 @@ $config = get_config('local_vmoodle');
 
 if (local_vmoodle_supports_feature('vcron/clustering')) {
     include_once($CFG->dirroot.'/local/vmoodle/pro/localprolib.php');
-    $vmoodles = \local_vmoodle\pro_manager::vmoodle_get_vmoodleset();
+    $vmoodles = \local_vmoodle\local_pro_manager::vmoodle_get_vmoodleset();
 } else {
     $vmoodles = vmoodle_get_vmoodleset();
 }

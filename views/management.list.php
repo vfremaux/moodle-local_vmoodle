@@ -103,6 +103,32 @@ if ($vmoodles) {
         $snapurl = new moodle_url('/local/vmoodle/view.php', $params);
         $pixicon = $OUTPUT->pix_icon('snapshot', get_string('snapshothost', 'local_vmoodle'), 'local_vmoodle');
         $vmoodlecmd .= '&nbsp;<a href="'.$snapurl.'">'.$pixicon.'</a>';
+
+        // Check current host key and report if something wrong.
+        $mnet_peer = new mnet_peer();
+        $mnetstate = 'unbound';
+        $hostid = $DB->get_field('mnet_host', 'id', ['wwwroot' => $vmoodle->vhostname]);
+        if ($hostid) {
+            // Too heavy to be done in direct query.
+            /*
+            $mnet_peer->set_id($hostid);
+            $mnet_peer->currentkey = mnet_get_public_key($mnet_peer->wwwroot, $mnet_peer->application);
+            // Secures the comparison.
+            $mnet_peer->currentkey = str_replace("\r", '', trim($mnet_peer->currentkey));
+            $mnet_peer->public_key = str_replace("\r", '', trim($mnet_peer->public_key));
+            if ($mnet_peer->currentkey == $mnet_peer->public_key) {
+                $mnetstate = 'good';
+            } else {
+                $mnetstate = 'bad';
+            }
+            */
+        }
+
+        $params = array('view' => 'management', 'what' => 'renewkey', 'id' => $vmoodle->id);
+        $renewkeyurl = new moodle_url('/local/vmoodle/view.php', $params);
+        $pixicon = $OUTPUT->pix_icon('i/key', get_string('renewmnetkey', 'local_vmoodle'), 'moodle');
+        $vmoodlecmd .= '&nbsp;<a href="'.$renewkeyurl.'" data-mnetid="'.$hostid.'" class="mnet-key-query mnet-key-'.$mnetstate.'">'.$pixicon.'</a>';
+
         $vmoodlestatus = vmoodle_print_status($vmoodle, true);
         $strmnet = $vmoodle->mnet;
         if ($strmnet < 0) {

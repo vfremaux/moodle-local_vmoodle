@@ -47,11 +47,12 @@ if ($options['help'] || (!$options['list'] && !$options['execute'])) {
 Scheduled cron tasks.
 
 Options:
---execute=\\\\some\\\\task  Execute scheduled task manually
---list                List all scheduled tasks
---debugging           Turns in debug mode
--H, --host            Virtual root to run for
--h, --help            Print out this help
+    --execute=\\\\some\\\\task  Execute scheduled task manually
+    --list                List all scheduled tasks
+    --debugging           Turns in debug mode
+    --isfixture           Tells to run in fixture mode, i.e. skips the needs upgrade control.
+    -H, --host            Virtual root to run for
+    -h, --help            Print out this help
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php ";
@@ -125,7 +126,7 @@ if ($execute = $options['execute']) {
         exit(1);
     }
 
-    if (moodle_needs_upgrading()) {
+    if (moodle_needs_upgrading() && !$isfixture) {
         mtrace("Moodle upgrade pending, cannot execute tasks.");
         exit(1);
     }

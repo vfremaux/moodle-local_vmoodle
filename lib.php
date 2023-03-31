@@ -485,7 +485,7 @@ function vmoodle_execute_query($vmoodle, $sql, $cnx) {
             $res = $newid;
         }
     } else if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
-        if (!($res = mysqli_query($sql, $cnx))) {
+        if (!($res = mysqli_query($cnx, $sql))) {
             echo "vmoodle_execute_query() : ".mysqli_error($cnx)."<br/>";
             return false;
         }
@@ -701,6 +701,10 @@ function vmoodle_load_database_from_template($vmoodledata) {
 
     exec($import, $output, $return);
 
+    if ($return == 1) {
+        print_error("Could not load database content. ");
+    }
+
     // End.
     return true;
 }
@@ -714,7 +718,7 @@ function vmoodle_create_database($vmoodledata) {
     global $DB;
 
     // Don't bind to db, it might not yet exist.
-    $sidecnx = vmoodle_make_connexion($vmoodledata, false);
+    $sidecnx = vmoodle_make_connection($vmoodledata, false);
 
     // Availability of SQL commands.
 
@@ -809,7 +813,7 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
     $sql = "UPDATE {$prefix}user SET password = '{$localadmin->password}' WHERE auth = 'manual' AND username = 'admin';\n\n";
     fwrite($file, $sql);
 
-    if ($vmoodledata->mnet == -1) { // NO MNET AT ALL.
+    if (@$vmoodledata->mnet == -1) { // NO MNET AT ALL.
         /*
          * we need :
          * disable mnet
@@ -913,15 +917,18 @@ function vmoodle_destroy($vmoodledata) {
     // Checks if paths commands have been properly defined in 'vconfig.php'.
     if ($vmoodledata->vdbtype == 'mysql') {
         $dropstatement = 'DROP DATABASE IF EXISTS';
+        $sqlescape = "`";
     } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $dropstatement = 'DROP DATABASE IF EXISTS';
+        $sqlescape = "`";
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $dropstatement = 'DROP SCHEMA';
+        $sqlescape = "'";
     }
 
     // Drop the database.
 
-    $sql = "$dropstatement $vmoodledata->vdbname";
+    $sql = "$dropstatement {$sqlescape}{$vmoodledata->vdbname}{$sqlescape}";
     if (function_exists('debug_trace')) {
         debug_trace("destroy_database : executing drop sql");
     }
@@ -1045,18 +1052,19 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     }
 
     // Password.
+    $vdbpass = '';
     if (!empty($vmoodledata->vdbpass)) {
-        $vmoodledata->vdbpass = '-p'.escapeshellarg($vmoodledata->vdbpass).' ';
+        $vdbpass = '-p'.escapeshellarg($vmoodledata->vdbpass).' ';
     }
 
     // Making the command line (see 'vconfig.php' file for defining the right paths).
     if ($vmoodledata->vdbtype == 'mysql') {
         $sqlcmd = $pgm.' -h'.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -P'.$vmoodledata->vdbport.' ' : ' ');
-        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vmoodledata->vdbpass;
+        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
     } else if (($vmoodledata->vdbtype == 'mysqli') || ($vmoodledata->vdbtype == 'mariadb')) {
         $sqlcmd = $pgm.' -h'.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -P'.$vmoodledata->vdbport.' ' : ' ');
-        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vmoodledata->vdbpass;
+        $sqlcmd .= '-u'.$vmoodledata->vdblogin.' '.$vdbpass;
         $sqlcmd .= $vmoodledata->vdbname.' < ';
     } else if ($vmoodledata->vdbtype == 'postgres') {
         $sqlcmd    = $pgm.' -Fc -h '.$vmoodledata->vdbhost.(isset($vmoodledata->vdbport) ? ' -p '.$vmoodledata->vdbport.' ' : ' ');

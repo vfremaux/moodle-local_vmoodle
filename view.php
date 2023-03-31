@@ -114,12 +114,16 @@ if ($action != '') {
             break;
 
             case 'sadmin': {
-                $result = include($CFG->dirroot.'/local/vmoodle/controller.sadmin.php');
+                include_once($CFG->dirroot.'/local/vmoodle/pro/controller.sadmin.php');
+                $controller = new \local_vmoodle\pro\sadmin_controller();
+                $result = $controller->process($action);
             }
             break;
 
             case 'services': {
-                $result = include($CFG->dirroot.'/local/vmoodle/controller.services.php');
+                include_once($CFG->dirroot.'/local/vmoodle/pro/controller.services.php');
+                $controller = new \local_vmoodle\pro\services_controller();
+                $result = $controller->process($action);
             }
             break;
 
@@ -166,11 +170,11 @@ switch($view) {
     }
     break;
     case 'sadmin': {
-        include($CFG->dirroot.'/local/vmoodle/views/sadmin.main.php');
+        include($CFG->dirroot.'/local/vmoodle/pro/views/sadmin.main.php');
     }
     break;
     case 'services': {
-        include($CFG->dirroot.'/local/vmoodle/views/services.main.php');
+        include($CFG->dirroot.'/local/vmoodle/pro/views/services.main.php');
     }
     break;
 }

@@ -38,13 +38,6 @@ class Command_CopyFileArea extends Command {
 
     /**
      * Constructor.
-<<<<<<< HEAD
-     * @param string $name Command's name.
-     * @param string $description Command's description.
-     * @param string $sql SQL command.
-     * @param string $parameters Command's parameters (optional / could be null, Command_Parameter object or Command_Parameter array).
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
      * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws Command_Exception
      */
@@ -95,17 +88,12 @@ class Command_CopyFileArea extends Command {
         $label = get_string('filearea_desc', 'vmoodleadminset_generic');
         $fileareaparam = new Command_Parameter('fileareaid', 'enum', $label, null, $fileareasmenu);
 
-<<<<<<< HEAD
-        // Creating Command.
-        parent::__construct($cmdname, $cmddesc, array($platformparam, $fileareaparam), $rpcommand);
-=======
         // Creating platform parameter. This is the source platform.
         $label = get_string('skipfiles_desc', 'vmoodleadminset_generic');
         $skipfilesparam = new Command_Parameter('skipfiles', 'text', $label, null);
 
         // Creating Command.
         parent::__construct($cmdname, $cmddesc, array($platformparam, $fileareaparam, $skipfilesparam), $rpcommand);
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     /**
@@ -116,12 +104,6 @@ class Command_CopyFileArea extends Command {
     public function run($hosts) {
         global $CFG, $USER;
 
-<<<<<<< HEAD
-        // Set Config. Adding constants.
-        require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
-
-        $systemcontextid = \context_system::instance()->id;
-=======
         ini_set('max_execution_time', 600);
 
         debug_trace('Start running  CopyFileArea');
@@ -130,49 +112,32 @@ class Command_CopyFileArea extends Command {
         require_once $CFG->dirroot.'/local/vmoodle/rpclib.php';
 
         $systemcontext = \context_system::instance();
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
         // Set Config. Checking host.
         if (!is_array($hosts)) {
             $hosts = array($hosts => 'Unnamed host');
         }
 
-<<<<<<< HEAD
-        // Set Config. Checking capabilities.
-        if (!has_capability('local/vmoodle:execute', $systemcontextid)) {
-=======
         debug_trace('Running CopyFileArea : check caps');
         // Set Config. Checking capabilities.
         if (!has_capability('local/vmoodle:execute', $systemcontext)) {
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             throw new Command_CopyFile_Exception('insuffisantcapabilities');
         }
 
         // Set Config. Initializing responses.
         $responses = array();
 
-<<<<<<< HEAD
-        // Creating peers.
-        $mnet_hosts = array();
-=======
         debug_trace('Running CopyFileArea : get hosts');
 
         // Creating peers for all target hosts.
         $mnethosts = array();
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         foreach ($hosts as $host => $name) {
 
             debug_trace('Running CopyFileArea for '.$name);
 
-<<<<<<< HEAD
-            $mnet_host = new \mnet_peer();
-            if ($mnet_host->bootstrap($host, null, 'moodle')) {
-                $mnet_hosts[] = $mnet_host;
-=======
             $mnethost = new \mnet_peer();
             if ($mnethost->bootstrap($host, null, 'moodle')) {
                 $mnethosts[] = $mnethost;
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             } else {
                 $responses[$host] = (object) array('status' => MNET_FAILURE, 'error' => get_string('couldnotcreateclient', 'local_vmoodle', $host));
             }
@@ -185,30 +150,6 @@ class Command_CopyFileArea extends Command {
         // We cannot transfer or copy a file the master does not knwow about.
         $fileareaid = $this->get_parameter('fileareaid')->get_value();
 
-<<<<<<< HEAD
-        $fs = get_file_storage();
-
-        list($component, $filearea, $itemid) = explode('/', $fileareaid);
-        // Get only true files. 
-        if ($itemid == '*') {
-            $files = $fs->get_area_files($systemcontextid, $component, $filearea, false, "itemid, filepath, filename", false);
-        } else {
-            $files = $fs->get_area_files($systemcontextid, $component, $filearea, $itemid, "itemid, filepath, filename", false);
-        }
-
-        // Resolve file source and get a remote file if remote.
-        $source = $this->get_parameter('platform')->get_value();
-
-        foreach ($files as $file) {
-            debug_trace('Running CopyFileArea for '.$file->get_filepath().'/'.$file->get_filename());
-            if ($source) {
-                // Creating peer to read files from the designated peer.
-                $mnethost = new mnet_peer();
-                if (!$mnethost->bootstrap($this->get_parameter('platform')->get_value(), null, 'moodle')) {
-                    $response = (object) array(
-                        'status' => MNET_FAILURE,
-                        'error' => get_string('couldnotcreateclient', 'local_vmoodle', $platform)
-=======
         // Resolve file source and get a remote file if remote.
         $source = $this->get_parameter('platform')->get_value();
 
@@ -281,7 +222,6 @@ class Command_CopyFileArea extends Command {
                     $response = (object) array(
                         'status' => MNET_FAILURE,
                         'error' => get_string('responseerror', 'local_vmoodle', $source)
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
                     );
 
                     // If we fail, we fail for all.
@@ -290,70 +230,6 @@ class Command_CopyFileArea extends Command {
                     }
                     return;
                 }
-<<<<<<< HEAD
-
-                debug_trace('Launching mnetadmin_rpc_get_remote_file on source ');
-                // Creating XMLRPC client to get the remote customisation language pack.
-                $rpcclient = new \local_vmoodle\XmlRpc_Client();
-                $rpcclient->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_get_remote_file');
-                $rpcclient->add_param($file->get_component(), 'string'); // plugins.
-                $rpcclient->add_param($file->get_filearea(), 'string'); // languages.
-                $rpcclient->add_param($file->get_itemid(), 'string'); // languages.
-                $rpcclient->add_param($file->get_filepath().$file->get_filename(), 'string'); // languages.
-                $rpcclient->add_param(true, 'string'); // Not jsonrequired.
-
-                // Checking result.
-                if (!($rpcclient->send($mnethost) && ($response = json_decode($rpcclient->response)) && $response->status == RPC_SUCCESS)) {
-                    // Creating response.
-                    if (!isset($response)) {
-                        $response = new Stdclass();
-                        $response->status = MNET_FAILURE;
-                        $response->errors[] = implode('<br/>', $rpcclient->get_errors($mnethost));
-                        $response->error = implode('<br/>', $rpcclient->get_errors($mnethost));
-                    }
-
-                    $responses = array();
-                    // Sending requests.
-                    foreach ($hosts as $host => $name) {
-                        $responses[$host] = $response;
-                    }
-
-                    $this->results = $responses + $this->results;
-
-                    // Don't go futher.
-                    return;
-                } else {
-                    // We have a remote file.
-                    $filecontent = $response->filecontent;
-                }
-            } else {
-                // If file is local use the local content of the file.
-                $filecontent = $file->get_content();
-            }
-
-            // Creating XMLRPC client.
-            $rpc_client = new \local_vmoodle\XmlRpc_Client();
-            $rpc_client->set_method('local/vmoodle/plugins/generic/rpclib.php/mnetadmin_rpc_import_file');
-            $rpc_client->add_param($file->get_component(), 'string');
-            $rpc_client->add_param($file->get_filearea(), 'string');
-            $rpc_client->add_param($file->get_itemid(), 'string');
-            $rpc_client->add_param($file->get_filepath().$file->get_filename(), 'string');
-            $rpc_client->add_param(base64_encode($filecontent), 'string');
-            $rpc_client->add_param(true, 'boolean');
-
-            // Set Config. Sending requests.
-            foreach($mnet_hosts as $mnet_host) {
-                // Sending request.
-                if (!$rpc_client->send($mnet_host)) {
-                    $response = new StdClass();
-                    $response->status = MNET_FAILURE;
-                    $response->errors[] = implode('<br/>', $rpc_client->get_errors($mnet_host));
-                } else {
-                    $response = json_decode($rpc_client->response);
-                }
-                // Recording response.
-                $responses[$mnet_host->wwwroot] = $response;
-=======
             }
 
             $filedescs = $response->fileareacontent;
@@ -469,21 +345,16 @@ class Command_CopyFileArea extends Command {
                     }
                     $responses[$mnethost->wwwroot] = $response;
                 }
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             }
         }
 
         // Set Config. Saving results.
-<<<<<<< HEAD
-        $this->results = $responses + $this->results;
-=======
 
         foreach ($sendstatus as $hostroot => $status) {
             $this->results[$hostroot] = "Files sent : OK {$status['success']}, Failed {$status['failures']}, Mnet errors {$status['mneterrors']}\n";
         }
 
         debug_trace('Running CopyFileArea : Finished.');
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     /**

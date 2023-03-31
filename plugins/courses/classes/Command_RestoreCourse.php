@@ -83,7 +83,7 @@ class Command_RestoreCourse extends Command {
         $parameters[] = new Command_Parameter(
             'catidnumber',
             'text',
-            vmoodle_get_string('catidnumber', 'vmoodleadminset_courses'),
+            vmoodle_get_string('restorecatidnumber', 'vmoodleadminset_courses'),
             null,
             null);
 
@@ -117,6 +117,27 @@ class Command_RestoreCourse extends Command {
             vmoodle_get_string('enroladmins', 'vmoodleadminset_courses'),
             'managers',
             $choices);
+
+        $parameters[] = new Command_Parameter(
+            'delay',
+            'text',
+            vmoodle_get_string('rundelay', 'vmoodleadminset_courses'),
+            60,
+            null);
+
+        $parameters[] = new Command_Parameter(
+            'spread',
+            'text',
+            vmoodle_get_string('spread', 'vmoodleadminset_courses'),
+            60,
+            null);
+
+        $parameters[] = new Command_Parameter(
+            'seed',
+            'text',
+            vmoodle_get_string('seed', 'vmoodleadminset_courses'),
+            '',
+            null);
 
         // Creating Command.
         parent::__construct($name, $description, $parameters, null);
@@ -167,6 +188,9 @@ class Command_RestoreCourse extends Command {
         $rpcclient->add_param($this->get_parameter('catidnumber')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('location')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('enroladmins')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('delay')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('spread')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('seed')->get_value(), 'string');
         $rpcclient->add_param(true, 'boolean'); // Json required.
 
         // Maintenance. Sending requests.

@@ -300,13 +300,10 @@ if ($data = $mform->get_data()) {
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->olddbname.' < temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'rm temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'rm temp'.$data->toversion.'.sql'."\n";
-<<<<<<< HEAD
-=======
 
             $ratio = sprintf("%.2f", $i/$count * 100);
             $datatransfer .=  'echo -e "\r'.$ratio.' %         "'."\n";
             $i++;
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         }
     }
 
@@ -324,13 +321,8 @@ if ($data = $mform->get_data()) {
             $datarootbasename = basename($hostreps[$vhost->name]->olddataroot);
             $datastr .= "\n";
             $datastr .= '# Data copy for '.$vhost->name."\n";
-<<<<<<< HEAD
-            $datastr .= "sudo -u{$data->webserveruser} rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
-            $datastr .= "sudo -u{$data->webserveruser} mkdir {$hostreps[$vhost->name]->newdataroot}\n";
-=======
             // $datastr .= "sudo -u{$data->webserveruser} rm -rf {$hostreps[$vhost->name]->newdataroot}\n";
             $datastr .= "sudo -u{$data->webserveruser} mkdir -p {$hostreps[$vhost->name]->newdataroot}\n";
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             $datastr .= "sudo -u{$data->webserveruser} rsync -r -o -p -g --del {$hostreps[$vhost->name]->olddataroot} {$main->tomoodledatacontainer}\n";
             $datastr .= '# Purge eventual caches of '.$vhost->name."\n";
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/cache\n";
@@ -339,11 +331,8 @@ if ($data = $mform->get_data()) {
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/lock\n";
             $datastr .= "sudo -u{$data->webserveruser} rm -rf {$main->tomoodledatacontainer}/{$datarootbasename}/sessions\n";
 
-<<<<<<< HEAD
-=======
             $ratio = sprintf("%.2f", $i/$count * 100);
             $datastr .=  'echo -e "\r'.$ratio.' %         "'."\n";
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             // Vhost replacements.
             $i++;
         }
@@ -420,11 +409,8 @@ if ($data = $mform->get_data()) {
             $upgradestr .= "\n";
             $upgradestr .= '# Full upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
             $upgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/upgrade.php --host={$hostreps[$vhost->name]->currentwwwroot} --non-interactive --allow-unstable\n";
-<<<<<<< HEAD
-=======
             $ratio = sprintf("%.2f", $i/$count * 100);
             $upgradestr .=  'echo -e "\r'.$ratio.' %         "'."\n";
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
             $preupgradestr .= "\n";
             $preupgradestr .= '# Pre upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
@@ -432,10 +418,7 @@ if ($data = $mform->get_data()) {
             if ($data->toversion >= 35) {
                 $preupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/mysql_collation.php --collation=utf8mb4_general_ci --host={$hostreps[$vhost->name]->currentwwwroot}\n";
             }
-<<<<<<< HEAD
-=======
             $preupgradestr .=  'echo -e "\r'.$ratio.' %         "'."\n";
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
             $postupgradestr .= "\n";
             $postupgradestr .= '# Post upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
@@ -527,8 +510,6 @@ if ($backupdbstr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$backupdbtransfer.'</pre>');
-<<<<<<< HEAD
-=======
 
     // Make a file
     $filedesc = new StdClass;
@@ -541,7 +522,6 @@ if ($backupdbstr) {
 
     $fs->create_file_from_string($filedesc, $backupdbtransfer);
 
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     echo $OUTPUT->heading(get_string('restorebackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
@@ -561,8 +541,6 @@ if ($backupdbstr) {
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;
     echo $OUTPUT->box('<pre>'.$restorebackupdbtransfer.'</pre>');
-<<<<<<< HEAD
-=======
 
     // Make a file
     $filedesc = new StdClass;
@@ -575,7 +553,6 @@ if ($backupdbstr) {
 
     $fs->create_file_from_string($filedesc, $restorebackupdbtransfer);
 
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     echo $OUTPUT->heading(get_string('dropbackup', 'local_vmoodle'), 4);
     echo '<div>Block: '.$blockid.'</div>';
     $blockid++;

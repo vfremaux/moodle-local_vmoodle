@@ -50,7 +50,7 @@ function vmoodle_get_remote_config($mnethost, $configkey, $module = '') {
         }
     }
 
-    if (!$userhost = $DB->get_record('mnet_host', array('id' => $user->mnethostid))) {
+    if (!$userhost = $DB->get_record('mnet_host', array('id' => $user->mnethostid, 'deleted' => 0))) {
         return '';
     }
     $user->remoteuserhostroot = $userhost->wwwroot;

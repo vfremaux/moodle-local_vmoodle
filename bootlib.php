@@ -47,7 +47,7 @@ function vmoodle_get_hostname() {
     }
 
     /*
-     * This is the standard case when each vmoodle runs on his own masgter single domain.
+     * This is the standard case when each vmoodle runs on his own master single domain.
      */
     $CFG->vmoodleroot = "{$protocol}://".@$_SERVER['HTTP_HOST'];
     $CFG->vmoodlename = @$_SERVER['HTTP_HOST'];
@@ -235,27 +235,29 @@ function vmoodle_boot_configuration() {
  * @param boolean $binddb if true, the database is bound after connection.
  * @return a connection
  */
-function vmoodle_make_connection(&$vmoodle, $binddb = false) {
+function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = false) {
     global $CFG;
 
     if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         // Important : force new link here.
 
-        $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, 3306);
+        $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, '', 3306);
         if (!$sidecnx) {
             if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                 debugging("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
-                die;
+                if (!$interactive) die;
             }
-            die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
+            if (!$interactive) die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
+            return false;
         }
         if ($binddb) {
             if (!mysqli_select_db($sidecnx, $vmoodle->vdbname)) {
                 if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                     debugging("VMoodle_make_connection : Database {$vmoodle->vdbname} not found");
-                    die;
+                    if (!$interactive) die;
                 }
-                die ("VMoodle_make_connection : Database not found");
+                if (!$interactive) die ("VMoodle_make_connection : Database not found");
+                return false;
             }
         }
         return $sidecnx;

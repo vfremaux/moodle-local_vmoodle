@@ -82,7 +82,7 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
                 curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
             } else {
                 curl_close($ch);
-                print_error( 'socksnotsupported','mnet' );
+                throw new \moodle_exception( 'socksnotsupported', 'mnet');
             }
         }
 
@@ -264,7 +264,7 @@ function mnet_encrypt_message($message, $remote_certificate) {
     // Generate a key resource from the remote_certificate text string
     $publickey = openssl_get_publickey($remote_certificate);
 
-    if ( gettype($publickey) != 'resource' ) {
+    if ($publickey === false) {
         // Remote certificate is faulty.
         return false;
     }
@@ -274,7 +274,7 @@ function mnet_encrypt_message($message, $remote_certificate) {
     $symmetric_keys = array();
 
     //        passed by ref ->     &$encryptedstring &$symmetric_keys
-    $bool = openssl_seal($message, $encryptedstring, $symmetric_keys, array($publickey));
+    $bool = openssl_seal($message, $encryptedstring, $symmetric_keys, array($publickey), 'RC4');
     $message = $encryptedstring;
     $symmetrickey = array_pop($symmetric_keys);
 
@@ -427,7 +427,10 @@ function mnet_generate_keypair($dn = null, $days=28) {
 
     // We export our self-signed certificate to a string.
     openssl_x509_export($selfSignedCert, $keypair['certificate']);
-    openssl_x509_free($selfSignedCert);
+    // TODO: Remove this block once PHP 8.0 becomes required.
+    if (PHP_MAJOR_VERSION < 8) {
+        openssl_x509_free($selfSignedCert);
+    }
 
     // Export your public/private key pair as a PEM encoded string. You
     // can protect it with an optional passphrase if you wish.
@@ -436,7 +439,10 @@ function mnet_generate_keypair($dn = null, $days=28) {
     } else {
         $export = openssl_pkey_export($new_key, $keypair['keypair_PEM'] /* , $passphrase */);
     }
-    openssl_pkey_free($new_key);
+    // TODO: Remove this block once PHP 8.0 becomes required.
+    if (PHP_MAJOR_VERSION < 8) {
+        openssl_pkey_free($new_key);
+    }
     unset($new_key); // Free up the resource
 
     return $keypair;
@@ -530,7 +536,7 @@ function mnet_sso_apply_indirection ($jumpurl, $url) {
             // if our wwwroot has a path component, need to strip that path from beginning of the
             // 'localpart' to make it relative to moodle's wwwroot
             $wwwrootpath = parse_url($CFG->wwwroot, PHP_URL_PATH);
-            if (!empty($wwwrootpath) and strpos($path, $wwwrootpath) === 0) {
+            if (!empty($wwwrootpath) && strpos($path, $wwwrootpath) === 0) {
                 $path = substr($path, strlen($wwwrootpath));
             }
             $localpart .= $path;

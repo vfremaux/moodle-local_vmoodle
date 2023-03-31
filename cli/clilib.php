@@ -419,7 +419,7 @@ function vmoodle_send_cli_progress($numhosts, $i, $operation = '') {
  * Sends admins a notification mail about a cli process state.
  * @param string $msg a message
  */
-function vmoodle_cli_notify_admin($msg) {
+function vmoodle_cli_notify_admin($msg, $content = '') {
     global $SITE, $DB, $CFG;
     static $admin;
 
@@ -429,10 +429,10 @@ function vmoodle_cli_notify_admin($msg) {
     }
 
     // Do NOT use email_to_user here because of possible nomailever restriction
-    mail($admin->email, $msg, '');
+    mail($admin->email, $msg, $content);
 
     // Additionnaly send mail to an extra techoperator, in case of delegated operations.
     if (!empty($CFG->techoperator)) {
-        mail($CFG->techoperator, $msg, '');
+        mail($CFG->techoperator, $msg, $content);
     }
 }
