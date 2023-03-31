@@ -30,27 +30,16 @@ if (get_config('local_vmoodle', 'late_install')) {
     xmldb_local_vmoodle_late_install();
 }
 
-$systemcontext = context_system::instance();
-$hasadmin = false;
-if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // This is AdminSettings driven administration.
-    if (has_capability('local/adminsettings:nobody', $systemcontext)) {
-        $hasadmin = true;
-    }
-} else {
-    // This is Moodle Standard.
-    $hasadmin = has_capability('moodle/site:config', $systemcontext);
-}
+if ($hassiteconfig) {
 
-if ($hasadmin) {
+    $settings = new admin_settingpage('localsettingvmoodle', get_string('pluginname', 'local_vmoodle'));
+    $ADMIN->add('localplugins', $settings);
+
     if (@$CFG->mainwwwroot == $CFG->wwwroot) {
         // Only master moodle can have this menu.
         $label = get_string('vmoodleadministration', 'local_vmoodle');
         $viewurl = new moodle_url('/local/vmoodle/view.php');
         $ADMIN->add('server', new admin_externalpage('vmoodle', $label, $viewurl, 'local/vmoodle:managevmoodles'));
-
-        $settings = new admin_settingpage('local_vmoodle', get_string('pluginname', 'local_vmoodle'));
-        $ADMIN->add('localplugins', $settings);
 
         $yesnoopts[0] = get_string('no');
         $yesnoopts[1] = get_string('yes');
@@ -62,10 +51,15 @@ if ($hasadmin) {
 
         $settings->add(new admin_setting_heading('siteschema', get_string('siteschema', 'local_vmoodle'), ''));
 
+        $key = 'local_vmoodle/vmoodleinstancepattern';
+        $label = get_string('vmoodleinstancepattern', 'local_vmoodle');
+        $desc = get_string('vmoodleinstancepattern_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configtext($key, $label, $desc, '^.*$'));
+
         $key = 'local_vmoodle/vmoodlehost';
         $label = get_string('vmoodlehost', 'local_vmoodle');
         $desc = get_string('vmoodlehost_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 'http://<%%INSTANCE%%>'));
+        $settings->add(new admin_setting_configtext($key, $label, $desc, 'https://<%%INSTANCE%%>'));
 
         $key = 'local_vmoodle/vmoodleip';
         $label = get_string('vmoodleip', 'local_vmoodle');
@@ -233,27 +227,35 @@ if ($hasadmin) {
         $desc = '';
         $settings->add(new admin_setting_configtext($key, $label, $desc, 'www-data', PARAM_TEXT));
 
-        $settings->add(new admin_setting_heading('clustering', get_string('clustering', 'local_vmoodle'), ''));
-        $ixs = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        $ixoptions = array_combine($ixs, $ixs);
-
-        $key = 'local_vmoodle/clusters';
-        $label = get_string('configclusters', 'local_vmoodle');
-        $desc = get_string('configclusters_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
-
-        $key = 'local_vmoodle/clusterix';
-        $label = get_string('configclusterix', 'local_vmoodle');
-        $desc = get_string('configclusterix_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $ixoptions));
-
         if (local_vmoodle_supports_feature('emulate/community') == 'pro') {
             include_once($CFG->dirroot.'/local/vmoodle/pro/prolib.php');
-            \local_vmoodle\pro_manager::add_settings($ADMIN, $settings);
+            $promanager = local_vmoodle\pro_manager::instance();
+            $promanager->add_settings($ADMIN, $settings);
         } else {
             $label = get_string('plugindist', 'local_vmoodle');
             $desc = get_string('plugindist_desc', 'local_vmoodle');
             $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
         }
+    } else {
+        // Minimal settings for vmoodle instances.
+        $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
+
+        $onoffopts[0] = get_string('off', 'local_vmoodle');
+        $onoffopts[1] = get_string('on', 'local_vmoodle');
+
+        $key = 'local_vmoodle/mnet_key_autorenew';
+        $label = get_string('mnetkeyautorenewenable', 'local_vmoodle');
+        $desc = get_string('mnetkeyautorenew_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $onoffopts));
+
+        $key = 'local_vmoodle/mnet_key_autorenew_gap';
+        $label = get_string('mnetkeyautorenewgap', 'local_vmoodle');
+        $desc = get_string('mnetkeyautorenewgap_desc', 'local_vmoodle');
+        $settings->add(new admin_setting_configtext($key, $label, $desc, 24 * 3));
+
+        $key = 'local_vmoodle/mnet_key_autorenew_time_hour';
+        $keymin = 'mnet_key_autorenew_time_min';
+        $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
+        $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
     }
 }

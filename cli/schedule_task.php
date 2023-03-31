@@ -31,7 +31,9 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 list($options, $unrecognized) = cli_get_params(array('help' => false,
                                                      'list' => false,
                                                      'execute' => false,
-                                                     'host' => false),
+                                                     'host' => false,
+                                                     'debugging' => false,
+                                                     'isfixture' => false),
                                                array('h' => 'help',
                                                      'H' => 'host'));
 
@@ -45,10 +47,12 @@ if ($options['help'] || (!$options['list'] && !$options['execute'])) {
 Scheduled cron tasks.
 
 Options:
---execute=\\\\some\\\\task  Execute scheduled task manually
---list                List all scheduled tasks
--H, --host            Virtual root to run for
--h, --help            Print out this help
+    --execute=\\\\some\\\\task  Execute scheduled task manually
+    --list                List all scheduled tasks
+    --debugging           Turns in debug mode
+    --isfixture           Tells to run in fixture mode, i.e. skips the needs upgrade control.
+    -H, --host            Virtual root to run for
+    -h, --help            Print out this help
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/scheduled_task.php ";
@@ -75,6 +79,17 @@ echo('Config check : playing for '.$CFG->wwwroot."\n");
 require_once($CFG->dirroot.'/lib/cronlib.php');
 
 $CFG->debug = E_ALL;
+
+if (!empty($options['debugging'])) {
+    $CFG->debug = E_ALL;
+    $CFG->debugdisplay = true;
+}
+
+global $isfixture;
+$isfixture = false;
+if (!empty($options['isfixture'])) {
+    $isfixture = true;
+}
 
 if ($options['list']) {
     cli_heading("List of scheduled tasks ($CFG->wwwroot)");
@@ -111,7 +126,7 @@ if ($execute = $options['execute']) {
         exit(1);
     }
 
-    if (moodle_needs_upgrading()) {
+    if (moodle_needs_upgrading() && !$isfixture) {
         mtrace("Moodle upgrade pending, cannot execute tasks.");
         exit(1);
     }

@@ -1,0 +1,32 @@
+
+
+<!-- local_vmoodle/success_hosts_report -->
+<div class="vmoodle-sadmin-success">
+    <table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">
+        <caption>
+            {{#str}}successfullplatforms, local_vmoodle{{/str}}
+        </caption>
+        <thead>
+            <tr>
+                <th scope="col" class="header c0" colspan="2">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#hosts}}
+            <tr class="r{{i}}">
+                <td>
+                    <b>{{hostname}}</b>
+                </td>
+                <td>
+                    {{{rpcstatus}}}
+                </td>
+                <td style="width: 25%;">
+                    {{{resultmessage}}}
+                </td>
+            </tr>
+            {{/hosts}}
+        </tbody>
+    </table>
+</div>
+<!-- /local_vmoodle/success_hosts_report -->

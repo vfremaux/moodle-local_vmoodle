@@ -20,6 +20,9 @@
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Plugins does not directly store any personal data about any user.';
+
 $string['available'] = 'Available';
 $string['backtocomparison'] = 'Back to plugins comparison';
 $string['cmdcomparedesc'] = 'Compare plugins equipement.';

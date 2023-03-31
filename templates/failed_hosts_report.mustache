@@ -1,0 +1,39 @@
+
+
+<!-- local_vmoodle/failed_hosts_report -->
+<div class="vmoodle-sadmin-failed">
+    <table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">
+        <caption>
+            {{#str}}failedplatforms, local_vmoodle{{/str}}
+        </caption>
+        <tbody>
+
+            {{#hosts}}
+            <tr class="r{{i}}">
+                <td>
+                    <b>{{hostname}}</b>
+                </td>
+
+                <td style="text-align: left;">
+                    {{{rpcstatus}}}
+                </td>
+
+                <td style="width: 25%;">
+                    {{{runagainbutton}}}
+                </td>
+            </tr>
+
+            <tr class="r{{i}}" valign="top">
+                <td>
+                    {{#str}}details, local_vmoodle{{/str}}
+                </td>
+                <td colspan="2">
+                    {{{errors}}}
+                </td>
+            </tr>
+            {{/hosts}}
+
+        </tbody>
+    </table>
+</div>
+<!-- /local_vmoodle/failed_hosts_report -->

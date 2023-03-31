@@ -166,8 +166,6 @@ $string['details'] = 'Details:';
 $string['disableinstances'] = 'disable instances ';
 $string['donotopenservices'] = 'Do not open MNET services';
 $string['dropbackup'] = 'Drop backup';
-$string['emulatecommunity'] = 'Emulate the community version.';
-$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['edithost'] = 'Edit the configuration';
 $string['editvmoodle'] = 'Edit a virtual host definition';
 $string['elements'] = 'element(s)';
@@ -201,13 +199,11 @@ $string['insuffisantcapabilities'] = 'Insufficient capabilities';
 $string['key_autorenew_parms'] = 'Aumated MNET key renewal';
 $string['lastcron'] = 'Last cron';
 $string['lastcrongap'] = '&Delta;';
-$string['licenseprovider'] = 'Pro License provider';
-$string['licenseprovider_desc'] = 'Input here your provider key';
-$string['licensekey'] = 'Pro license key';
-$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['maindb'] = 'Main db';
 $string['mainpath'] = 'Main path';
 $string['mainservicesformselection'] = 'Services pattern to master Moodle<br/>This pattern is applied to the new node. the mirrored pattern is applied to the master node (this moodle)';
+$string['managersonly'] = 'Managers only';
+$string['managersandadminsonly'] = 'Managers and site administrators';
 $string['makebackup'] = 'Make backup';
 $string['manualcommand'] = 'Manual command';
 $string['massdeployment'] = 'Massive deployment';
@@ -275,7 +271,6 @@ $string['platformname'] = 'Platform name';
 $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Plugin is disabled.';
 $string['pluginenabled'] = 'Plugin is enabled.';
-$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'VMoodle'; // @CORE
 $string['pluginnotdisabled'] = 'Plugin were not disabled.';
 $string['pluginnotenabled'] = 'Plugin were not enabled.';
@@ -292,6 +287,7 @@ $string['regexp'] = 'regexp';
 $string['removeall'] = 'Remove all';
 $string['removefromselection'] = 'Remove from selection';
 $string['renewallbindings'] = 'Renew all bindings';
+$string['renewmnetkey'] = 'Renew mnet key';
 $string['responseerror'] = 'Error in RPC response from source {$a}';
 $string['sendfailure'] = 'RPC Send to source {$a} error';
 $string['restorebackup'] = 'Restore backup';
@@ -390,8 +386,10 @@ $string['vmoodledoadd1'] = 'STEP 1 on 4 : The new virtual platform database is b
 $string['vmoodledoadd2'] = 'STEP 2 on 4 : The database has been converted. Next step will load data files.';
 $string['vmoodledoadd3'] = 'STEP 3 on 4 : Data Files are available. Next step will register the virtual platform.';
 $string['vmoodledoadd4'] = 'STEP 4 on 4 : Platform registration complete. Platform URL has been activated. Last step will enable Mnet protocols.';
+$string['vmoodleinstancepattern'] = 'Virtual Moodle instance check pattern';
+$string['vmoodleinstancepattern_desc'] = 'A regexp to secure the instance naming. Defaults to ".*" as pass-all pattern. You can add a restritive pattern that secures what can be given as name.';
+$string['errorinvalidnameform'] = 'Name is not complying the naming conventions given by the pattern {$a} in site config.';
 $string['vmoodlehost'] = 'Virtual Moodle Host name scheme';
-$string['vmoodlehost'] = 'Virtual Moodle host';
 $string['vmoodlehost_desc'] = 'Any http(s):// scheme where <%%INSTANCE%%> will be replaced by host shortname.';
 $string['vmoodleip'] = 'IP Address';
 $string['vmoodlemanager'] = 'Virtual Moodle instances manager';
@@ -407,6 +405,8 @@ $string['withoutmessage'] = 'without message';
 $string['withselection'] = 'With the selection: ';
 $string['wrongplugin'] = 'Wrong plugin.';
 $string['wwwrootexceedscsrlimits'] = 'The choosen wwwroot exceeds 64 chars length. This is not compatible with MNET openssl CSR requirements.';
+$string['instancebasenotexists'] = 'Instance base does no exists yet.';
+$string['instancebaseexists'] = 'Instance base exists';
 
 /*** Help Strings ***/
 $string['name'] = 'Name';
@@ -599,10 +599,4 @@ Injection placeholders:
 - %DATAROOT%
 ';
 
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
+include(__DIR__.'/pro_additional_strings.php');

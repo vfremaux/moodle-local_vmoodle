@@ -35,7 +35,7 @@ class restore_automation {
      * @param mixed $backup_file_id backup file id
      * @param mixed $course_category_id  destination restore category.
      */
-    public static function run_automated_restore($backupfileid = null, $filepath = null, $coursecategoryid) {
+    public static function run_automated_restore($backupfileid = null, $filepath = null, $coursecategoryid, $seed = '') {
         global $CFG, $DB, $USER;
 
         debug_trace("Starting automated restore...");
@@ -107,39 +107,46 @@ class restore_automation {
 
         // Create temp directory.
         if (!file_exists($tempdir)) {
-            if (!mkdir($tempdir)) {
-                throw new Exception("Could'nt create backup temp directory. operation faild.");
+            if (!mkdir($tempdir, 0775, true)) {
+                debug_trace("Could'nt create backup temp directory $tempdir. operation failed.");
+                throw new Exception("Could'nt create backup temp directory $tempdir. operation failed.");
             }
         }
 
+        debug_trace("VMoodle : Start extraction");
         $fp = get_file_packer('application/vnd.moodle.backup');
         $unzipresult = $fp->extract_to_pathname($CFG->tempdir.'/backup/'.$file->get_filename(), $tempdir);
-        debug_trace("Backup File extracted");
+        debug_trace("VMoodle : Backup File extracted");
 
         // Check category exists.
         if (!$cat = $DB->get_record('course_categories', array('id' => $coursecategoryid))) {
+            debug_trace("Error : Invalid destination category");
             throw new Exception("Invalid destination category");
         }
 
         // Create the base course.
         $data = new \StdClass();
         $data->fullname = "Course restore in progress...";
-        $data->shortname= "course_shortname".(rand(0, 293736));
+        if (empty($seed)) {
+            $seed = rand(0, 293736);
+        }
+        $data->shortname= "course_shortname".$seed;
         $data->category = $coursecategoryid;
 
-        $course = create_course($data);
+        // $course = create_course($data);
+        $course = restore_dbops::create_new_course($data->fullname, $data->shortname, $category->id);
 
         $rc = new \restore_controller($file->get_contenthash(),
                                      $course->id,
                                      \backup::INTERACTIVE_NO,
-                                     \backup::MODE_GENERAL,
+                                     \backup::MODE_SAMESITE,
                                      $USER->id,
                                      \backup::TARGET_NEW_COURSE);
 
         $rc->set_status(\backup::STATUS_AWAITING);
         $rc->execute_plan();
         $results = $rc->get_results();
-        debug_trace("Course restored.");
+        debug_trace("VMoodle : Course restored.");
 
          // Cleanup.
          unlink($tempfile);

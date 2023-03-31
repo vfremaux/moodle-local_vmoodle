@@ -131,7 +131,7 @@ function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
     upgrade_noncore(false);
 
     // Log in as admin - we need doanything permission when applying defaults.
-    session_set_user(get_admin());
+    \core\session\manager::set_user(get_admin());
 
     // Apply all default settings, just in case do it twice to fill all defaults.
     admin_apply_default_settings(null, false);
@@ -139,6 +139,70 @@ function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
     ob_end_clean();
 
     $response->message = get_string('upgradecomplete', 'vmoodleadminset_upgrade', $newversion);
+
+    if ($jsonresponse) {
+        return json_encode($response);
+    } else {
+        return $response;
+    }
+}
+
+function mnetadmin_rpc_checkstatus($user, $jsonresponse = true) {
+    global $CFG, $USER;
+
+    if (function_exists('debug_trace')) {
+        debug_trace('RPC starts : Check Upgrade status');
+    }
+
+    raise_memory_limit(MEMORY_HUGE);
+    @set_time_limit(0);
+
+    // Invoke local user and check his rights.
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonresponse) {
+            return $auth_response;
+        } else {
+            return json_decode($auth_response);
+        }
+    }
+
+    // Creating response.
+    $response = new stdclass();
+    $response->status = RPC_SUCCESS;
+
+    require("$CFG->dirroot/version.php");       // Defines version, release, branch and maturity.
+    $CFG->target_release = $release;            // Used during installation and upgrades.
+
+    // Default success message.
+    $a = new StdClass;
+    $a->old = $oldversion = "$CFG->release ($CFG->version)";
+    $a->new = $newversion = "$release ($version)";
+    $response->message = get_string('upgradetodo', 'vmoodleadminset_upgrade', $a);
+
+    if ($version < $CFG->version) {
+        $response->message = get_string('downgradedcore', 'error');
+    }
+
+    if (!moodle_needs_upgrading()) {
+        $response->message = get_string('cliupgradenoneed', 'core_admin', $newversion);
+    }
+
+    list($envstatus, $environment_results) = check_moodle_environment(normalize_version($release), ENV_SELECT_NEWER);
+    if (!$envstatus) {
+        $response->message = vmoodle_get_string('environmentissues', 'vmoodleadminset_upgrade');
+        $response->message .= $environment_results;
+    }
+
+    // Test plugin dependencies.
+    $failed = array();
+    if (!core_plugin_manager::instance()->all_plugins_ok($version, $failed)) {
+        $response->message = get_string('pluginschecktodo', 'admin');
+        if ($jsonresponse) {
+            return json_encode($response);
+        } else {
+            return $response;
+        }
+    }
 
     if ($jsonresponse) {
         return json_encode($response);

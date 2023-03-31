@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  */
 function xmldb_local_vmoodle_install() {
-    global $DB;
+    global $DB, $CFG;
 
     $dbman = $DB->get_manager();
 
@@ -45,6 +45,14 @@ function xmldb_local_vmoodle_install() {
 
         $table = new xmldb_table('block_vmoodle');
         $dbman->drop_table($table);
+    }
+
+    // Register zabbix indicators if installed.
+    // Note will only work with report_zabbix "pro" version.
+    // This call is only a wrapper.
+    if (is_dir($CFG->dirroot.'/report/zabbix')) {
+        include_once($CFG->dirroot.'/report/zabbix/xlib.php');
+        report_zabbix_register_plugin('local', 'vmoodle');
     }
 
     set_config('late_install', 1, 'local_vmoodle');
@@ -81,18 +89,33 @@ function xmldb_local_vmoodle_late_install() {
 
     if (!empty($rpcs)) {
         foreach ($rpcs as $rpc) {
+            // Note that this should NOT happen as we can correctly encode path in db/mnet.php file.
             $rpc->xmlrpcpath = str_replace('vmoodleadminset/', 'local/vmoodle/plugins/', $rpc->xmlrpcpath);
             $DB->update_record('mnet_remote_rpc', $rpc);
         }
     }
 
     // We need to replace the word "vmoodleadminset/" with real subplugin path "local/vmoodle/plugins/".
+    // Here we have a real issue of duplicate registering that needs to be fixed.
     $rpcs = $DB->get_records('mnet_rpc', array('plugintype' => 'vmoodleadminset'));
 
     if (!empty($rpcs)) {
         foreach ($rpcs as $rpc) {
-            $rpc->xmlrpcpath = str_replace('vmoodleadminset/', 'local/vmoodle/plugins/', $rpc->xmlrpcpath);
-            $DB->update_record('mnet_rpc', $rpc);
+            if (preg_match('#^local/vmoodle/plugins/#', $rpc->xmlrpcpath)) {
+                // Actually nothing to do. Rpc is located fine.
+                continue;
+            } 
+
+            $xmlrpcpath = str_replace('vmoodleadminset/', 'local/vmoodle/plugins/', $rpc->xmlrpcpath);
+            if ($DB->get_record('mnet_rpc', ['xmlrpcpath' => $xmlrpcpath])) {
+                // This function is already registered. So discard this record.
+                $DB->delete_records('mnet_rpc', ['id' => $rpc->id]);
+                $DB->delete_records('mnet_service2rpc', ['rpcid' => $rpc->id]);
+            } else {
+                // This is a new function. Convert its path.
+                $rpc->xmlrpcpath = $xmlrpcpath;
+                $DB->update_record('mnet_rpc', $rpc);
+            }
         }
     }
 

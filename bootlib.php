@@ -47,7 +47,7 @@ function vmoodle_get_hostname() {
     }
 
     /*
-     * This is the standard case when each vmoodle runs on his own masgter single domain.
+     * This is the standard case when each vmoodle runs on his own master single domain.
      */
     $CFG->vmoodleroot = "{$protocol}://".@$_SERVER['HTTP_HOST'];
     $CFG->vmoodlename = @$_SERVER['HTTP_HOST'];
@@ -137,10 +137,10 @@ function vmoodle_boot_configuration() {
                     $vmoodle = mysqli_fetch_object($res);
                     vmoodle_feed_config($vmoodle);
                 } else {
-                    die ("VMoodling : No configuration for this host : $CFG->vmoodleroot. May be faked.\n");
+                    die ("VMoodling (Mysql) : No configuration for this host : $CFG->vmoodleroot. Identified root is {$CFG->wwwroot} May be faked.\n");
                 }
             } else {
-                die ("VMoodling : Could not fetch virtual moodle configuration\n");
+                die ("VMoodling (Mysql) : Could not fetch virtual moodle configuration\n");
             }
         } else if ($CFG->vmasterdbtype == 'postgres' || $CFG->vmasterdbtype == 'postgres7') {
             $vmaster = new StdClass();
@@ -165,11 +165,11 @@ function vmoodle_boot_configuration() {
                     $vmoodle = pg_fetch_object($res);
                     vmoodle_feed_config($vmoodle);
                 } else {
-                    die ("VMoodling : No configuration for this host. May be faked.\n");
+                    die ("VMoodling (Postgresql) : No configuration for this host. May be faked.\n");
                 }
                 pg_close($sidecnx);
             } else {
-                die ("VMoodling : Could not fetch virtual moodle configuration\n");
+                die ("VMoodling (Postgresql) : Could not fetch virtual moodle configuration\n");
             }
         } else {
             die("VMoodling : Unsupported Database for VMoodleMaster\n");
@@ -182,9 +182,23 @@ function vmoodle_boot_configuration() {
          * Setup will additionnaly apply a local/defaults.php file if exists.
          */
         if (!empty($CFG->vmoodlehardchildsdefaults)) {
-            $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardchildsdefaults.'.php';
-            if (file_exists($default)) {
-                include($default);
+            $exclude = false;
+            if (!empty($CFG->vmoodlehardchildsdefaultsexclude)) {
+                if (preg_match('/'.$CFG->vmoodlehardchildsdefaultsexclude.'/', $CFG->vmoodleroot)) {
+                    $exclude = true;
+                }
+            }
+
+            if (!$exclude) {
+
+                $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardchildsdefaults.'.php';
+                if (file_exists($default)) {
+                    include($default);
+                } else {
+                    if ($CFG->debug == E_ALL) {
+                        throw new Exception("Trying to load an inexistant or unreacheable child defaults file\n");
+                    }
+                }
             }
         }
 
@@ -200,13 +214,17 @@ function vmoodle_boot_configuration() {
             $default = $CFG->dirroot.'/local/defaults_'.$CFG->vmoodlehardmasterdefaults.'.php';
             if (file_exists($default)) {
                 include($default);
+            } else {
+                if (@$CFG->debug == E_ALL) {
+                    throw new Exception("Trying to load an inexistant or unreacheable master defaults file\n");
+                }
             }
         }
 
         // Do nothing, just bypass.
         assert(true);
     } else {
-        die ("real moodle instance cannot be used in this VMoodle implementation");
+        die ("real moodle instance cannot be used in this VMoodle implementation\n");
     }
 }
 
@@ -217,27 +235,29 @@ function vmoodle_boot_configuration() {
  * @param boolean $binddb if true, the database is bound after connection.
  * @return a connection
  */
-function vmoodle_make_connection(&$vmoodle, $binddb = false) {
+function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = false) {
     global $CFG;
 
     if (($vmoodle->vdbtype == 'mysqli') || ($vmoodle->vdbtype == 'mariadb')) {
         // Important : force new link here.
 
-        $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, $vmoodle->vdbname, 3306);
+        $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, '', 3306);
         if (!$sidecnx) {
-            if ($CFG->debug == DEBUG_DEVELOPER) {
+            if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                 debugging("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
-                die;
+                if (!$interactive) die;
             }
-            die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
+            if (!$interactive) die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
+            return false;
         }
         if ($binddb) {
             if (!mysqli_select_db($sidecnx, $vmoodle->vdbname)) {
-                if ($CFG->debug == DEBUG_DEVELOPER) {
+                if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                     debugging("VMoodle_make_connection : Database {$vmoodle->vdbname} not found");
-                    die;
+                    if (!$interactive) die;
                 }
-                die ("VMoodle_make_connection : Database not found");
+                if (!$interactive) die ("VMoodle_make_connection : Database not found");
+                return false;
             }
         }
         return $sidecnx;

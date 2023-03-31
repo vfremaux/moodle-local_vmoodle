@@ -52,6 +52,13 @@ class Command_DeleteCourse extends Command {
         $description = vmoodle_get_string('cmddeletecourse_desc', 'vmoodleadminset_courses');
 
         $parameters[] = new Command_Parameter(
+            'fullname',
+            'text',
+            get_string('fullnamelike', 'vmoodleadminset_courses'),
+            null,
+            null);
+
+        $parameters[] = new Command_Parameter(
             'shortname',
             'text',
             get_string('shortname'),
@@ -63,6 +70,20 @@ class Command_DeleteCourse extends Command {
             'text',
             get_string('idnumber'),
             null,
+            null);
+
+        $parameters[] = new Command_Parameter(
+            'delay',
+            'text',
+            vmoodle_get_string('rundelay', 'vmoodleadminset_courses'),
+            60,
+            null);
+
+        $parameters[] = new Command_Parameter(
+            'spread',
+            'text',
+            vmoodle_get_string('spread', 'vmoodleadminset_courses'),
+            60,
             null);
 
         // Creating Command.
@@ -108,8 +129,11 @@ class Command_DeleteCourse extends Command {
         // Creating XMLRPC client.
         $rpcclient = new \local_vmoodle\XmlRpc_Client();
         $rpcclient->set_method('local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_delete_course');
+        $rpcclient->add_param($this->get_parameter('fullname')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('shortname')->get_value(), 'string');
         $rpcclient->add_param($this->get_parameter('idnumber')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('delay')->get_value(), 'string');
+        $rpcclient->add_param($this->get_parameter('spread')->get_value(), 'string');
         $rpcclient->add_param(true, 'boolean'); // Json required.
 
         // Maintenance. Sending requests.

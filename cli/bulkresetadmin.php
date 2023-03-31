@@ -114,7 +114,7 @@ foreach ($allhosts as $h) {
     echo implode("\n", $output)."\n";
 
     if ($return) {
-        if (!empty($options['fullsptop'])) {
+        if (!empty($options['fullstop'])) {
             die("Worker ended with error");
         } else {
             mtrace("Worker failed for {$h->hostname}");

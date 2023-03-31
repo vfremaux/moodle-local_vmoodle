@@ -20,6 +20,9 @@
  * @author Valery Fremaux (valery.fremaux@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'Le composant VMoodle Plugins ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['available'] = 'Disponible';
 $string['backtocomparison'] = 'Retour à la comparaison des plugins';
 $string['cmdcomparedesc'] = 'Compare l\'équipement en plugins.';

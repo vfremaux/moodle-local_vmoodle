@@ -140,13 +140,15 @@ function cron_check_mnet_keys() {
             set_config('mnet_autorenew_haveto', 0);
             $trace .= userdate(time()).' RESET KEY RENEW on '.$CFG->wwwroot."\n";
 
-            // Record trace in trace file.
-            if ($CFG->tracevmoodlekeyrenew) {
+            // Record trace in trace file (hidden config key).
+            if (!empty($CFG->tracevmoodlekeyrenew)) {
                 if ($trace = fopen($CFG->dataroot.'/vmoodle_renew.log', 'w+')) {
                     fputs($trace, $trace);
                     fclose($trace);
                 }
             }
         }
+    } else {
+        mtrace("VMoodle Autorenew mode OFF");
     }
 }

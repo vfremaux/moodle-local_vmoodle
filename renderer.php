@@ -46,6 +46,10 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         return $CFG->wwwroot.'/local/vmoodle/plugins/'.$plugin.'/pix/'.$parts['filename'].'.'.$parts['extension'];
     }
 
+    public function tabs($view) {
+        assert(true);
+    }
+
     /**
      * Checks if file with any image extension exists.
      *
@@ -113,5 +117,46 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         $template->namefilter = $current;
         $template->filterurl = new moodle_url('/local/vmoodle/view.php', ['view' => 'management', 'what' => 'list', 'vpage' => 0]);
         return $this->output->render_from_template('local_vmoodle/namefilter', $template);
+    }
+
+    public function success_hosts_report($hosts, $command) {
+        $template = new StdClass;
+
+        $i = 0;
+        foreach ($hosts as $hostroot => $hostname) {
+            $hosttpl = new StdClass;
+            $hosttpl->i = $i;
+            $hosttpl->hostname = $hostname;
+            $status = $command->get_result($hostroot, 'status');
+            $hosttpl->rpcstatus = get_string('rpcstatus'.$status, 'local_vmoodle');
+            $hosttpl->resultmessage = $command->get_result($hostroot, 'message');
+            $template->hosts[] = $hosttpl;
+            $i = ($i + 1) % 2;
+        }
+
+        return $this->output->render_from_template('local_vmoodle/success_hosts_report', $template);
+    }
+
+    public function failed_hosts_report($hosts, $command) {
+        $template = new StdClass;
+
+        $i = 0;
+        foreach ($hosts as $hostroot => $hostname) {
+            $hosttpl = new StdClass;
+            $hosttpl->i = $i;
+            $hosttpl->hostname = $hostname;
+            $hosttpl->rpcstatus = get_string('rpcstatus'.$command->get_result($hostroot, 'status'), 'local_vmoodle');
+            if ($command->get_result($hostroot, 'status') > 200 && $command->get_result($hostroot, 'status') < 520) {
+                $params = array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($hostroot));
+                $btnurl = new moodle_url('view.php', $params);
+                $label = get_string('runcmdagain', 'local_vmoodle');
+                $hosttpl->runagainbutton = $this->output->single_button($btnurl, $label, 'get');
+            }
+            $hosttpl->errors = implode('<br/>', $command->get_result($hostroot, 'errors'));
+            $template->hosts[] = $hosttpl;
+            $i = ($i + 1) % 2;
+        }
+
+        return $this->output->render_from_template('local_vmoodle/failed_hosts_report', $template);
     }
 }
