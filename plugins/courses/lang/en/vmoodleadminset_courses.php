@@ -29,7 +29,10 @@ $string['noenrol'] = 'No enrol';
 $string['managers'] = 'Inly managers';
 $string['siteadmins'] = 'Only site admins';
 $string['adminsandmanagers'] = 'Site admins and managers';
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['cmdcreatecategory'] = 'Course Category Creation';
 $string['cmdcreatecategory_desc'] = 'Create a course category given a path';
 $string['cmdrestorecourse'] = 'Course restore';
@@ -37,9 +40,13 @@ $string['cmdrestorecourse_desc'] = 'Restores a course from an absolute file loca
 $string['cmddeletecourse'] = 'Course deletion';
 $string['cmddeletecourse_desc'] = 'Deletes a course on base of its local shortname or idnumber';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 $string['enroladmins'] = 'Enrol administrators as teacher.';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$string['enroladmins'] = 'Enrol administrators as teacher.';
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['mnetadmin_description'] = 'When published, you allow the local platform to be remotely administrated by the peer moodle.<br/><br/>When subscribing, you will access to remote administration of the peer moodle.<br/><br/>';
 $string['mnetadmin_name'] = 'Meta-administration service';
 $string['pluginname'] = 'Course  related features';
@@ -52,10 +59,14 @@ $string['errornopermission'] = 'You have no permissions with your remote user to
 $string['errorduringrestore'] = 'An error raised while restoring. Exception : {$a}';
 $string['errorafterrestore'] = 'Restore terminated without failure but no course was created.';
 <<<<<<< HEAD
+<<<<<<< HEAD
 $string['path'] = 'Name path of the category';
 =======
 $string['path'] = 'Name path of the category ((ex: "Courses for 2020/History/Medieval studies")';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$string['path'] = 'Name path of the category ((ex: "Courses for 2020/History/Medieval studies")';
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['catidnumber'] = 'Category ID number';
 $string['catvisible'] = 'Category initially visible';
 $string['coursevisible'] = 'Course initially visible';

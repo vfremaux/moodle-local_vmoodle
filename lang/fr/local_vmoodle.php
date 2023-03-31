@@ -171,10 +171,13 @@ $string['errorplatformnotavailable'] = 'La plate-forme {$a} n\'est pas disponibl
 $string['errorreactivetemplate'] = 'Le nom du chemin du moodle data et le nom de la base de données est introuvable pour réactiver la plateforme désirée.';
 $string['errorsetupdb'] = 'Erreur de mise en place de la base de données';
 <<<<<<< HEAD
+<<<<<<< HEAD
 $string['emulatecommunity'] = 'Emuler la version communautaire';
 $string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
 =======
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['environment'] = 'Environment technique';
 $string['failedplatforms'] = 'Echec des plates-formes :';
 $string['fileschema'] = 'Position des fichiers';
@@ -197,10 +200,6 @@ $string['insuffisantcapabilities'] = 'Capacités insuffisantes';
 $string['key_autorenew_parms'] = 'Réactualisation automatique des clefs réseau';
 $string['lastcron'] = 'Dernier Cron';
 $string['lastcrongap'] = '&Delta;';
-$string['licenseprovider'] = 'Fournisseur version Pro';
-$string['licenseprovider_desc'] = 'Entrez la clef de votre distributeur.';
-$string['licensekey'] = 'Clef de license pro';
-$string['licensekey_desc'] = 'Entrez ici la clef de produit que vous avez reçu de votre distributeur.';
 $string['maindb'] = 'Base de données principale';
 $string['mainpath'] = 'fichiers utilisateur principaux';
 $string['mainservicesformselection'] = 'Patron vis à vis du Moodle maître<br/>Ce patron est appliqué au nouveau noeud. Le patron "miroir" est appliqué au Moodle maître (ce moodle) ';
@@ -272,7 +271,6 @@ $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Le plugin a été désactivé.';
 $string['pluginenabled'] = 'Le plugin a été activé.';
 $string['pluginname'] = 'VMoodle';
-$string['plugindist'] = 'Distribution du plugin';
 $string['pluginnotdisabled'] = 'Le plugin n\'a pas été désactivé.';
 $string['pluginnotenabled'] = 'Le plugin n\'a pas été activé.';
 $string['pluginnotuninstalled'] = 'Le plugin n\'a pas été désintallé.';
@@ -621,5 +619,9 @@ Balises d\'injection :
 - %DATAROOT%
 ';
 
+<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+include(__DIR__.'/pro_additional_strings.php');
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f

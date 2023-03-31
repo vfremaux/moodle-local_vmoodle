@@ -71,10 +71,14 @@ Please note you must execute this script with the same uid as apache!
 
 Options:
 <<<<<<< HEAD
+<<<<<<< HEAD
     --host                Switches to this host virtual configuration before processing.
 =======
     -H, --host                Switches to this host virtual configuration before processing.
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+    -H, --host                Switches to this host virtual configuration before processing.
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     -h, --help            Print out this help.
     -d, --debug           Turn on debug mode.
 

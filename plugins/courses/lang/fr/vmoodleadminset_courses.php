@@ -31,7 +31,10 @@ $string['noenrol'] = 'Pas d\'inscription';
 $string['managers'] = 'Gestionnaires uniquement';
 $string['siteadmins'] = 'Administrateurs de site uniquement';
 $string['adminsandmanagers'] = 'Gestionnaires et administrateurs de site';
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['cmdcreatecategory'] = 'Créer une catégorie de cours';
 $string['cmdcreatecategory_desc'] = 'Crée une catégorie de cours par son chemin (noms complets de catégorie)';
 $string['cmdrestorecourse'] = 'Restaurer un cours';
@@ -42,9 +45,13 @@ $string['mnetadmin_description'] = 'En publiant ce service, vous autorisez la pl
 $string['mnetadmin_name'] = 'Service de méta-administration';
 $string['pluginname'] = 'Fonctions relatives aux cours';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 $string['enroladmins'] = 'Inscrire les administrateurs comme enseignants.';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$string['enroladmins'] = 'Inscrire les administrateurs comme enseignants.';
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['errornolocation'] = 'Il n\'y a pas de fichier à l\'emplacement donné ou ce fichier n\'est pas lisible.';
 $string['errornotamoodlearchive'] = 'L\'emplacement indiqué ne contient pas une archive Moodle.';
 $string['errornocategory'] = 'La catégorie cible n\'existe pas (par numéro d\'identification).';
@@ -54,10 +61,14 @@ $string['errornopermission'] = 'Vous n\'avez pas les droits avec votre utilisate
 $string['errorduringrestore'] = 'Une erreur est survenue lors de la restauration. . Exception : {$a}';
 $string['errorafterrestore'] = 'La restauration a abouti, mais aucun cours n\'a été créé.';
 <<<<<<< HEAD
+<<<<<<< HEAD
 $string['path'] = 'Chemin de noms de la catégorie';
 =======
 $string['path'] = 'Chemin complet de la catégorie (ex: "Année 2020/Histoire/Histoire contemporaine")';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$string['path'] = 'Chemin complet de la catégorie (ex: "Année 2020/Histoire/Histoire contemporaine")';
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 $string['catidnumber'] = 'Numéro d\'identification de la nouvelle catégorie';
 $string['catvisible'] = 'Categorie visible initialement';
 $string['coursevisible'] = 'Cours initiallement visible';

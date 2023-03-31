@@ -408,7 +408,11 @@ function vmoodle_cli_notify_admin($msg) {
 
     if (!isset($admin)) {
         // Here we are sure to get one.
+<<<<<<< HEAD
         $admin = $DB->get_record('user', ['username' => 'admin', 'menthostid' => $CFG->mnet_localhost_id]);
+=======
+        $admin = $DB->get_record('user', ['username' => 'admin']);
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     }
 
     // Do NOT use email_to_user here because of possible nomailever restriction

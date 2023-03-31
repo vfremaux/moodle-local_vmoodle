@@ -59,12 +59,19 @@ list($options, $unrecognized) = cli_get_params(
     array('non-interactive'   => false,
           'allow-unstable'    => false,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+          'purge-caches'      => false,
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
           'host'              => false,
           'test'              => false,
-          'help'              => false),
+          'debug'             => false,
+          'help'              => false
+    ),
     array('h' => 'help',
           'H' => 'host',
           'u' => 'allow-unstable',
+<<<<<<< HEAD
           't' => 'test')
 =======
           'purge-caches'      => false,
@@ -76,11 +83,16 @@ list($options, $unrecognized) = cli_get_params(
     array('h' => 'help',
           'H' => 'host',
           'u' => 'allow-unstable',
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
           'P' => 'purge-caches',
           't' => 'test',
           'd' => 'debug'
     )
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 );
 
 $interactive = empty($options['non-interactive']);
@@ -99,6 +111,7 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
 <<<<<<< HEAD
+<<<<<<< HEAD
 --non-interactive     No interactive questions or confirmations
 -u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
@@ -106,6 +119,8 @@ Options:
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
 =======
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     --non-interactive     No interactive questions or confirmations
     -u, --allow-unstable      Upgrade even if the version is not marked as stable yet, required in non-interactive mode.
     -P, --purge-caches    Purge caches immediately after upgradig completes.
@@ -113,7 +128,10 @@ Options:
     --test                Stops after host resolution, telling the actual config that will be used
     -d, --debug           Set debug mode on
     -h, --help            Print out this help
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade.php --host=http://my.virtual.moodle.org

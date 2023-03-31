@@ -40,11 +40,8 @@ if (!defined('RPC_SUCCESS')) {
     define('RPC_FAILURE_RUN', 521);
 }
 
-<<<<<<< HEAD
-=======
 use local_vmoodle\restore_automation;
 
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 /**
  * Creates (or updates a category having some absolute path in the categroy tree.
  * If exists, may change idnumber if provided and different of the actual one.
@@ -118,16 +115,10 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
  * @param string $idnumber the target course idnumber. It must not be used already.
  * @param string $catidnumber the idnumber of the course category to restore in. It must exist.
  * @param string $location an absolute pat in the file system where to find an .mbz archive file.
-<<<<<<< HEAD
- * @param boolean $jsonrequired Asks for json return
- */
-function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $jsonrequired = true) {
-=======
  * @param string $enroladmins soem enrolment options. Empty if no enrol, or managers (site level) or site admins, or both.
  * @param boolean $jsonrequired Asks for json return
  */
 function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $enroladmins = '', $jsonrequired = true) {
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     global $CFG, $USER, $DB;
 
     debug_trace("VMOODLE : Starting Restore course");
@@ -149,24 +140,14 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
 
     if (!file_exists($location)) {
         $response->status = RPC_FAILURE_DATA;
-<<<<<<< HEAD
-        $response->error = get_string('errornolocation', 'vmoodleadminset_courses');
-        $response->errors[] = get_string('errornolocation', 'vmoodleadminset_courses');
-=======
         $response->error = get_string('errornolocation', 'vmoodleadminset_courses')."\n ".$location;
         $response->errors[] = get_string('errornolocation', 'vmoodleadminset_courses')."\n ".$location;
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     if (!preg_match('/\.mbz/', $location)) {
         $response->status = RPC_FAILURE_DATA;
-<<<<<<< HEAD
-        $response->error = get_string('errornotamoodlearchive', 'vmoodleadminset_courses');
-        $response->errors[] = get_string('errornotamoodlearchive', 'vmoodleadminset_courses');
-=======
         $response->error = get_string('errornotamoodlearchive', 'vmoodleadminset_courses')."\n ".$location;
         $response->errors[] = get_string('errornotamoodlearchive', 'vmoodleadminset_courses')."\n ".$location;
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     if (!$coursecat = $DB->get_record('course_categories', array('idnumber' => $catidnumber))) {
@@ -205,18 +186,12 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
 
     debug_trace('RPC Bind : Executing restore');
     try {
-<<<<<<< HEAD
-        $newcourseid =  restore_automation::run_automated_restore(null, $location, $coursecat->id);
-=======
         $newcourseid = restore_automation::run_automated_restore(null, $location, $coursecat->id);
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
         if (!$newcourseid) {
             $response->status = RPC_FAILURE_RUN;
             $response->error = get_string('errorafterrestore', 'vmoodleadminset_courses');
             $response->errors[] = get_string('errorafterrestore', 'vmoodleadminset_courses');
-<<<<<<< HEAD
-=======
         } else {
             // Restore was OK, now check for admins enrolment.
             if (!empty($enroladmins)) {
@@ -266,7 +241,6 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
                     }
                 }
             }
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         }
     } catch (Exception $e) {
         $response->status = RPC_FAILURE_RUN;

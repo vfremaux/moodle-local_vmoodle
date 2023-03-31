@@ -45,9 +45,13 @@ Options:
 --shorten             Shorten result if necessary.
 --host                Host to play on.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 --debug               Set debug on.
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+--debug               Set debug on.
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 --non-interactive     Perform the replacement without confirming.
 -h, --help            Print out this help.
 
@@ -62,9 +66,13 @@ list($options, $unrecognized) = cli_get_params(
         'shorten' => false,
         'host' => false,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         'debug' => false,
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+        'debug' => false,
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
         'non-interactive' => false,
         'help'    => false,
     ),
@@ -72,12 +80,18 @@ list($options, $unrecognized) = cli_get_params(
         'h' => 'help',
         'H' => 'host',
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
         's' => 'search',
         'r' => 'replace',
         'S' => 'shorten',
         'I' => 'non-interactive'
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     )
 );
 
@@ -119,10 +133,14 @@ try {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 if (!$options['non-interactive']) {
 =======
 if (empty($options['non-interactive'])) {
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+if (empty($options['non-interactive'])) {
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     echo get_string('excludedtables', 'tool_replace') . "\n\n";
     echo get_string('notsupported', 'tool_replace') . "\n\n";
     $prompt = get_string('cliyesnoprompt', 'admin');

@@ -23,12 +23,6 @@ defined('MOODLE_INTERNAL') || die;
 class local_vmoodle_renderer extends plugin_renderer_base {
 
     public function image_url($image, $subplugin = null) {
-<<<<<<< HEAD
-        global $CFG, $OUTPUT;
-
-        if (!$subplugin) {
-            return $OUTPUT->image_url($image, 'local_vmoodle');
-=======
         global $CFG;
 
         if ($subplugin == 'moodle' || $subplugin == 'core') {
@@ -37,7 +31,6 @@ class local_vmoodle_renderer extends plugin_renderer_base {
 
         if (!$subplugin) {
             return $this->output->image_url($image, 'local_vmoodle');
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         }
 
         list($type, $plugin) = explode('_', $subplugin);
@@ -95,19 +88,11 @@ class local_vmoodle_renderer extends plugin_renderer_base {
      * @param string $displayed True if the block is displayed by default, false otherwise.
      */
     public function collapsable_block($id, $caption, $content, $classes = '', $displayed = true) {
-<<<<<<< HEAD
-        global $OUTPUT;
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         static $i = 0;
 
         $i++;
 
-<<<<<<< HEAD
-        $template = new StdClass;
-=======
         $template = new StdClass();
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $template->id = $id;
         $template->i = $i;
 
@@ -115,19 +100,13 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         $template->captionnotags = strip_tags($caption);
 
         $pixpath = ($displayed) ? '/t/expanded' : '/t/collapsed';
-<<<<<<< HEAD
-        $template->pixpathurl = $OUTPUT->image_url($pixpath);
-=======
         $template->pixpathurl = $this->image_url($pixpath, 'core');
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $template->showctlalt = ($displayed) ? get_string('hide') : get_string('show');
         $template->hideclass = ($displayed) ? '' : ' vmoodle-hidden';
         $template->blockcontent = $content;
 
         return $this->output->render_from_template('local_vmoodle/collapsibleblock', $template);
     }
-<<<<<<< HEAD
-=======
 
     public function namefilter($current) {
         $template = new StdClass;
@@ -176,5 +155,4 @@ class local_vmoodle_renderer extends plugin_renderer_base {
 
         return $this->output->render_from_template('local_vmoodle/failed_hosts_report', $template);
     }
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 }

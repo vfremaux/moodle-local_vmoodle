@@ -63,6 +63,7 @@ foreach ($pluginlibs as $lib) {
  * @param string $feature a feature key to be tested.
  */
 <<<<<<< HEAD
+<<<<<<< HEAD
 function local_vmoodle_supports_feature($feature) {
     global $CFG;
     static $supports;
@@ -77,6 +78,15 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
         $config = get_config('local_vmoodle');
     }
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+function local_vmoodle_supports_feature($feature = null, $getsupported = false) {
+    global $CFG;
+    static $supports;
+
+    if (!during_initial_install()) {
+        $config = get_config('local_vmoodle');
+    }
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
 
     if (!isset($supports)) {
         $supports = array(
@@ -90,12 +100,18 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     if ($getsupported) {
         return $supports;
     }
 
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     // Check existance of the 'pro' dir in plugin.
     if (is_dir(__DIR__.'/pro')) {
         if ($feature == 'emulate/community') {
@@ -111,13 +127,19 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     if (empty($feature)) {
         // Just return version.
         return $versionkey;
     }
 
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     list($feat, $subfeat) = explode('/', $feature);
 
     if (!array_key_exists($feat, $supports[$versionkey])) {
@@ -891,9 +913,12 @@ function vmoodle_create_database($vmoodledata) {
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!$DB->execute($sql)) {
         print_error('noexecutionfor', 'local_vmoodle', '', $sql);
 =======
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
     try {
         $DB->execute($sql);
     } catch (Exception $ex) {
@@ -901,7 +926,10 @@ function vmoodle_create_database($vmoodledata) {
         $e->sql = $sql;
         $e->error = $DB->get_last_error();
         print_error('noexecutionfor', 'local_vmoodle', '', $e);
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 6c75c99304011a41c3fb6cd66723b737d004147f
         die;
     }
 }

@@ -56,36 +56,7 @@ if (!empty($successfull_platforms)) {
 // Displaying failed commands.
 $i = 0;
 if (!empty($failed_platforms)) {
-<<<<<<< HEAD
-    echo '<table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">'.
-            '<tbody>'.
-                '<tr>'.
-                    '<th scope="col" class="header c0" style="vertical-align: top; text-align: left; width: 20%; white-space: nowrap;" colspan="3"><b>'.get_string('failedplatforms', 'local_vmoodle').'</b></th>' .
-                '</tr>';
-    foreach ($failed_platforms as $host => $platform) {
-        echo '<tr class="r'.$i.'">' .
-                '<td><b>'.$platform.'</b></td>' .
-                '<td style="text-align: left;">'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>' .
-                '<td style="width: 25%;">';
-        if ($command->get_result($host, 'status') > 200 && $command->get_result($host, 'status') < 520) {
-            $params = array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($host));
-            echo $OUTPUT->single_button(new moodle_url('view.php', $params), get_string('runcmdagain', 'local_vmoodle'), 'get');
-        } else {
-            echo '&nbsp;';
-        }
-        echo '</td>' .
-            '</tr>' .
-            '<tr class="r'.$i.'" valign="top">' .
-                '<td>'.get_string('details', 'local_vmoodle').'</td>' .
-                '<td colspan="2">'.implode('<br/>', $command->get_result($host, 'errors')).'</td>' .
-            '</tr>';
-        $i = ($i+1)%2;
-    }
-    echo '</tbody>' .
-        '</table><br/>';
-=======
     echo $renderer->failed_hosts_report($failed_platforms, $command);
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 }
 
 // Displaying controls.
