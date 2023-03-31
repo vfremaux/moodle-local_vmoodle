@@ -26,6 +26,10 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
 require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/backup/restore_automation.class.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/classes/task/restore_course_task.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/classes/task/delete_course_task.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/classes/task/delete_course_category_task.php');
+require_once($CFG->dirroot.'/local/vmoodle/plugins/courses/classes/task/empty_course_category_task.php');
 
 if (!defined('RPC_SUCCESS')) {
     define('RPC_TEST', 100);
@@ -41,6 +45,10 @@ if (!defined('RPC_SUCCESS')) {
 }
 
 use local_vmoodle\restore_automation;
+use vmoodleadminset_courses\task\restore_course_task;
+use vmoodleadminset_courses\task\delete_course_task;
+use vmoodleadminset_courses\task\delete_course_category_task;
+use vmoodleadminset_courses\task\empty_course_category_task;
 
 /**
  * Creates (or updates a category having some absolute path in the categroy tree.
@@ -54,7 +62,9 @@ use local_vmoodle\restore_automation;
 function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visible = true, $jsonrequired = true) {
     global $DB;
 
-    debug_trace("VMOODLE: Starting Create Category");
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE: Starting Create Category", TRACE_DEBUG);
 
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user)) {
@@ -83,7 +93,7 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
                 }
             }
         } else {
-            debug_trace("VMOODLE: Starting Create Category path ");
+            if ($traceable) debug_trace("VMOODLE: Starting Create Category path ", TRACE_DEBUG);
             $elementdata = new StdClass;
             $elementdata->name = $element;
             $elementdata->parent = $cat->id;
@@ -108,21 +118,26 @@ function mnetadmin_rpc_create_category($user, $catpath, $idnumber = null, $visib
 }
 
 /**
- * Locally restores a course to a given category (by idnumber) from a locally filesystem accessible archive.
+ * Locally places a delayed course restore task in a given category (by idnumber) from a locally filesystem accessible archive.
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
  * @param string $shortname the target course shortname. It must not exist already.
  * @param string $fullname the target course fullname
  * @param string $idnumber the target course idnumber. It must not be used already.
  * @param string $catidnumber the idnumber of the course category to restore in. It must exist.
- * @param string $location an absolute pat in the file system where to find an .mbz archive file.
- * @param string $enroladmins soem enrolment options. Empty if no enrol, or managers (site level) or site admins, or both.
+ * @param string $location an absolute path in the file system where to find an .mbz archive file.
+ * @param string $enroladmins some enrolment options. Empty if no enrol, or managers (site level) or site admins, or both.
+ * @param int $delay do not start effective retore before this delay (minutes) from task setup.
+ * @param int $spread a period (minutes) in which the restore will occur at random time offset.
+ * @param int $seed an integer that marks the same deployment operation. Can be explicitely fixed when building command.
  * @param boolean $jsonrequired Asks for json return
  */
-function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $enroladmins = '', $jsonrequired = true) {
+function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $catidnumber, $location, $enroladmins = '', $delay = 60, $spread = 60, $seed = '', $jsonrequired = true) {
     global $CFG, $USER, $DB;
 
-    debug_trace("VMOODLE : Starting Restore course");
-    debug_trace('RPC '.json_encode($user));
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE : Starting Restore course");
+    if ($traceable) debug_trace('RPC '.json_encode($user));
 
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
@@ -136,7 +151,7 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
     $response = new stdClass;
     $response->status = RPC_SUCCESS;
 
-    // TODO :
+    // Pre Check of restorability conditions.
 
     if (!file_exists($location)) {
         $response->status = RPC_FAILURE_DATA;
@@ -162,7 +177,7 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
         $response->errors[] = get_string('errorcoursealreadyexists', 'vmoodleadminset_courses');
     }
 
-    if (!empty($idnumber) && $DB->get_record('course', array('idnumber' => $shortname))) {
+    if (!empty($idnumber) && $DB->get_record('course', array('idnumber' => $idnumber))) {
         $response->status = RPC_FAILURE_DATA;
         $response->error = get_string('errorcourseidnumberexists', 'vmoodleadminset_courses');
         $response->errors[] = get_string('errorcourseidnumberexists', 'vmoodleadminset_courses');
@@ -184,71 +199,110 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
         }
     }
 
-    debug_trace('RPC Bind : Executing restore');
-    try {
-        $newcourseid = restore_automation::run_automated_restore(null, $location, $coursecat->id);
+    // Now setup an ad hoc task passing incoming data.
+    if ($traceable) debug_trace('RPC Bind : Placing restore task', TRACE_DEBUG);
 
-        if (!$newcourseid) {
-            $response->status = RPC_FAILURE_RUN;
-            $response->error = get_string('errorafterrestore', 'vmoodleadminset_courses');
-            $response->errors[] = get_string('errorafterrestore', 'vmoodleadminset_courses');
+    $task = new restore_course_task();
+
+    $customdata = new StdClass;
+    $customdata->location = $location;
+    $customdata->coursecatid = $coursecat->id;
+    $customdata->enroladmins = $enroladmins;
+    $customdata->shortname = $shortname;
+    $customdata->fullname = $fullname;
+
+    $task->set_custom_data($customdata);
+
+    $task->set_component('vmoodleadminset_courses');
+    $task->set_userid($user->id);
+    // Program a time randomly spread beteen delay and delay + spread. This is usefull on VMoodle large arrays.
+    $tasktime = time() + (rand($delay, $delay + $spread) * MINSECS);
+
+    $task->set_next_run_time($tasktime);
+
+    \core\task\manager::queue_adhoc_task($task);
+    $response->message = "Restore scheduled at ".userdate($tasktime);
+
+    if ($traceable) debug_trace('RPC Bind : Sending response', TRACE_DEBUG);
+
+    // Returns response (success or failure).
+    if ($jsonrequired) {
+        return json_encode($response);
+    } else {
+        return $response;
+    }
+}
+
+/**
+ * Remotely deletes a course given a shortname or an idnumber.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $fullname the target course fullname with potential LIKE wildcards
+ * @param string $shortname the target course shortname
+ * @param string $idnumber the target course idnumber
+ * @param int $delay do not start effective retore before this delay (minutes) from task setup.
+ * @param int $spread a period (minutes) in which the restore will occur at random time offset.
+ * @param boolean $jsonrequired Asks for json return
+ */
+function mnetadmin_rpc_delete_course($user, $fullname = null, $shortname = null, $idnumber = null, $delay = 60, $spread = 60, $jsonrequired = true) {
+    global $DB;
+
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE : Starting Delete course");
+    if ($traceable) debug_trace('RPC '.json_encode($user));
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
         } else {
-            // Restore was OK, now check for admins enrolment.
-            if (!empty($enroladmins)) {
-                debug_trace('RPC Restore : checking users to enrol');
-                if (in_array($enroladmins, ['siteadmins', 'adminsandmanagers'])) {
-                    debug_trace('RPC Restore : Seeking for site admins');
-                    // Enrol site admins.
-                    $admins = explode($CFG->siteadmins);
-                    if (!empty($admins)) {
-                        foreach ($admins as $uid) {
-                            $userstoenrol[] = $uid;
-                        }
-                    }
-                }
-
-                if (in_array($enroladmins, ['managers', 'adminsandmanagers'])) {
-                    debug_trace('RPC Restore : Seeking for site managers');
-                    // Complete users to enrol array with manager ids.
-                    $systemcontext = context_system::instance();
-                    // This should be a workable heuristic.
-                    $managers = get_users_by_capability('moodle/site:deleteanymessage', $systemcontext);
-                    if (!empty($managers)) {
-                        foreach (array_keys($managers) as $uid) {
-                            if (!in_array($uid, $userstoenrol)) {
-                                $userstoenrol[] = $uid;
-                            }
-                        }
-                    }
-                }
-
-                if (!empty($userstoenrol)) {
-                    debug_trace('RPC Restore : Have '.count($userstoenrol).' users to enrol');
-                    $enrolplugin = enrol_get_plugin('manual');
-                    $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
-                    $instance = $DB->get_record('enrol', ['enrol' => 'manual', 'courseid' => $newcourseid, 'status' => 0]);
-                    if (!$instance) {
-                        // Do create a first enabled instance for manual enrolments if missing.
-                        $newcourse = $DB->get_record('course', ['id' => $newcourseid]);
-                        $enrolplugin->add_default_instance($newcourse);
-                        // Fetch again the default instance now we have it.
-                        $instance = $DB->get_record('enrol', ['enrol' => 'manual', 'courseid' => $newcourseid, 'status' => 0]);
-                    }
-
-                    // Now enrol all pending users.
-                    foreach ($userstoenrol as $uid) {
-                        $enrolplugin->enrol_user($instance, $uid, $rolei->id);
-                    }
-                }
-            }
+            return json_decode($auth_response);
         }
-    } catch (Exception $e) {
-        $response->status = RPC_FAILURE_RUN;
-        $response->error = get_string('errorduringrestore', 'vmoodleadminset_courses', $e->getMessage());
-        $response->errors[] = get_string('errorduringrestore', 'vmoodleadminset_courses', $e->getMessage());
     }
 
-    debug_trace('RPC Bind : Sending response');
+    // Creating response.
+    $response = new stdClass;
+    $response->status = RPC_SUCCESS;
+
+    if (!empty($fullname)) {
+        $courses = $DB->get_records_select('course', ' fullname LIKE ? ', [$fullname]);
+    } else if (!empty($shortname)) {
+        $course = $DB->get_record('course', array('shortname' => $shortname));
+    } else  {
+        if (!empty($idnumber)) {
+            $course = $DB->get_record('course', array('shortname' => $shortname));
+        }
+    }
+
+    if (empty($courses) && empty($course)) {
+        $response->status = RPC_FAILURE_RUN;
+        $response->error = get_string('errornocourse', 'vmoodleadminset_courses');
+        $response->errors[] = get_string('errornocourse', 'vmoodleadminset_courses');
+    } else {
+        // Now setup an ad hoc task passing incoming data.
+        if ($traceable) debug_trace('RPC Bind : Placing delete task', TRACE_DEBUG);
+
+        $task = new delete_course_task();
+
+        $customdata = new StdClass;
+        $customdata->fullname = $fullname;
+        $customdata->shortname = $shortname;
+        $customdata->idnumber = $idnumber;
+
+        $task->set_custom_data($customdata);
+
+        $task->set_component('vmoodleadminset_courses');
+        $task->set_userid($user->id);
+        // Program a time randomly spread beteen delay and delay + spread. This is usefull on VMoodle large arrays.
+        $tasktime = time() + (rand($delay, $delay + $spread) * MINSECS);
+
+        $task->set_next_run_time($tasktime);
+
+        \core\task\manager::queue_adhoc_task($task);
+        $response->message = "Course Deletion scheduled at ".userdate($tasktime);
+
+    }
+
+    if ($traceable) debug_trace('RPC Bind : Sending response', TRACE_DEBUG);
 
     // Returns response (success or failure).
     if ($jsonrequired) {
@@ -263,13 +317,17 @@ function mnetadmin_rpc_restore_course($user, $shortname, $fullname, $idnumber, $
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
  * @param string $shortname the target course shortname
  * @param string $idnumber the target course idnumber
+ * @param int $delay do not start effective retore before this delay (minutes) from task setup.
+ * @param int $spread a period (minutes) in which the restore will occur at random time offset.
  * @param boolean $jsonrequired Asks for json return
  */
-function mnetadmin_rpc_delete_course($user, $shortname = null, $idnumber = null, $jsonrequired = true) {
+function mnetadmin_rpc_delete_course_category($user, $idnumber = null, $delay = 60, $spread = 60, $jsonrequired = true) {
     global $DB;
 
-    debug_trace("VMOODLE : Starting Delete course");
-    debug_trace('RPC '.json_encode($user));
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE : Starting Delete course category");
+    if ($traceable) debug_trace('RPC '.json_encode($user));
 
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
@@ -283,23 +341,167 @@ function mnetadmin_rpc_delete_course($user, $shortname = null, $idnumber = null,
     $response = new stdClass;
     $response->status = RPC_SUCCESS;
 
-    if (!empty($shortname)) {
-        $course = $DB->get_record('course', array('shortname' => $shortname));
-    } else  {
-        if (!empty($idnumber)) {
-            $course = $DB->get_record('course', array('shortname' => $shortname));
+    $coursecat = $DB->get_record('course_categories', array('idnumber' => $idnumber));
+
+    if (empty($coursecat)) {
+        $response->status = RPC_FAILURE_RUN;
+        $response->error = get_string('errornocategory', 'vmoodleadminset_courses');
+        $response->errors[] = get_string('errornocategory', 'vmoodleadminset_courses');
+    } else {
+        // Now setup an ad hoc task passing incoming data.
+        if ($traceable) debug_trace('RPC Bind : Placing category delete task', TRACE_DEBUG);
+
+        $task = new delete_course_category_task();
+
+        $customdata = new StdClass;
+        $customdata->catidnumber = $idnumber;
+
+        $task->set_custom_data($customdata);
+
+        $task->set_component('vmoodleadminset_courses');
+        $task->set_userid($user->id);
+        // Program a time randomly spread beteen delay and delay + spread. This is usefull on VMoodle large arrays.
+        $tasktime = time() + (rand($delay, $delay + $spread) * MINSECS);
+
+        $task->set_next_run_time($tasktime);
+
+        \core\task\manager::queue_adhoc_task($task);
+        $response->message = "Course Category Deletion scheduled at ".userdate($tasktime);
+
+    }
+
+    if ($traceable) debug_trace('RPC Bind : Sending response', TRACE_DEBUG);
+
+    // Returns response (success or failure).
+    if ($jsonrequired) {
+        return json_encode($response);
+    } else {
+        return $response;
+    }
+}
+
+/**
+ * Remotely deletes a course given a shortname or an idnumber.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $shortname the target course shortname
+ * @param string $idnumber the target course idnumber
+ * @param int $delay do not start effective retore before this delay (minutes) from task setup.
+ * @param int $spread a period (minutes) in which the restore will occur at random time offset.
+ * @param boolean $jsonrequired Asks for json return
+ */
+function mnetadmin_rpc_empty_course_category($user, $idnumber = null, $delay = 60, $spread = 60, $jsonrequired = true) {
+    global $DB;
+
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE : Starting Empty course category");
+    if ($traceable) debug_trace('RPC '.json_encode($user));
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        } else {
+            return json_decode($auth_response);
         }
     }
 
-    if (empty($course)) {
+    // Creating response.
+    $response = new stdClass;
+    $response->status = RPC_SUCCESS;
+
+    $coursecat = $DB->get_record('course_categories', array('idnumber' => $idnumber));
+
+    if (empty($coursecat)) {
         $response->status = RPC_FAILURE_RUN;
-        $response->error = get_string('errornocourse', 'vmoodleadminset_courses');
-        $response->errors[] = get_string('errornocourse', 'vmoodleadminset_courses');
+        $response->error = get_string('errornocategory', 'vmoodleadminset_courses');
+        $response->errors[] = get_string('errornocategory', 'vmoodleadminset_courses');
     } else {
-        delete_course($course->id, false);
+        // Now setup an ad hoc task passing incoming data.
+        if ($traceable) debug_trace('RPC Bind : Placing empty category task', TRACE_DEBUG);
+
+        $task = new empty_course_category_task();
+
+        $customdata = new StdClass;
+        $customdata->catidnumber = $idnumber;
+
+        $task->set_custom_data($customdata);
+
+        $task->set_component('vmoodleadminset_courses');
+        $task->set_userid($user->id);
+        // Program a time randomly spread beteen delay and delay + spread. This is usefull on VMoodle large arrays.
+        $tasktime = time() + (rand($delay, $delay + $spread) * MINSECS);
+
+        $task->set_next_run_time($tasktime);
+
+        \core\task\manager::queue_adhoc_task($task);
+        $response->message = "Course Category Purge scheduled at ".userdate($tasktime);
+
     }
 
-    debug_trace('RPC Bind : Sending response');
+    if ($traceable) debug_trace('RPC Bind : Sending response', TRACE_DEBUG);
+
+    // Returns response (success or failure).
+    if ($jsonrequired) {
+        return json_encode($response);
+    } else {
+        return $response;
+    }
+}
+
+/**
+ * Remotely checks for courses given a shortname, idnumber or fullname.
+ * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
+ * @param string $shortname the target course shortname
+ * @param string $fullname the target course fullname
+ * @param string $idnumber the target course idnumber
+ * @param boolean $jsonrequired Asks for json return
+ */
+function mnetadmin_rpc_check_course($user, $shortname = null, $fullname = null, $idnumber = null, $jsonrequired = true) {
+    global $DB;
+
+    $traceable = function_exists('debug_trace');
+
+    if ($traceable) debug_trace("VMOODLE : Starting Check course");
+    if ($traceable) debug_trace('RPC '.json_encode($user));
+
+    if ($auth_response = invoke_local_user((array)$user)) {
+        if ($jsonrequired) {
+            return $auth_response;
+        } else {
+            return json_decode($auth_response);
+        }
+    }
+
+    // Creating response.
+    $response = new stdClass;
+    $response->status = RPC_SUCCESS;
+
+    $candidates = [];
+    if (!empty($shortname)) {
+        $sqllike = $DB->sql_like('shortname', ':shortname');
+        $candidates = $DB->get_records_select('course', $sqllike, ['shortname' => $shortname], 'fullname', 'id,shortname,idnumber,fullname');
+    }
+
+    else if (!empty($idnumber)) {
+        $sqllike = $DB->sql_like('idnumber', ':idnumber');
+        $candidates = $DB->get_records_select('course', $sqllike, ['idnumber' => $idnumber], 'fullname', 'id,shortname,idnumber,fullname');
+    }
+
+    else if (!empty($fullname)) {
+        $sqllike = $DB->sql_like('fullname', ':fullname');
+        $candidates = $DB->get_records_select('course', $sqllike, ['fullname' => $fullname], 'fullname', 'id,shortname,idnumber,fullname');
+    }
+
+    $courses = [];
+    foreach ($candidates as $c) {
+        $courses[] = "[{$c->shortname}] $c->fullname ({$c->idnumber})";
+    }
+
+    if (empty($courses)) {
+        $response->message = get_string('nocourses', 'vmoodleadminset_courses');
+    } else {
+        $response->message = implode("\n<br>", $courses);
+    }
 
     // Returns response (success or failure).
     if ($jsonrequired) {

@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/local/vmoodle/db/install.php');
 
 function xmldb_local_vmoodle_upgrade($oldversion = 0) {
-    global $DB;
+    global $DB, $CFG;
 
     $result = true;
 
@@ -49,6 +49,14 @@ function xmldb_local_vmoodle_upgrade($oldversion = 0) {
     // Eventually fix some misnamed rpcs if any at each upgrade.
     // So this is a global process that can be massified.
     xmldb_local_vmoodle_late_install();
+
+    // Register zabbix indicators if installed.
+    // Note will only work with report_zabbix "pro" version.
+    // This call is only a wrapper.
+    if (is_dir($CFG->dirroot.'/report/zabbix')) {
+        include_once($CFG->dirroot.'/report/zabbix/xlib.php');
+        report_zabbix_register_plugin('local', 'vmoodle');
+    }
 
     return $result;
 }

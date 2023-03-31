@@ -1166,7 +1166,6 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
     if (!$onlybounce) {
         if (function_exists('debug_trace')) {
             debug_trace("mnetadmin_rpc_create_user: Up to create $targetuser ");
-<<<<<<< HEAD
         }
 
         $params = array('username' => $targetuser);
@@ -1190,31 +1189,6 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
             $user = $DB->get_record('user', $params);
         }
 
-=======
-        }
-
-        $params = array('username' => $targetuser);
-        if ($targetuser != 'admin') {
-            // Assuming unique username. TODO : reinforce incomming identity and wrap to user_mnet_hosts
-            // policy for unifying users.
-            $user = $DB->get_record('user', $params);
-        } else {
-            // Find an admin comming from caller. It will be the superadmin.
-            if (function_exists('debug_trace')) {
-                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($callinguser, true));
-            }
-            $adminhost = $DB->get_record('mnet_host', array('wwwroot' => $callinguser->remotehostroot));
-            if (function_exists('debug_trace')) {
-                debug_trace("mnetadmin_rpc_create_user: host admin ".print_r($adminhost, true));
-            }
-            $params['mnethostid'] = $adminhost->id;
-            if (function_exists('debug_trace')) {
-                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($params, true));
-            }
-            $user = $DB->get_record('user', $params);
-        }
-
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         if (!$user) {
 
             // Collect eventual profilefields and cleanup user record from them.
