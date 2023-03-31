@@ -8,12 +8,6 @@ sous certaines conditions, afin de soutenir l\'effort de développement, amélio
 <p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
 <p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
 
-<<<<<<< HEAD
-=======
-// Caches.
-$string['cachedef_pro'] = 'Stocke des données spécifiques de la zone "pro"';
-
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 require_once($CFG->dirroot.'/local/vmoodle/lib.php'); // to get xx_supports_feature();
 if ('pro' == local_vmoodle_supports_feature()) {
     include($CFG->dirroot.'/local/vmoodle/pro/lang/fr/pro.php');

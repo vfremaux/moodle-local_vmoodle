@@ -118,11 +118,6 @@ function mnetadmin_rpc_set_maintenance($user, $message, $hardmaintenance = false
 
     // Be really sure we drop caches.
     cache_helper::invalidate_by_definition('core', 'config');
-<<<<<<< HEAD
-
-    debug_trace('RPC Bind : Sending response');
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     // Returns response (success or failure).
     return json_encode($response);
@@ -186,22 +181,10 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
             continue;
         }
         // Invalidates cache.
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        debug_trace("VMoodle : Setting config $key, $value, $plugin", TRACE_NOTICE);
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
-        set_config($key, $value, $plugin);
-    }
-
-    debug_trace('RPC Bind : Sending response');
-
-=======
         debug_trace("VMoodle : Setting config $key, $value, $plugin", TRACE_NOTICE);
         set_config($key, $value, $plugin);
     }
 
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     // Returns response (success or failure).
     return json_encode($response);
 }
@@ -213,11 +196,6 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
 function mnetadmin_rpc_purge_caches($user, $jsonrequired = true) {
     global $CFG, $USER;
 
-<<<<<<< HEAD
-    debug_trace('RPC '.json_encode($user));
-
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     if ($auth_response = invoke_local_user((array)$user)) {
         if ($jsonrequired) {
             return $auth_response;
@@ -262,10 +240,6 @@ function mnetadmin_rpc_get_local_langs($user, $plugins, $langs, $jsonrequired = 
         $response = new stdClass;
         $response->status = RPC_FAILURE;
         $response->error = "Empty plugin set";
-<<<<<<< HEAD
-        debug_trace("Empty pluginset");
-=======
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         if ($jsonrequired) {
             return json_encode($response);
         }
@@ -431,12 +405,7 @@ function mnetadmin_rpc_set_local_langs($user, $locallangzipcontent, $jsonrequire
  * @param string $filecontent The encoded (base64) file content.
  * @param boolean $jsonrequired Is json required for return ?.
  */
-<<<<<<< HEAD
-function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filename, $filecontent, $jsonrequired = true) {
-    global $CFG;
-=======
 function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filepath, $filename, $filecontent, $jsonrequired = true) {
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Receiving moodle file');
@@ -456,14 +425,8 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filep
     $filerec->component = $component;
     $filerec->filearea = $filearea;
     $filerec->itemid = $itemid;
-<<<<<<< HEAD
-    $filerec->filepath = dirname($filename).'/';
-    $filerec->filepath = str_replace('//', '/', $filerec->filepath); // fixes eventual slash doubling
-    $filerec->filename = basename($filename);
-=======
     $filerec->filepath = $filepath;
     $filerec->filename = $filename;
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     $fs = get_file_storage();
 
@@ -504,8 +467,6 @@ function mnetadmin_rpc_import_file($user, $component, $filearea, $itemid, $filep
 }
 
 /**
-<<<<<<< HEAD
-=======
  * Get a complete listing of files in a system filearea as a file descriptor. Do not retrieve directories.
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
  * @param string $component The component name.
@@ -560,26 +521,17 @@ function mnetadmin_rpc_get_remote_filearea($user, $component, $filearea, $itemid
 }
 
 /**
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
  * Get a remote file and send it to the caller if exists.
  * this is similar to the file download WS procedure but within a mnet trusted network and without token setup.
  * @param object $user The calling user, containing mnethostroot reference and hostroot reference.
  * @param string $component The component name.
  * @param string $filearea the file area.
  * @param string $itemid The origin itemid. Usually should be 0, but some other cases may arise.
-<<<<<<< HEAD
- * @param string $filename The full pathed name of the file.
- * @param boolean $jsonrequired Is json required for return ?.
- */
-function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filename, $jsonrequired = true) {
-    global $CFG;
-=======
  * @param string $filepath The full pathed name of the file.
  * @param string $filename The name of the file.
  * @param boolean $jsonrequired Is json required for return ?.
  */
 function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $filepath, $filename, $jsonrequired = true) {
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     if (function_exists('debug_trace')) {
         debug_trace('RPC starts : Getting local moodle file');
@@ -594,26 +546,6 @@ function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $f
 
     $context = context_system::instance();
 
-<<<<<<< HEAD
-    $filerec = new StdClass;
-    $filerec->contextid = $context->id;
-    $filerec->component = $component;
-    $filerec->filearea = $filearea;
-    $filerec->itemid = $itemid;
-    $filerec->filepath = dirname($filename).'/';
-    $filerec->filename = basename($filename);
-
-    $fs = get_file_storage();
-
-    if ($file = $fs->get_file($filerec->contextid,
-                                 $filerec->component,
-                                 $filerec->filerarea,
-                                 $filerec->itemid,
-                                 $filerec->filepath,
-                                 $filerec->filename)) {
-        $return->filecontent = base64_encode($file->get_content());
-        $return = new StdClass;
-=======
     $fs = get_file_storage();
 
     if ($file = $fs->get_file($context->id,
@@ -624,15 +556,10 @@ function mnetadmin_rpc_get_remote_file($user, $component, $filearea, $itemid, $f
                                  $filename)) {
         $return = new StdClass;
         $return->filecontent = base64_encode($file->get_content());
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $return->status = RPC_SUCCESS;
     } else {
         $return = new StdClass;
         $return->status = RPC_FAILURE_DATA;
-<<<<<<< HEAD
-        $return->error = "Cannot find required file";
-        $return->errors[] = "Cannot find required file";
-=======
         $return->error = "Cannot find required file $context->id/{$component}/{$filearea}/$itemid{$filepath}{$filename}";
         $return->errors[] = "Cannot find required file $context->id/{$component}/{$filearea}/$itemid{$filepath}{$filename}";
     }
@@ -741,7 +668,6 @@ function mnetadmin_rpc_import_table_content($user, $table, $content, $jsonrequir
         $return->error = "Cannot import required data in table";
         $return->errors[] = "Cannot import required data in table";
         $return->errors[] = $DB->get_last_error();
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     if ($jsonrequired) {

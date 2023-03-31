@@ -284,26 +284,14 @@ class filter_remote_control extends plugin_remote_control {
             case 'available': {
                 $newstate = TEXTFILTER_OFF;
                 filter_set_global_state($this->plugin, $newstate);
-<<<<<<< HEAD
-=======
                 break;
             }
 
             case 'disable': {
                 $newstate = TEXTFILTER_DISABLED;
                 filter_set_global_state($this->plugin, $newstate);
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
                 break;
             }
-<<<<<<< HEAD
-=======
-
-            case 'disable': {
-                $newstate = TEXTFILTER_DISABLED;
-                filter_set_global_state($this->plugin, $newstate);
-                break;
-            }
->>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         }
         return 0;
 
@@ -594,19 +582,11 @@ class auth_remote_control extends plugin_remote_control {
 }
 
 class format_remote_control extends plugin_remote_control {
-<<<<<<< HEAD
 
     public function __construct($plugin) {
         return parent::__construct('format', $plugin);
     }
 
-=======
-
-    public function __construct($plugin) {
-        return parent::__construct('format', $plugin);
-    }
-
->>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     public function action($action) {
 
         $allplugins = \core_plugin_manager::instance()->get_plugins();
