@@ -23,7 +23,7 @@
  */
 
 $plugin = new stdclass;
-$plugin->version = 2015062000;
+$plugin->version = 2020102800;
 $plugin->requires = 2014111001;
 $plugin->component = 'vmoodleadminset_roles';
 $plugin->dependencies = array('local_vmoodle' => 2015062000);

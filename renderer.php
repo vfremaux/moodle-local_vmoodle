@@ -23,10 +23,21 @@ defined('MOODLE_INTERNAL') || die;
 class local_vmoodle_renderer extends plugin_renderer_base {
 
     public function image_url($image, $subplugin = null) {
+<<<<<<< HEAD
         global $CFG, $OUTPUT;
 
         if (!$subplugin) {
             return $OUTPUT->image_url($image, 'local_vmoodle');
+=======
+        global $CFG;
+
+        if ($subplugin == 'moodle' || $subplugin == 'core') {
+            return $this->output->image_url($image, 'moodle');
+        }
+
+        if (!$subplugin) {
+            return $this->output->image_url($image, 'local_vmoodle');
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         }
 
         list($type, $plugin) = explode('_', $subplugin);
@@ -84,12 +95,19 @@ class local_vmoodle_renderer extends plugin_renderer_base {
      * @param string $displayed True if the block is displayed by default, false otherwise.
      */
     public function collapsable_block($id, $caption, $content, $classes = '', $displayed = true) {
+<<<<<<< HEAD
         global $OUTPUT;
+=======
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         static $i = 0;
 
         $i++;
 
+<<<<<<< HEAD
         $template = new StdClass;
+=======
+        $template = new StdClass();
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $template->id = $id;
         $template->i = $i;
 
@@ -97,11 +115,66 @@ class local_vmoodle_renderer extends plugin_renderer_base {
         $template->captionnotags = strip_tags($caption);
 
         $pixpath = ($displayed) ? '/t/expanded' : '/t/collapsed';
+<<<<<<< HEAD
         $template->pixpathurl = $OUTPUT->image_url($pixpath);
+=======
+        $template->pixpathurl = $this->image_url($pixpath, 'core');
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $template->showctlalt = ($displayed) ? get_string('hide') : get_string('show');
         $template->hideclass = ($displayed) ? '' : ' vmoodle-hidden';
         $template->blockcontent = $content;
 
         return $this->output->render_from_template('local_vmoodle/collapsibleblock', $template);
     }
+<<<<<<< HEAD
+=======
+
+    public function namefilter($current) {
+        $template = new StdClass;
+        $template->namefilter = $current;
+        $template->filterurl = new moodle_url('/local/vmoodle/view.php', ['view' => 'management', 'what' => 'list', 'vpage' => 0]);
+        return $this->output->render_from_template('local_vmoodle/namefilter', $template);
+    }
+
+    public function success_hosts_report($hosts, $command) {
+        $template = new StdClass;
+
+        $i = 0;
+        foreach ($hosts as $hostroot => $hostname) {
+            $hosttpl = new StdClass;
+            $hosttpl->i = $i;
+            $hosttpl->hostname = $hostname;
+            $status = $command->get_result($hostroot, 'status');
+            $hosttpl->rpcstatus = get_string('rpcstatus'.$status, 'local_vmoodle');
+            $hosttpl->resultmessage = $command->get_result($hostroot, 'message');
+            $template->hosts[] = $hosttpl;
+            $i = ($i + 1) % 2;
+        }
+
+        return $this->output->render_from_template('local_vmoodle/success_hosts_report', $template);
+    }
+
+    public function failed_hosts_report($hosts, $command) {
+        $template = new StdClass;
+
+        $i = 0;
+        foreach ($hosts as $hostroot => $hostname) {
+            $hosttpl = new StdClass;
+            $hosttpl->i = $i;
+            $hosttpl->hostname = $hostname;
+            $hosttpl->rpcstatus = get_string('rpcstatus'.$command->get_result($hostroot, 'status'), 'local_vmoodle');
+            if ($command->get_result($hostroot, 'status') > 200 && $command->get_result($hostroot, 'status') < 520) {
+                $params = array('view' => 'sadmin', 'what' => 'runcmdagain', 'platform' => urlencode($hostroot));
+                $btnurl = new moodle_url('view.php', $params);
+                $label = get_string('runcmdagain', 'local_vmoodle');
+                $hosttpl->runagainbutton = $this->output->single_button($btnurl, $label, 'get');
+            }
+            $hosttpl->errors = implode('<br/>', $command->get_result($hostroot, 'errors'));
+            $template->hosts[] = $hosttpl;
+            $i = ($i + 1) % 2;
+        }
+
+        return $this->output->render_from_template('local_vmoodle/failed_hosts_report', $template);
+    }
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 }

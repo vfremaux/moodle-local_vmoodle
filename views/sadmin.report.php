@@ -50,28 +50,13 @@ if (!is_null($command->get_result())) {
 // Displaying successfull commands.
 $i = 0;
 if (!empty($successfull_platforms)) {
-    echo '<table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">'.
-            '<tbody>'.
-                '<tr>'.
-                    '<th scope="col" class="header c0" style="vertical-align: top; text-align: left; width: 20%; white-space: nowrap;" colspan="2"><b>'.get_string('successfullplatforms', 'local_vmoodle').'</b></th>'.
-                '</tr>';
-    foreach ($successfull_platforms as $host => $platform) {
-        echo '<tr class="r'.$i.'">'.
-                '<td><b>'.$platform.'</b></td>'.
-                '<td>'.get_string('rpcstatus'.$command->get_result($host, 'status'), 'local_vmoodle').'</td>'.
-                '<td style="width: 25%;">'.
-                $command->get_result($host, 'message').
-                '</td>'.
-            '</tr>';
-        $i = ($i+1)%2;
-    }
-    echo '</tbody>'.
-        '</table><br/>';
+    echo $renderer->success_hosts_report($successfull_platforms, $command);
 }
 
 // Displaying failed commands.
 $i = 0;
 if (!empty($failed_platforms)) {
+<<<<<<< HEAD
     echo '<table width="95%" cellspacing="1" cellpadding="5" class="generaltable boxaligncenter">'.
             '<tbody>'.
                 '<tr>'.
@@ -98,6 +83,9 @@ if (!empty($failed_platforms)) {
     }
     echo '</tbody>' .
         '</table><br/>';
+=======
+    echo $renderer->failed_hosts_report($failed_platforms, $command);
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 }
 
 // Displaying controls.

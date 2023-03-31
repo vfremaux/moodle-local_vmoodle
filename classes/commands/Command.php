@@ -128,7 +128,18 @@ abstract class Command {
                 if ($parameter->get_type() == 'boolean' && !property_exists($data, $parameter->get_name())) {
                     $parameter->set_value('0');
                 } else {
-                    $parameter->set_value($data->{$parameter->get_name()});
+                    $attrname = $parameter->get_name();
+                    // Turnaround in case of re-post :
+                    if (!isset($data->$attrname)) {
+                        if (!empty($_REQUEST[$attrname])) {
+                            $attr = clean_param($_REQUEST[$attrname], PARAM_TEXT);
+                            $parameter->set_value($attr);
+                        } else {
+                            throw new \Exception("$attrname not available in query");
+                        }
+                        continue;
+                    }
+                    $parameter->set_value($data->{$attrname});
                 }
             }
         }
@@ -186,6 +197,34 @@ abstract class Command {
     }
 
     /**
+    * Elaborates a CLI syntax for the command
+    * @return string
+    */
+    public function get_cli_form() {
+        // Collect all parameters for CLI syntax.
+        $commandname = str_replace('Command_', '', get_class($this)); // Remove constant command prefix.
+        $commandname = str_replace('vmoodleadminset_', '', $commandname); // Remove constant plugin prefix.
+        $commandname = str_replace('\\', '/', $commandname); // forthslash.
+
+        $platform = 0; // Local source.
+        $pairsstr = '';
+        if (!empty($this->parameters)) {
+            $pairs = array();
+            foreach ($this->parameters as $parameter) {
+                $parmname = $parameter->get_name();
+                if ($parmname !== 'platform') {
+                    $pairs[] = $parmname.'='.urlencode($parameter->get_value(true)); // Invoke in "readmonly".
+                } else {
+                    $platform = $parameter->get_value(true);
+                }
+            }
+            $pairsstr = implode('&', $pairs);
+        }
+        $str = "php run_command.php --command={$commandname} --fromhost={$platform} --tohosts=&lt;hostlist&gt;  --attributes={$pairsstr}\n";
+        return $str;
+    }
+
+    /**
      * Get the command's parameter from name.
      * @param string $name A command parameter name.
      * @return mixed The command parameter.
@@ -207,6 +246,16 @@ abstract class Command {
     }
 
     /**
+     * Add a command parameter value. This may be usefull when using commands in Cli Scripts.
+     * @param string $key
+     * @param string $value
+     * @return void.
+     */
+    public function set_parameter($key, $parameter) {
+        $this->parameters[$key] = $parameter;
+    }
+
+    /**
      * Get the retrieve platforms command.
      * @return Command Retrieve platforms command.
      */
@@ -219,7 +268,7 @@ abstract class Command {
      * @param Command $rpcommand Retrieve platforms command (optional / could be null or Command object).
      * @throws Command_Exception
      */
-    public function attach_rpc_ommand($rpcommand) {
+    public function attach_rpc_command($rpcommand) {
         // Checking retrieve platforms command.
         if (!(is_null($rpcommand) || $rpcommand instanceof Command)) {
             throw new Command_Exception('commandwrongrpcommand', $this->name);

@@ -57,9 +57,15 @@ switch ($wizardnow) {
 
 // If an error happens.
 if ($result == -1) {
+<<<<<<< HEAD
     unset($SESSION->vmoodle_sa['command']);
     $buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin'));
     echo $OUTPUT->singlebutton($buttonurl, get_string('restart', 'local_vmoodle'));
+=======
+    unset($SESSION->vmoodle_sa);
+    $buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'sadmin'));
+    echo $OUTPUT->single_button($buttonurl, get_string('restart', 'local_vmoodle'));
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     echo $OUTPUT->footer();
     exit(0);
 }

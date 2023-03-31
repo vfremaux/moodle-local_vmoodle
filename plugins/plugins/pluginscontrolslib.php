@@ -275,21 +275,50 @@ class filter_remote_control extends plugin_remote_control {
     public function action($action) {
 
         switch ($action) {
-            case 'enable':
+            case 'enable': {
                 $newstate = TEXTFILTER_ON;
                 filter_set_global_state($this->plugin, $newstate);
                 break;
-            case 'disable':
+            }
+
+            case 'available': {
                 $newstate = TEXTFILTER_OFF;
                 filter_set_global_state($this->plugin, $newstate);
+<<<<<<< HEAD
+=======
                 break;
+            }
+
+            case 'disable': {
+                $newstate = TEXTFILTER_DISABLED;
+                filter_set_global_state($this->plugin, $newstate);
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+                break;
+            }
         }
         return 0;
 
     }
 
-    public function is_enabled(){
-        return filter_is_enabled($this->plugin);
+    /**
+     * Returns the active value of the filter.
+     */
+    public function is_enabled() {
+        global $DB;
+
+        $context = context_system::instance();
+        $params = array('contextid' => $context->id, 'filter' => $this->plugin);
+        $state = $DB->get_field('filter_active', 'active', $params, 'sortorder', 'filter,active,sortorder');
+        switch ($state) {
+            case -1 :
+                return 'available';
+
+            case 1 :
+                return 'enabled';
+
+            default :
+                return 'disabled';
+        }
     }
 }
 
@@ -556,11 +585,19 @@ class auth_remote_control extends plugin_remote_control {
 }
 
 class format_remote_control extends plugin_remote_control {
+<<<<<<< HEAD
 
     public function __construct($plugin) {
         return parent::__construct('format', $plugin);
     }
 
+=======
+
+    public function __construct($plugin) {
+        return parent::__construct('format', $plugin);
+    }
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     public function action($action) {
 
         $allplugins = \core_plugin_manager::instance()->get_plugins();

@@ -46,7 +46,7 @@ require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
 // Add needed javascript here (because addonload() is needed before).
 
-$PAGE->requires->js('/local/vmoodle/js/host_form.js');
+$PAGE->requires->js_call_amd('local_vmoodle/hostform', 'init');
 
 $config = get_config('local_vmoodle');
 
@@ -216,7 +216,11 @@ if ($action == 'doadd') {
             vmoodle_add_subpath($submitteddata);
         }
 
+<<<<<<< HEAD
         // Ensure a database is created.
+=======
+        // Ensure a database is created. Let the existing database play if already exists.
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         vmoodle_create_database($submitteddata);
 
         if (function_exists('debug_trace')) {

@@ -58,6 +58,7 @@ require_once($CFG->dirroot.'/lib/clilib.php');
 list($options, $unrecognized) = cli_get_params(
     array('non-interactive'   => false,
           'allow-unstable'    => false,
+<<<<<<< HEAD
           'host'              => false,
           'test'              => false,
           'help'              => false),
@@ -65,6 +66,21 @@ list($options, $unrecognized) = cli_get_params(
           'H' => 'host',
           'u' => 'allow-unstable',
           't' => 'test')
+=======
+          'purge-caches'      => false,
+          'host'              => false,
+          'test'              => false,
+          'debug'             => false,
+          'help'              => false
+    ),
+    array('h' => 'help',
+          'H' => 'host',
+          'u' => 'allow-unstable',
+          'P' => 'purge-caches',
+          't' => 'test',
+          'd' => 'debug'
+    )
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 );
 
 $interactive = empty($options['non-interactive']);
@@ -82,12 +98,22 @@ Please note you must execute this script with the same uid as apache!
 Site defaults may be changed via local/defaults.php.
 
 Options:
+<<<<<<< HEAD
 --non-interactive     No interactive questions or confirmations
 -u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
                       required in non-interactive mode.
 -H, --host                Switches to this host virtual configuration before processing
 --test                Stops after host resolution, telling the actual config that will be used
 -h, --help            Print out this help
+=======
+    --non-interactive     No interactive questions or confirmations
+    -u, --allow-unstable      Upgrade even if the version is not marked as stable yet, required in non-interactive mode.
+    -P, --purge-caches    Purge caches immediately after upgradig completes.
+    -H, --host            Switches to this host virtual configuration before processing
+    --test                Stops after host resolution, telling the actual config that will be used
+    -d, --debug           Set debug mode on
+    -h, --help            Print out this help
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
 Example:
 \$sudo -u www-data /usr/bin/php local/vmoodle/cli/upgrade.php --host=http://my.virtual.moodle.org
@@ -127,6 +153,10 @@ require_once($CFG->libdir.'/adminlib.php');       // Various admin-only function
 require_once($CFG->libdir.'/upgradelib.php');     // General upgrade/install related functions.
 require_once($CFG->libdir.'/environmentlib.php');
 
+if (!empty($options['debug'])) {
+    $CFG->debug = E_ALL;
+}
+
 if (empty($CFG->version)) {
     cli_error(get_string('missingconfigversion', 'debug'));
 }
@@ -142,6 +172,11 @@ $oldversion = "$CFG->release ($CFG->version)";
 $newversion = "$release ($version)";
 
 if (!moodle_needs_upgrading()) {
+    // At least purge cache as required.
+    if (!empty($options['purge-caches'])) {
+        purge_all_caches();
+        echo "Cache emptied.\n";
+    }
     cli_error(get_string('cliupgradenoneed', 'core_admin', $newversion), 0);
 }
 
@@ -225,4 +260,10 @@ admin_apply_default_settings(null, false);
 admin_apply_default_settings(null, false);
 
 echo get_string('cliupgradefinished', 'admin')."\n";
+
+if (!empty($options['purge-caches'])) {
+    purge_all_caches();
+    echo "Cache emptied.\n";
+}
+
 exit(0); // 0 means success.

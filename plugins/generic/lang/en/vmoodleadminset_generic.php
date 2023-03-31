@@ -19,14 +19,29 @@
  * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
+<<<<<<< HEAD
+=======
+
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Generic does not directly store any personal data about any user.';
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['alllanguages'] = 'All languages';
 $string['allplugins'] = 'All files';
 $string['cmdconfigvalue'] = 'Global Config Value';
 $string['cmdconfigvalue_desc'] = 'Distributing a configuration value in moodle global configuration';
 $string['cmdcopyfile'] = 'Copy a system file';
 $string['cmdcopyfile_desc'] = 'Sends and copies a site level stored file';
+<<<<<<< HEAD
 $string['cmdcopyfilearea'] = 'Copy a system full filearea';
 $string['cmdcopyfilearea_desc'] = 'Sends and copies a site level stored filearea content, with all file and path structure.';
+=======
+$string['skipfiles_desc'] = 'Skip n files';
+$string['cmdcopyfilearea'] = 'Copy a system full filearea';
+$string['cmdcopyfilearea_desc'] = 'Sends and copies a site level stored filearea content, with all file and path structure.';
+$string['cmdcopytable'] = 'Copy a moodle DB table';
+$string['cmdcopytable_desc'] = 'Sends and copies the full content of a table. this is suitable for system level definitions.';
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['cmdlangsynccustomisation'] = 'Exchange laguange customisations';
 $string['cmdlangsynccustomisation_desc'] = 'Sync and exchange language customisation files between intances';
 $string['cmdmaintenance'] = 'Maintenance mode';
@@ -43,14 +58,26 @@ $string['core'] = 'core subsystems';
 $string['dataexchange_name'] = 'Generic data exchange';
 $string['file_desc'] = 'System file';
 $string['filearea_desc'] = 'System filearea';
+<<<<<<< HEAD
 $string['langparamdesc'] = 'Language(s)';
 $string['localfile'] = 'Local file';
+=======
+$string['tableparam_desc'] = 'Moodle table';
+$string['selectparam_desc'] = 'Select clause, generally to exclude local context dependant rows.';
+$string['langparamdesc'] = 'Language(s)';
+$string['localfile'] = 'Local file';
+$string['localtable'] = 'Local table';
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['localfilearea'] = 'Local filearea';
 $string['maintenancemessage'] = 'Maintenance message';
 $string['maintenancemode'] = 'Maintenance mode';
 $string['mnetadmin_name'] = 'Meta-administration service';
 $string['platformparamfile_desc'] = 'Instance to get file from';
 $string['platformparamfilearea_desc'] = 'Instance to get filearea content from';
+<<<<<<< HEAD
+=======
+$string['platformparamtable_desc'] = 'Moodle instance to get table data from';
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['platformparamlangsyncdesc'] = 'Instance to get lang files from';
 $string['platformparamsyncdesc'] = 'Source platform of the lang customisations to copy from';
 $string['pluginname'] = 'Generic features';

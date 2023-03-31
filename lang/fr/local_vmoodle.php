@@ -95,6 +95,7 @@ $string['cliusingtemplate'] = 'Construction sur le modèle {$a}';
 $string['closewindow'] = 'Fermer cette fenêtre';
 $string['checkmnetkeys'] = 'Vérifier les clefs MNET';
 $string['commanddescription'] = 'Description';
+$string['commandcli'] = 'Syntaxe CLI';
 $string['commandemptydescription'] = 'La description de la commande est vide.';
 $string['commandemptyname'] = 'Le nom de la commande est vide.';
 $string['commandformnotlinked'] = 'Aucune commande liée au formulaire.';
@@ -169,8 +170,11 @@ $string['errorinvalidsessionorplatform'] = 'Les données de session VMoodle sont
 $string['errorplatformnotavailable'] = 'La plate-forme {$a} n\'est pas disponible.';
 $string['errorreactivetemplate'] = 'Le nom du chemin du moodle data et le nom de la base de données est introuvable pour réactiver la plateforme désirée.';
 $string['errorsetupdb'] = 'Erreur de mise en place de la base de données';
+<<<<<<< HEAD
 $string['emulatecommunity'] = 'Emuler la version communautaire';
 $string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
+=======
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['environment'] = 'Environment technique';
 $string['failedplatforms'] = 'Echec des plates-formes :';
 $string['fileschema'] = 'Position des fichiers';
@@ -229,6 +233,7 @@ $string['name'] = 'Nom';
 $string['newvmoodle'] = 'Nouvelle plate-forme virtuelle';
 $string['newplatformregistered'] = 'Un nouvelle instance de moodle a été enregistrée';
 $string['nextstep'] = 'Continuer';
+$string['noexecutionfor'] = 'L\'opération sur base de données a échoué.<br/>SQL : {$a->sql}<br/>Raison: {$a->error}';
 $string['nomnet'] = 'Pas de réseau Moodle';
 $string['none'] = 'Aucune';
 $string['noplatformchosen'] = 'Aucune plate-forme choisie.';
@@ -246,6 +251,8 @@ $string['operation'] = 'Opération';
 $string['organization'] = 'Organisation';
 $string['organizationmail'] = 'Email';
 $string['organizationunit'] = 'Unité';
+$string['oldversionsuffix'] = 'Suffixe de l\'ancienne version (générateur de scripts de migration)';
+$string['oldversionsuffix_desc'] = 'Suffixe alternatif pour la version antérieure. Habituellement, un suffixe -moodleXX est généré pour les urls des anciennes versions. Le suffixe sera moodle-[suffix] s\'il est non vide.';
 $string['parameterallowedvaluesnotgiven'] = 'Les valeurs autorisées de l\'énumération {$a} ne sont pas données.';
 $string['parameteremptydescription'] = 'La description du paramètre {$a} est vide.';
 $string['parameteremptyname'] = 'Le nom du paramètre est vide.';
@@ -282,8 +289,14 @@ $string['removeall'] = 'Tout retirer';
 $string['removefromselection'] = 'Retirer de la sélection';
 $string['renewallbindings'] = 'Renouveller toutes les paires';
 $string['restart'] = 'Redémarrer la procédure';
+<<<<<<< HEAD
+=======
+$string['responseerror'] = 'Erreur dans la réponse RPC de {$a}';
+$string['sendfailure'] = 'Erreur d\'invocation RPC sur {$a}';
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 $string['restorebackup'] = 'Restaurer des bases de sauvegarde';
 $string['retrieveplatforms'] = 'Récupérer les plates-formes';
+$string['retrievefiles'] = 'Récupérer les fichiers';
 $string['rpcstatus100'] = 'Commande en mode test.';
 $string['rpcstatus200'] = 'Commande exécutée avec succès.';
 $string['rpcstatus404'] = 'Echec RPC. Url cible non trouvée. Erreur 404.';
@@ -315,6 +328,7 @@ $string['snapshothost'] = 'Capturer la configuration';
 $string['snapshotmaster'] = 'Capturer la plate-forme principale';
 $string['sqlcommand'] = 'Commande SQL';
 $string['sqlfile'] = 'Fichier SQL';
+$string['sqlparam'] = 'Paramètre SQL';
 $string['startingstate'] = 'Etat initial :';
 $string['status'] = 'Etat';
 $string['subscribe'] = 'Souscription';
@@ -584,6 +598,7 @@ $string['vlogfilepattern_desc'] = 'Un motif exprimant un chemin système où enr
 accepte un emplacement %VHOSTNAME% et supprime les préfixes de protocoles de la valeur finale.
 ';
 
+<<<<<<< HEAD
 $string['plugindist_desc'] = '
 <p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
 correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
@@ -591,3 +606,20 @@ sous certaines conditions, afin de soutenir l\'effort de développement, amélio
 <p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
 <p>Notez que les deux composant local_sharedresources et mod_sharedresource doivent fonctionner au même niveau de distribution</p>
 <p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
+=======
+$string['generatescripts'] = 'Générateur de scripts';
+$string['generatescripts_help'] = '
+Generère tout type de script en scannant la base de registre de virtualisation vmoodle et en instanciant le bloc de script pour chaque hôte du registre.
+
+Balises d\'injection :
+
+- %WWWROOT%
+- %DBHOST%
+- %DBNAME%
+- %DBUSER%
+- %DBPASS%
+- %DATAROOT%
+';
+
+include(__DIR__.'/pro_additional_strings.php');
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31

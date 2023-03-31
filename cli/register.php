@@ -82,7 +82,7 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
-if (!empty($options['debug')) {
+if (!empty($options['debug'])) {
     $CFG->debug = E_ALL;
 }
 

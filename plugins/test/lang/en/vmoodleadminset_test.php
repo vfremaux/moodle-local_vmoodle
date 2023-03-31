@@ -20,6 +20,9 @@
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 
+// Privacy.
+$string['privacy:metadata'] = 'The local plugin vmoodeladminset Test does not directly store any personal data about any user.';
+
 $string['pluginname'] = 'VMoodle Admin Commands Unit tests';
 $string['test'] = 'Test category';
 $string['value1'] = 'Value 1';

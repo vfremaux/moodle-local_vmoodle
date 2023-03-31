@@ -62,11 +62,21 @@ foreach ($pluginlibs as $lib) {
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
+<<<<<<< HEAD
 function local_vmoodle_supports_feature($feature) {
     global $CFG;
     static $supports;
 
     $config = get_config('local_vmoodle');
+=======
+function local_vmoodle_supports_feature($feature = null, $getsupported = false) {
+    global $CFG;
+    static $supports;
+
+    if (!during_initial_install()) {
+        $config = get_config('local_vmoodle');
+    }
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     if (!isset($supports)) {
         $supports = array(
@@ -79,6 +89,13 @@ function local_vmoodle_supports_feature($feature) {
         $prefer = array();
     }
 
+<<<<<<< HEAD
+=======
+    if ($getsupported) {
+        return $supports;
+    }
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     // Check existance of the 'pro' dir in plugin.
     if (is_dir(__DIR__.'/pro')) {
         if ($feature == 'emulate/community') {
@@ -93,6 +110,14 @@ function local_vmoodle_supports_feature($feature) {
         $versionkey = 'community';
     }
 
+<<<<<<< HEAD
+=======
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
+    }
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     list($feat, $subfeat) = explode('/', $feature);
 
     if (!array_key_exists($feat, $supports[$versionkey])) {
@@ -865,8 +890,18 @@ function vmoodle_create_database($vmoodledata) {
 
     // Creates the new database before importing the data.
     $sql = str_replace('%DATABASE%', $vmoodledata->vdbname, $createstatement);
+<<<<<<< HEAD
     if (!$DB->execute($sql)) {
         print_error('noexecutionfor', 'local_vmoodle', '', $sql);
+=======
+    try {
+        $DB->execute($sql);
+    } catch (Exception $ex) {
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         die;
     }
 }
@@ -1068,7 +1103,10 @@ function vmoodle_destroy($vmoodledata) {
     try {
         $DB->execute($sql);
     } catch (Exception $e) {
-        echo $OUTPUT->notification('noexecutionfor', 'local_vmoodle', $sql);
+        $e = new StdClass;
+        $e->sql = $sql;
+        $e->error = $DB->get_last_error();
+        print_error('noexecutionfor', 'local_vmoodle', '', $e);
     }
 
     // Destroy moodledata.
@@ -1224,7 +1262,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     $pgm = str_replace("/", DIRECTORY_SEPARATOR, $pgm);
 
     if (!is_executable($phppgm)) {
-        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', $phppgm);
+        print_error('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle', '', $phppgm);
         return false;
     }
 
@@ -1848,3 +1886,20 @@ function vmoodle_del_subpath(&$vmoodle) {
         mtrace('VMoodle Sub path cannot be used on Windows systems. Resuming.');
     }
 }
+<<<<<<< HEAD
+=======
+
+function vmoodle_load_command($plugin, $commandname) {
+    global $CFG;
+
+    if (!in_array($plugin, array('generic', 'roles', 'plugins', 'courses'))) {
+        throw new Exception("Unsupported or unkown plugin $plugin");
+    }
+
+    $commandclassfile = $CFG->dirroot.'/local/vmoodle/plugins/'.$plugin.'/classes/Command_'.$commandname.'.php';
+    include_once($commandclassfile);
+    $commandclass = 'vmoodleadminset_'.$plugin.'\\Command_'.$commandname;
+    $command = new $commandclass();
+    return $command;
+}
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31

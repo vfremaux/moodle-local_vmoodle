@@ -63,9 +63,15 @@ class Command_CopyFile extends Command {
         // Get all system level files that are true files.
         $params = array('contextid' => context_system::instance()->id);
         $select = " contextid = ? AND filename <> '.' ";
+<<<<<<< HEAD
         $files = $DB->get_records_select('files', $select, $params);
 
         $filesmennu = array();
+=======
+        $files = $DB->get_records_select('files', $select, $params, 'component,filearea,itemid,filepath,filename');
+
+        $filesmenu = array();
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         if (!empty($files)) {
             foreach($files as $fid => $file) {
                 if ($file->filearea == 'preview') {
@@ -191,7 +197,12 @@ class Command_CopyFile extends Command {
         $rpc_client->add_param($file->get_component(), 'string');
         $rpc_client->add_param($file->get_filearea(), 'string');
         $rpc_client->add_param($file->get_itemid(), 'string');
+<<<<<<< HEAD
         $rpc_client->add_param($file->get_filepath().$file->get_filename(), 'string');
+=======
+        $rpc_client->add_param($file->get_filepath(), 'string');
+        $rpc_client->add_param($file->get_filename(), 'string');
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $rpc_client->add_param(base64_encode($filecontent), 'string');
         $rpc_client->add_param(true, 'boolean');
 

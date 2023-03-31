@@ -367,7 +367,7 @@ function mnetadmin_rpc_set_role_capabilities($user, $roledata, $rolecapabilities
  * Get role allowances of a virtual platform.
  * As being a cross platform match, do only rely on shortnames and never on ids
  * @param mixed $user The calling user.
- * @param string $table 'assign' or 'override'.
+ * @param string $table the role related table type in 'assign' or 'override', or 'switch'.
  * @param string $rolename The role shortname to get allowance from.
  */
 function mnetadmin_rpc_get_role_allow_table($user, $table, $rolename = '', $jsonresponse = true) {
@@ -400,16 +400,18 @@ function mnetadmin_rpc_get_role_allow_table($user, $table, $rolename = '', $json
                 return $response;
             }
         }
-        $allows = $DB->get_records('role_allow_'.$table, array('roleid', $role->id));
+        $allows = $DB->get_records('role_allow_'.$table, array('roleid' => $role->id));
     } else {
         $allows = $DB->get_records('role_allow_'.$table, array());
     }
+
+    // Passes back a table of sourceshortname => targetshortname
     $result = array();
     if ($allows) {
         foreach ($allows as $a) {
             $rolename = $DB->get_field('role', 'shortname', array('id' => $a->roleid));
-            $key = 'allow'.$table;
-            $targetname = $DB->get_field('role', 'shortname', array('id' => $a->$key));
+            $allowfieldkey = 'allow'.$table;
+            $targetname = $DB->get_field('role', 'shortname', array('id' => $a->$allowfieldkey));
             $result[$rolename][] = $targetname;
         }
     }
@@ -428,11 +430,10 @@ function mnetadmin_rpc_get_role_allow_table($user, $table, $rolename = '', $json
 /**
  * Get role allowances of a virtual platform.
  * @param mixed $user The calling user.
- * @param string $table 'assign' or 'override'.
- * @param string $rolename The role shortname to get allowance from.
- * @param string $targetrolenames comma separated lists of role shortnames.
+ * @param string $table The allow table type in 'assign', 'override' or 'switch'.
+ * @param string $roleallowtable an array of sourceroleshortname => targetroleshortnames[] to setup allowance for.
  */
-function mnetadmin_rpc_set_role_allow($user, $table, $rolename, $targetrolenames, $jsonresponse = true) {
+function mnetadmin_rpc_set_role_allow($user, $table, $roleallowtable, $jsonresponse = true) {
     global $CFG, $USER, $DB;
 
     // Invoke local user and check his rights.
@@ -451,16 +452,18 @@ function mnetadmin_rpc_set_role_allow($user, $table, $rolename, $targetrolenames
     $response->status = RPC_SUCCESS;
 
     // Getting allowance records.
-    if ($rolename) {
-        if ($role = $DB->get_record('role', array('shortname' => $rolename))) {
+    foreach ($roleallowtable as $sourcerole => $targetroles) {
+        if ($role = $DB->get_record('role', array('shortname' => $sourcerole))) {
+            // If role is known by shortname, start deleting its allow data.
             $DB->delete_records('role_allow_'.$table, array('roleid' => $role->id));
-            $targets = explode(',', $targetrolenames);
-            foreach ($targets as $targetname) {
-                if ($targetrole = $DB->get_record('role', array('shortname' => $targetname))) {
-                    $key = 'allow'.$table;
+
+            // Reassign allow data from targets.
+            foreach ($targetroles as $targetrole) {
+                if ($targetrole = $DB->get_record('role', array('shortname' => $targetrole))) {
+                    $allowfieldkey = 'allow'.$table;
                     $roleallow = new StdClass();
                     $roleallow->roleid = $role->id;
-                    $roleallow->$key = $targetrole->id;
+                    $roleallow->$allowfieldkey = $targetrole->id;
                     $DB->insert_record('role_allow_'.$table, $roleallow);
                 } else {
                     $response->errors[] = "Bad target role shortname $targetname.";
@@ -476,15 +479,6 @@ function mnetadmin_rpc_set_role_allow($user, $table, $rolename, $targetrolenames
             } else {
                 return $response;
             }
-        }
-    } else {
-        $response->status = RPC_FAILURE_RECORD;
-        $response->errors[] = 'Bad role id.';
-        $response->error = 'Unable to retrieve assign allowance table on source host.';
-        if ($jsonresponse) {
-            return json_encode($response);
-        } else {
-            return $response;
         }
     }
 
@@ -1172,6 +1166,7 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
     if (!$onlybounce) {
         if (function_exists('debug_trace')) {
             debug_trace("mnetadmin_rpc_create_user: Up to create $targetuser ");
+<<<<<<< HEAD
         }
 
         $params = array('username' => $targetuser);
@@ -1195,6 +1190,31 @@ function mnetadmin_rpc_create_user($callinguser, $targetuser, $userparams, $user
             $user = $DB->get_record('user', $params);
         }
 
+=======
+        }
+
+        $params = array('username' => $targetuser);
+        if ($targetuser != 'admin') {
+            // Assuming unique username. TODO : reinforce incomming identity and wrap to user_mnet_hosts
+            // policy for unifying users.
+            $user = $DB->get_record('user', $params);
+        } else {
+            // Find an admin comming from caller. It will be the superadmin.
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($callinguser, true));
+            }
+            $adminhost = $DB->get_record('mnet_host', array('wwwroot' => $callinguser->remotehostroot));
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: host admin ".print_r($adminhost, true));
+            }
+            $params['mnethostid'] = $adminhost->id;
+            if (function_exists('debug_trace')) {
+                debug_trace("mnetadmin_rpc_create_user: search admin ".print_r($params, true));
+            }
+            $user = $DB->get_record('user', $params);
+        }
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         if (!$user) {
 
             // Collect eventual profilefields and cleanup user record from them.

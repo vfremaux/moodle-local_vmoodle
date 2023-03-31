@@ -132,6 +132,7 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
     // Invoke local user and check his rights.
     if ($auth_response = invoke_local_user((array)$user, 'local/vmoodle:execute')) {
         if ($jsonrequired) {
+<<<<<<< HEAD
             // We could not have a credential.
             return $auth_response;
         }
@@ -149,10 +150,32 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
             debug_trace("mnetadmin_rpc_set_plugins_states: failing running remote action on $actionclass. Class not found");
         }
         if ($jsonrequired) {
+=======
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             // We could not have a credential.
             return $auth_response;
         }
         return json_decode($auth_response);
+<<<<<<< HEAD
+=======
+    }
+
+    $actionclass = $plugintype.'_remote_control';
+
+    // Non implemented.
+    if (!class_exists($actionclass)) {
+        $response->status = RPC_FAILURE;
+        $response->errors[] = "mnetadmin_rpc_set_plugins_states : State control class not implmeented for type: $plugintype";
+        $response->error = "mnetadmin_rpc_set_plugins_states : State control class not implmeented for type: $plugintype";
+        if (function_exists('debug_trace')) {
+            debug_trace("mnetadmin_rpc_set_plugins_states: failing running remote action on $actionclass. Class not found");
+        }
+        if ($jsonrequired) {
+            // We could not have a credential.
+            return $auth_response;
+        }
+        return json_decode($auth_response);
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     }
 
     // Getting plugin enable/disable method.
@@ -160,6 +183,7 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
 
         foreach ($plugininfos as $plugin => $state) {
 
+<<<<<<< HEAD
             if ($state == 1) {
                 $action = 'enable';
             } else {
@@ -170,6 +194,23 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
                 debug_trace("Setting state: $plugin with action $action using $actionclass");
             }
 
+=======
+            if (is_numeric($state)) {
+                // Let pass those plugins which send explicit actions such as 3 state plugins. Elsewhere failback onto boolean choice.
+                if ($state == 1) {
+                    $action = 'enable';
+                } else {
+                    $action = 'disable';
+                }
+            } else {
+                $action = $state;
+            }
+
+            if (function_exists('debug_trace')) {
+                debug_trace("Setting state: $plugin with action $action using $actionclass");
+            }
+
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
             $control = new $actionclass($plugin);
 
             $return = $control->action($action);
@@ -180,8 +221,13 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
             }
         }
 
+<<<<<<< HEAD
         cache_helper::invalidate_by_definition('core', 'plugin_manager');
         cache_helper::invalidate_by_definition('core', 'config');
+=======
+        reset_text_filters_cache();
+        core_plugin_manager::reset_caches();
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 
     } else {
         if (function_exists('debug_trace')) {

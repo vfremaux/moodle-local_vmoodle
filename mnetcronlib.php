@@ -90,7 +90,11 @@ function cron_check_mnet_keys() {
             }
         }
 
+<<<<<<< HEAD
         // Renew if needed.
+=======
+        // Renew if needed. This only works for web triggrered cron processing.
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         $force = optional_param('forcerenew', 0, PARAM_INT);
         if ($force) {
             mtrace("forced mode");

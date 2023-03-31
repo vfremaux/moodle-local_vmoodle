@@ -18,6 +18,7 @@ define('CLI_SCRIPT', true);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // CLI only functions.
 
 // Ensure options are blanck.
 unset($options);
@@ -30,12 +31,14 @@ list($options, $unrecognized) = cli_get_params(
         'verbose'          => false,
         'fullstop'         => false,
         'debug'            => false,
+        'with-master'       => false,
     ),
     array(
         'h' => 'help',
         'v' => 'verbose',
         'f' => 'fullstop',
         'd' => 'debug',
+        'M' => 'with-master',
     )
 );
 
@@ -53,7 +56,7 @@ Command line Global Cache clearance
     -v, --verbose           Print out workers output.
     -f, --fullstop          Stops on first error.
     -d, --debug             Turns on debug mode.
-
+    -M, --with-master        Purge caches on master moodle too.
 "; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
@@ -72,9 +75,8 @@ if (!empty($options['debug'])) {
     $debug = ' --debug ';
 }
 
-$i = 1;
-foreach ($allhosts as $h) {
-    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" {$debug} ";
+if (!empty($options['with-master'])) {
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php {$debug} ";
 
     mtrace("Executing $workercmd\n######################################################\n");
     $output = array();
@@ -83,6 +85,7 @@ foreach ($allhosts as $h) {
     if ($return) {
         if (empty($options['fullstop'])) {
             echo implode("\n", $output)."\n";
+            vmoodle_cli_notify_admin("[$SITE->shortname] Bulkpurgecaches Error : {$CFG->wwwroot} (master) ended with error");
             die("Worker ended with error\n");
         }
         echo "Worker ended with error:\n";
@@ -95,4 +98,31 @@ foreach ($allhosts as $h) {
     }
 }
 
+$i = 1;
+$numhosts = count($allhosts);
+foreach ($allhosts as $h) {
+    $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" {$debug} ";
+
+    mtrace("Executing $workercmd\n######################################################\n");
+    $output = array();
+    exec($workercmd, $output, $return);
+
+    if ($return) {
+        if (empty($options['fullstop'])) {
+            echo implode("\n", $output)."\n";
+            vmoodle_cli_notify_admin("[$SITE->shortname] Bulkpurgecaches Error : {$h->vhostname} (master) ended with error. Fatal.");
+            die("Worker ended with error\n");
+        }
+        echo "Worker ended with error:\n";
+        echo implode("\n", $output)."\n";
+        echo "Pursuing anyway\n";
+    } else {
+        if (!empty($options['verbose'])) {
+            echo implode("\n", $output)."\n";
+        }
+    }
+    vmoodle_send_cli_progress($numhosts, $i, 'bulkpurgecaches');
+    $i++;
+}
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulkpurgecaches done.");
 echo "All done.\n";

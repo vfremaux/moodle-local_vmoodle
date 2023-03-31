@@ -82,9 +82,10 @@ if (!empty($options['host'])) {
 }
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
-
-require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
-echo('Config check : playing for '.$CFG->wwwroot."\n");
+if (!defined('MOODLE_INTERNAL')) {
+    include(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
+    echo('Config check : playing for '.$CFG->wwwroot."\n");
+}
 
 // Check debugging is set to developer level.
 if (empty($options['bypasscheck']) && !$CFG->debugdeveloper) {

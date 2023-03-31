@@ -44,6 +44,10 @@ Options:
 --replace=STRING      String to replace with.
 --shorten             Shorten result if necessary.
 --host                Host to play on.
+<<<<<<< HEAD
+=======
+--debug               Set debug on.
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
 --non-interactive     Perform the replacement without confirming.
 -h, --help            Print out this help.
 
@@ -57,12 +61,23 @@ list($options, $unrecognized) = cli_get_params(
         'replace' => null,
         'shorten' => false,
         'host' => false,
+<<<<<<< HEAD
+=======
+        'debug' => false,
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
         'non-interactive' => false,
         'help'    => false,
     ),
     array(
         'h' => 'help',
         'H' => 'host',
+<<<<<<< HEAD
+=======
+        's' => 'search',
+        'r' => 'replace',
+        'S' => 'shorten',
+        'I' => 'non-interactive'
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     )
 );
 
@@ -103,7 +118,11 @@ try {
     cli_error(get_string('invalidcharacter', 'tool_replace'));
 }
 
+<<<<<<< HEAD
 if (!$options['non-interactive']) {
+=======
+if (empty($options['non-interactive'])) {
+>>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
     echo get_string('excludedtables', 'tool_replace') . "\n\n";
     echo get_string('notsupported', 'tool_replace') . "\n\n";
     $prompt = get_string('cliyesnoprompt', 'admin');

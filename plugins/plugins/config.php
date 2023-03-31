@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 
 use \local_vmoodle\commands\Command_Category;
 use \vmoodleadminset_plugins\Command_Plugin_Set_State;
+use \vmoodleadminset_plugins\Command_Plugin_Set_Filter_State;
 use \vmoodleadminset_plugins\Command_Plugins_Sync;
 use \vmoodleadminset_plugins\Command_Plugins_Compare;
 
@@ -34,6 +35,7 @@ $category = new Command_Category('plugins');
 
 // Adding commands.
 $category->add_command(new Command_Plugin_Set_State());
+$category->add_command(new Command_Plugin_Set_Filter_State());
 $category->add_command(new Command_Plugins_Sync());
 $category->add_command(new Command_Plugins_Compare());
 
