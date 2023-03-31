@@ -376,6 +376,15 @@ function vmoodle_check_headers($headers, $optional, $optionaldefaults, $required
     return true;
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Prints a progress indicator to the CLI console, to track a long process.
+ * @param int $i the progress value
+ * @param int $total the total value to reach.
+ * @return void.
+ */
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 function vmoodle_print_cli_progress($i, $total) {
 
     $scale = 50;
@@ -389,6 +398,16 @@ function vmoodle_print_cli_progress($i, $total) {
     }
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Send by mail a progress indicator to admins to track a long process.
+ * @param int $numhosts Total number of hosts to process
+ * @param int $i the host index
+ * @param int $operation Name of the operation.
+ * @return void.
+ */
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 function vmoodle_send_cli_progress($numhosts, $i, $operation = '') {
     global $CFG, $SITE;
     static $progressmem = 0;
@@ -402,13 +421,24 @@ function vmoodle_send_cli_progress($numhosts, $i, $operation = '') {
     }
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Sends admins a notification mail about a cli process state.
+ * @param string $msg a message
+ */
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 function vmoodle_cli_notify_admin($msg) {
     global $SITE, $DB, $CFG;
     static $admin;
 
     if (!isset($admin)) {
         // Here we are sure to get one.
+<<<<<<< HEAD
         $admin = $DB->get_record('user', ['username' => 'admin', 'menthostid' => $CFG->mnet_localhost_id]);
+=======
+        $admin = $DB->get_record('user', ['username' => 'admin', 'mnethostid' => $CFG->mnet_localhost_id]);
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     }
 
     // Do NOT use email_to_user here because of possible nomailever restriction

@@ -15,14 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
- *
- * @package local_vmoodle
- * @category local
- * @author Bruce Bujon (bruce.bujon@gmail.com)
+ * @package   local_courseindex
+ * @category  local
+ * @copyright 2006 Valery Fremaux
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$plugin->version = 2020110900;
-$plugin->component = 'vmoodleadminset_upgrade';
-$plugin->requires = 2016051900;
-$plugin->release = '3.8.0 (Build 2020110900)';
-$plugin->dependencies = array('local_vmoodle' => 2020110900);
+
+defined('MOODLE_INTERNAL') || die();
+
+$definitions = array(
+    'pro' => array(
+        'mode' => cache_store::MODE_APPLICATION
+    )
+);

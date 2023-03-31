@@ -18,7 +18,7 @@ defined('MOODLE_INTERNAL') || die;
 
 if (!function_exists('debug_trace')) {
 
-    function debug_trace() {
+    function debug_trace($msg, $tracelevel = 0, $label = '', $backtracelevel = 1) {
     };
 
     function debug_open_trace() {

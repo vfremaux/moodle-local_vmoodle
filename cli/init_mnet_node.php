@@ -121,11 +121,20 @@ if (!empty($options['newkey'])) {
     $mnetstate = get_config('moodle', 'mnet_dispatcher_mode');
     if ($mnetstate != 'strict') {
         set_config('mnet_dispatcher_mode', 'strict');
+<<<<<<< HEAD
         $MNET = new mnet_environment();
         $MNET->init();
         // Ensure we have a fresh key ourself.
         $MNET->replace_keys();
     }
+=======
+    }
+    $MNET = new mnet_environment();
+    $MNET->init();
+    // Ensure we have a fresh key ourself.
+    echo "Replacing local keys\n";
+    $MNET->replace_keys();
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     cache_helper::invalidate_by_definition('core', 'config');
 }
 
@@ -148,7 +157,11 @@ exit(0); // 0 means success.
  *
  */
 function bindme($mnet, $vmoodlesub, $url = '') {
+<<<<<<< HEAD
     global $DB, $MNET;
+=======
+    global $DB, $MNET, $CFG;
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
     static $application;
 
     if (empty($application)) {
@@ -167,8 +180,15 @@ function bindme($mnet, $vmoodlesub, $url = '') {
 
     $mnetpeer = new mnet_peer();
     $mnetpeer->wwwroot = $remoteurl;
+    echo "Bootstrapping to $remoteurl.\n";
     $mnetpeer->bootstrap($mnetpeer->wwwroot, null, $application->id, true);
     $mnetpeer->commit();
+    /*
+    if ($CFG->debug == E_ALL) {
+        echo "Is Boostrapped : {$mnetpeer->bootstrapped}\n";
+        echo "Mnet Public key : {$mnetpeer->public_key}\n";
+    }
+    */
     cache_helper::invalidate_by_definition('core', 'config');
 
     /*

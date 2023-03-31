@@ -32,6 +32,10 @@ $plugin->release = '3.6.0 (build 2019060200)';
 $plugin->version = 2019072501;
 $plugin->requires = 2016051900;
 $plugin->component = 'vmoodleadminset_generic';
+<<<<<<< HEAD
 $plugin->release = '3.8.0 (build 2019072501)';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$plugin->release = '3.9.0 (build 2019072501)';
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 $plugin->dependencies = array('local_vmoodle' => 2017090100);

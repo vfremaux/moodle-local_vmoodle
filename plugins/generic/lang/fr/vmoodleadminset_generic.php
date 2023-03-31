@@ -83,9 +83,13 @@ $string['pluginname'] = 'Fonctions génériques';
 $string['pluginparamdesc'] = 'Composant(s)';
 $string['plugin'] = 'Plugin';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 $string['skipfiles_desc'] = 'Sauter n fichiers';
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+$string['skipfiles_desc'] = 'Sauter n fichiers';
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 
 $string['mnetadmin_description'] = 'En publiant ce service, vous autorisez la plate-forme à être administrée par la
 méta-administration du site maître.<br/><br/>En vous abonnant à ce service, vous pouvez administrer les autres plates-formes

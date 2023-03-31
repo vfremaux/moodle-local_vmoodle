@@ -29,7 +29,7 @@
  *
  * @package local_vmoodle
  * @category local
- * @author Valery fremaux (valery.fremaux@club-internet.fr)
+ * @author Valery fremaux (valery.fremaux@gmail.com)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
  */
 define('CLI_SCRIPT', true);
@@ -54,17 +54,14 @@ $vcron->trace_enable = false;                       // Enables tracing.
 
 $config = get_config('local_vmoodle');
 
-$clusters = 1;
-if (!empty($config->clusters)) {
-    $clusters = $config->clusters;
+if (local_vmoodle_supports_feature('vcron/clustering')) {
+    include_once($CFG->dirroot.'/local/vmoodle/pro/localprolib.php');
+    $vmoodles = \local_vmoodle\pro_manager::vmoodle_get_vmoodleset();
+} else {
+    $vmoodles = vmoodle_get_vmoodleset();
 }
 
-$clusterix = 1;
-if (!empty($config->clusterix)) {
-    $clusterix = $config->clusterix;
-}
-
-if (!$vmoodles = vmoodle_get_vmoodleset($clusters, $clusterix)) {
+if (!$vmoodles) {
     die("Nothing to do. No Vhosts");
 }
 

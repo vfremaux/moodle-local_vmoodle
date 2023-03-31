@@ -24,10 +24,15 @@ namespace local_vmoodle;
 defined('MOODLE_INTERNAL') || die();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use StdClass;
 
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+use StdClass;
+
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
 class restore_automation {
@@ -35,10 +40,14 @@ class restore_automation {
     /**
      * given a stored backup file, this function creates course from
 <<<<<<< HEAD
+<<<<<<< HEAD
      * this backup automatically . 
 =======
      * this backup automatically.
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+     * this backup automatically.
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
      * @param mixed $backup_file_id backup file id
      * @param mixed $course_category_id  destination restore category.
      */
@@ -46,25 +55,47 @@ class restore_automation {
         global $CFG, $DB, $USER;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        debug_trace("Starting automated restore...");
+
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         $fs = get_file_storage();
 
-        if (!$backupfileid && !$filepath) {
-            print_error("invalid backup file");
+        if (!$backupfileid && empty($filepath)) {
+            debug_trace("Invalid or empty backup file source.");
+            throw new Exception("Invalid or empty backup file source.");
         }
 
-        if ($filepath != null) {
-            $array = split('/', $filepath);
-            $file_name= array_pop($array);
+        if (!empty($filepath)) {
+            if (!is_readable($filepath)) {
+                debug_trace("Not readable path");
+                throw new Exception("Not readable path");
+            }
 
-            $file_rec = new stdClass();
-            $file_rec->contextid = 1;
-            $file_rec->component = 'backup';
-            $file_rec->filearea = 'publishflow';
-            $file_rec->itemid = 0;
-            $file_rec->filename = $file_name;
-            $file_rec->filepath = '/';
+            if (!is_file($filepath)) {
+                debug_trace("Not a file");
+                throw new Exception("Not a file");
+            }
+        }
+
+        debug_trace("Registering a file.");
+        if (!empty($filepath)) {
+            debug_trace("By filepath");
+            debug_trace($filepath);
+            $array = explode('/', $filepath);
+            $filename = array_pop($array);
+
+            $filerec = new stdClass();
+            $filerec->contextid = 1;
+            $filerec->component = 'backup';
+            $filerec->filearea = 'publishflow';
+            $filerec->itemid = 0;
+            $filerec->filename = $filename;
+            $filerec->filepath = '/';
 
             // Try load the file.
+<<<<<<< HEAD
             $file = $fs->get_file($file_rec->contextid,
                                   $file_rec->component,
                                   $file_rec->filearea,
@@ -109,17 +140,23 @@ class restore_automation {
             $filerec->filepath = '/';
 
             // Try load the file.
+=======
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
             $file = $fs->get_file($filerec->contextid,
                                   $filerec->component,
                                   $filerec->filearea,
                                   $filerec->itemid,
                                   $filerec->filepath,
                                   $filerec->filename);
+<<<<<<< HEAD
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
             if ($file) {
                 $file->delete();
             }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             $file  = $fs->create_file_from_pathname($file_rec, $filepath);
 =======
@@ -127,10 +164,16 @@ class restore_automation {
             $file = $fs->create_file_from_pathname($filerec, $filepath);
             debug_trace("File created from path $filepath");
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+            debug_trace("Attempting with $filepath");
+            $file = $fs->create_file_from_pathname($filerec, $filepath);
+            debug_trace("File created from path $filepath");
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         } else {
             $file = $fs->get_file_by_id($backupfileid);
 
             if (empty($file)) {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 print_error("backup file does not exist.");
             }
@@ -140,6 +183,12 @@ class restore_automation {
             }
             debug_trace("File from id $backupfileid");
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+                debug_trace("backup file does not exist (by id).");
+                throw new Exception("backup file does not exist (by id).");
+            }
+            debug_trace("File from id $backupfileid");
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         }
 
         // Copy file to temp place.
@@ -152,16 +201,25 @@ class restore_automation {
         // Create temp directory.
         if (!file_exists($tempdir)) {
 <<<<<<< HEAD
+<<<<<<< HEAD
             if (!mkdir($tempdir)) {
                 print_error("Could'nt create backup temp directory. operation faild.");
+=======
+            if (!mkdir($tempdir, 0775, true)) {
+                debug_trace("Could'nt create backup temp directory $tempdir. operation failed.");
+                throw new Exception("Could'nt create backup temp directory $tempdir. operation failed.");
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
             }
         }
 
+        debug_trace("VMoodle : Start extraction");
         $fp = get_file_packer('application/vnd.moodle.backup');
         $unzipresult = $fp->extract_to_pathname($CFG->tempdir.'/backup/'.$file->get_filename(), $tempdir);
+        debug_trace("VMoodle : Backup File extracted");
 
         // Check category exists.
         if (!$cat = $DB->get_record('course_categories', array('id' => $coursecategoryid))) {
+<<<<<<< HEAD
             print_error("Invalid destination category");
 =======
             if (!mkdir($tempdir, 0775, true)) {
@@ -180,6 +238,10 @@ class restore_automation {
             debug_trace("Error : Invalid destination category");
             throw new Exception("Invalid destination category");
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+            debug_trace("Error : Invalid destination category");
+            throw new Exception("Invalid destination category");
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         }
 
         // Create the base course.
@@ -201,9 +263,13 @@ class restore_automation {
         $rc->execute_plan();
         $results = $rc->get_results();
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         debug_trace("VMoodle : Course restored.");
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+        debug_trace("VMoodle : Course restored.");
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 
          // Cleanup.
          unlink($tempfile);

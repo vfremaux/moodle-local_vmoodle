@@ -166,8 +166,6 @@ $string['details'] = 'Details:';
 $string['disableinstances'] = 'disable instances ';
 $string['donotopenservices'] = 'Do not open MNET services';
 $string['dropbackup'] = 'Drop backup';
-$string['emulatecommunity'] = 'Emulate the community version.';
-$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['edithost'] = 'Edit the configuration';
 $string['editvmoodle'] = 'Edit a virtual host definition';
 $string['elements'] = 'element(s)';
@@ -201,13 +199,11 @@ $string['insuffisantcapabilities'] = 'Insufficient capabilities';
 $string['key_autorenew_parms'] = 'Aumated MNET key renewal';
 $string['lastcron'] = 'Last cron';
 $string['lastcrongap'] = '&Delta;';
-$string['licenseprovider'] = 'Pro License provider';
-$string['licenseprovider_desc'] = 'Input here your provider key';
-$string['licensekey'] = 'Pro license key';
-$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['maindb'] = 'Main db';
 $string['mainpath'] = 'Main path';
 $string['mainservicesformselection'] = 'Services pattern to master Moodle<br/>This pattern is applied to the new node. the mirrored pattern is applied to the master node (this moodle)';
+$string['managersonly'] = 'Managers only';
+$string['managersandadminsonly'] = 'Managers and site administrators';
 $string['makebackup'] = 'Make backup';
 $string['manualcommand'] = 'Manual command';
 $string['massdeployment'] = 'Massive deployment';
@@ -275,7 +271,6 @@ $string['platformname'] = 'Platform name';
 $string['plugin'] = 'Plugin';
 $string['plugindisabled'] = 'Plugin is disabled.';
 $string['pluginenabled'] = 'Plugin is enabled.';
-$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'VMoodle'; // @CORE
 $string['pluginnotdisabled'] = 'Plugin were not disabled.';
 $string['pluginnotenabled'] = 'Plugin were not enabled.';
@@ -611,5 +606,9 @@ Injection placeholders:
 - %DATAROOT%
 ';
 
+<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+include(__DIR__.'/pro_additional_strings.php');
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc

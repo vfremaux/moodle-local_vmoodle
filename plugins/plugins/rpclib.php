@@ -184,10 +184,20 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
         foreach ($plugininfos as $plugin => $state) {
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             if ($state == 1) {
                 $action = 'enable';
+=======
+            if (is_numeric($state)) {
+                // Let pass those plugins which send explicit actions such as 3 state plugins. Elsewhere failback onto boolean choice.
+                if ($state == 1) {
+                    $action = 'enable';
+                } else {
+                    $action = 'disable';
+                }
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
             } else {
-                $action = 'disable';
+                $action = $state;
             }
 
             if (function_exists('debug_trace')) {
@@ -222,12 +232,17 @@ function mnetadmin_rpc_set_plugins_states($user, $plugintype, $plugininfos, $jso
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         cache_helper::invalidate_by_definition('core', 'plugin_manager');
         cache_helper::invalidate_by_definition('core', 'config');
 =======
         reset_text_filters_cache();
         core_plugin_manager::reset_caches();
 >>>>>>> f0e8ce055c5d6b1708c2f90d0e41c0191910aa31
+=======
+        reset_text_filters_cache();
+        core_plugin_manager::reset_caches();
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
 
     } else {
         if (function_exists('debug_trace')) {

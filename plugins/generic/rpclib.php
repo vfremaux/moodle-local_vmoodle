@@ -187,6 +187,10 @@ function mnetadmin_rpc_load_plugin_config($user, $plugin, $configstub, $jsonrequ
         }
         // Invalidates cache.
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        debug_trace("VMoodle : Setting config $key, $value, $plugin", TRACE_NOTICE);
+>>>>>>> 4ea9c8f29077dc62aeedf68e947e183f5ea5c9fc
         set_config($key, $value, $plugin);
     }
 
