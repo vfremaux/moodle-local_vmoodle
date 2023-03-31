@@ -31,6 +31,8 @@ use \local_vmoodle\commands\Command_Parameter;
 use \vmoodleadminset_courses\Command_CreateCategory;
 use \vmoodleadminset_courses\Command_RestoreCourse;
 use \vmoodleadminset_courses\Command_DeleteCourse;
+use \vmoodleadminset_courses\Command_DeleteCourseCategory;
+use \vmoodleadminset_courses\Command_EmptyCourseCategory;
 use \vmoodleadminset_sql\Command_Sql;
 
 $category = new Command_Category('courses');
@@ -57,6 +59,15 @@ $desc = vmoodle_get_string('setcategoryvisibility_desc', 'vmoodleadminset_course
 $sql = 'UPDATE {course_categories} SET visible = [[?visible]] WHERE idnumber = [[?idnumber]] ';
 $cmd = new Command_Sql($name, $desc, $sql, array($param1, $param2));
 $cmd->set_purgecaches(true);
+$category->add_command($cmd);
+
+$cmd = new Command_DeleteCourseCategory();
+$category->add_command($cmd);
+
+$cmd = new Command_EmptyCourseCategory();
+$category->add_command($cmd);
+
+$cmd = new Command_CheckCourse();
 $category->add_command($cmd);
 
 $cmd = new Command_RestoreCourse();

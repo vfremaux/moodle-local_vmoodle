@@ -103,8 +103,12 @@ if (!empty($options['withmaster'])) {
     }
 }
 
-$i = 1;
-if ($allhosts) {
+if (!empty($allhosts)) {
+
+    $i = 0;
+    $numhosts = count($allhosts);
+    $fails = 0;
+
     foreach ($allhosts as $h) {
         $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/update_langpacks.php {$debug} --host=\"{$h->vhostname}\" ";
 
@@ -118,13 +122,20 @@ if ($allhosts) {
             } else {
                 echo "Worker ended with error:\n";
                 echo implode("\n", $output)."\n";
+                echo "Pursuing anyway\n";
+                $fails++;
             }
         } else {
             if (!empty($options['verbose'])) {
                 echo implode("\n", $output)."\n";
             }
         }
+        $i++;
+        vmoodle_send_cli_progress($numhosts, $i, 'bulkupdatelangpacks');
     }
+    vmoodle_cli_notify_admin("[$SITE->shortname] Bulkupdatelangpacks done with $fails failures.");
+    echo "Done with $fails failures.\n";
+    exit(0);
 }
 
-echo "Done.\n";
+echo "No vhosts.\n";

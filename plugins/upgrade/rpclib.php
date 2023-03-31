@@ -131,7 +131,7 @@ function mnetadmin_rpc_upgrade($user, $jsonresponse = true) {
     upgrade_noncore(false);
 
     // Log in as admin - we need doanything permission when applying defaults.
-    session_set_user(get_admin());
+    \core\session\manager::set_user(get_admin());
 
     // Apply all default settings, just in case do it twice to fill all defaults.
     admin_apply_default_settings(null, false);

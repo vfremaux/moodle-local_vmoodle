@@ -33,7 +33,10 @@ $publishes = array(
                         'filename'   => 'rpclib.php',
                         'methods'    => array('mnetadmin_rpc_create_category',
                                               'mnetadmin_rpc_restore_course',
-                                              'mnetadmin_rpc_delete_course'),
+                                              'mnetadmin_rpc_check_course',
+                                              'mnetadmin_rpc_delete_course',
+                                              'mnetadmin_rpc_delete_course_category',
+                                              'mnetadmin_rpc_empty_course_category'),
     ),
 );
 
@@ -41,6 +44,9 @@ $subscribes = array(
     'mnetadmin' => array(
         'mnetadmin_rpc_create_category' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_create_category',
         'mnetadmin_rpc_restore_course' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_restore_course',
+        'mnetadmin_rpc_check_course' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_check_course',
         'mnetadmin_rpc_delete_course' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_delete_course',
+        'mnetadmin_rpc_delete_course_category' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_delete_course_category',
+        'mnetadmin_rpc_empty_course_category' => 'local/vmoodle/plugins/courses/rpclib.php/mnetadmin_rpc_empty_course_category',
      ),
 );

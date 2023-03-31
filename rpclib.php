@@ -272,6 +272,7 @@ function parse_wlerror() {
  * reimplementation of system.keyswapcall with capability of forcing the local renew
  *
  */
+ /*
 function mnetadmin_keyswap($function, $params) {
     global $CFG, $MNET;
 
@@ -306,6 +307,7 @@ function mnetadmin_keyswap($function, $params) {
     }
     return $MNET->public_key;
 }
+*/
 
 /**
  * Load plugins' RPC functions.

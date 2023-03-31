@@ -100,6 +100,7 @@ if (!empty($options['with-master'])) {
 
 $i = 1;
 $numhosts = count($allhosts);
+$fails = 0;
 foreach ($allhosts as $h) {
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" {$debug} ";
 
@@ -116,6 +117,7 @@ foreach ($allhosts as $h) {
         echo "Worker ended with error:\n";
         echo implode("\n", $output)."\n";
         echo "Pursuing anyway\n";
+        $fails++;
     } else {
         if (!empty($options['verbose'])) {
             echo implode("\n", $output)."\n";
@@ -124,5 +126,6 @@ foreach ($allhosts as $h) {
     vmoodle_send_cli_progress($numhosts, $i, 'bulkpurgecaches');
     $i++;
 }
-vmoodle_cli_notify_admin("[$SITE->shortname] Bulkpurgecaches done.");
-echo "All done.\n";
+vmoodle_cli_notify_admin("[$SITE->shortname] Bulkpurgecaches done with $fails failures.");
+echo "done with $fails failures.\n";
+exit(0);
