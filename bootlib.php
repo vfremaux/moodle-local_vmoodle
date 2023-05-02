@@ -245,7 +245,7 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = fals
         if (!$sidecnx) {
             if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                 debugging("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
-                if (!$interactive) die;
+                die;
             }
             if (!$interactive) die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
             return false;
