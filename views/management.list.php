@@ -185,40 +185,37 @@ if ($vmoodles) {
 }
 
 $params = array('view' => 'management', 'what' => 'snapshot', 'wwwroot' => $CFG->wwwroot);
+echo '<div class="vmoodle-tools-row">';
+echo '<div class="vmoodle-tool">';
 echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), get_string('snapshotmaster', 'local_vmoodle'), 'get');
+echo '</div>';
 
 // Displays buttons for adding a new virtual host and renewing all keys.
-
-echo '<br/>';
 
 $templates = vmoodle_get_available_templates();
 $params = array('view' => 'management', 'what' => 'add');
 if (empty($templates)) {
     $buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'add'));
     $label = get_string('notemplates', 'local_vmoodle');
+    echo '<div class="vmoodle-tool">';
     echo $OUTPUT->single_button($buttonurl, $label, 'get', array('tooltip' => null, 'disabled' => true));
+    echo '</div>';
 } else {
     $buttonurl = new moodle_url('/local/vmoodle/view.php', array('view' => 'management', 'what' => 'add'));
+    echo '<div class="vmoodle-tool">';
     echo $OUTPUT->single_button($buttonurl, get_string('addvmoodle', 'local_vmoodle'), 'get');
+    echo '</div>';
 }
+echo '</div>';
 
 echo '<br/>';
 echo '<div class="vmoodle-tools-row">';
-if ((@$CFG->mainwwwroot == $CFG->wwwroot) && ($USER->mnethostid == $CFG->mnet_localhost_id)) {
-    echo '<div class="vmoodle-tool">';
-    $params = array('view' => 'management', 'what' => 'generateconfigs');
-    $label = get_string('generateconfigs', 'local_vmoodle');
-    echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/view.php', $params), $label, 'get');
-    echo '</div>';
-    echo '<div class="vmoodle-tool">';
-    $label = get_string('generatecopyscripts', 'local_vmoodle');
-    echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecopyscripts.php', $params), $label, 'get');
-    echo '</div>';
+
+if (local_vmoodle_supports_feature('instances/tools')) {
+    require_once($CFG->dirroot.'/local/vmoodle/pro/locallib.php');
+    echo local_vmoodle_add_extra_instance_tools();
 }
-echo '<div class="vmoodle-tool">';
-$label = get_string('generatecustomscripts', 'local_vmoodle');
-echo $OUTPUT->single_button(new moodle_url('/local/vmoodle/tools/generatecustomscripts.php', $params), $label, 'get');
-echo '</div>';
+
 echo '<div class="vmoodle-tool">';
 $params = array('view' => 'management', 'what' => 'renewall');
 $label = get_string('renewallbindings', 'local_vmoodle');

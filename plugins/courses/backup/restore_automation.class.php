@@ -134,10 +134,14 @@ class restore_automation {
         $data->category = $coursecategoryid;
 
         // $course = create_course($data);
-        $course = restore_dbops::create_new_course($data->fullname, $data->shortname, $category->id);
+        $courseid = \restore_dbops::create_new_course($data->fullname, $data->shortname, $coursecategoryid);
+
+        if (!$courseid) {
+            throw new \moodle_exception("Could not create course in automation process");
+        }
 
         $rc = new \restore_controller($file->get_contenthash(),
-                                     $course->id,
+                                     $courseid,
                                      \backup::INTERACTIVE_NO,
                                      \backup::MODE_SAMESITE,
                                      $USER->id,
@@ -150,6 +154,6 @@ class restore_automation {
 
          // Cleanup.
          unlink($tempfile);
-         return $course->id;
+         return $courseid;
     }
 }
