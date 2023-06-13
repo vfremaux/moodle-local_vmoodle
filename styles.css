@@ -1,11 +1,15 @@
 
 .bvmc * H2 {
-    color:#000080;
+    color: #000080;
 }
 
 .vmoodle-hidden {
-    display:none;
-    visibility:hidden;
+    display: none;
+    visibility: hidden;
+}
+
+.vmoodle-tool {
+    margin: 10px;
 }
 
 

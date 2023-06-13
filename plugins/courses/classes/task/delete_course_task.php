@@ -58,13 +58,13 @@ class delete_course_task extends adhoc_task {
         // something might have changed in thje meanwhile.
 
         $courses = [];
-        if (!empty($customdata->fullname) && !$courses = $DB->get_records_select('course', "fullname LIKE ? " [$customdata->fullname])) {
+        if (!empty($customdata->fullname) && !$courses = $DB->get_records_select('course', "fullname LIKE ? ", [$customdata->fullname])) {
             mtrace(get_string('errornocourse', 'vmoodleadminset_courses'));
             return false;
-        } else if (!empty($customdata->shortname) && !$course = $DB->get_record('course', array('shortname' => $customdata->shortname))) {
+        } else if (!empty($customdata->shortname) && !$course = $DB->get_record('course', ['shortname' => $customdata->shortname])) {
             mtrace(get_string('errornocourse', 'vmoodleadminset_courses'));
             return false;
-        } else if (!empty($customdata->idnumber) && !$course = $DB->get_record('course', array('idnumber' => $customdata->idnumber))) {
+        } else if (!empty($customdata->idnumber) && !$course = $DB->get_record('course', ['idnumber' => $customdata->idnumber])) {
             mtrace(get_string('errornocourse', 'vmoodleadminset_courses'));
             return false;
         }
