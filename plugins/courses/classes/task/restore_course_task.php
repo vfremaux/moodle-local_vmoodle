@@ -136,7 +136,7 @@ class restore_course_task extends adhoc_task {
                         // Complete users to enrol array with manager ids.
                         $systemcontext = context_system::instance();
                         // This should be a workable heuristic.
-                        $managers = get_users_by_capability('moodle/site:deleteanymessage', $systemcontext);
+                        $managers = get_users_by_capability($systemcontext, 'moodle/site:deleteanymessage');
                         if (!empty($managers)) {
                             foreach (array_keys($managers) as $uid) {
                                 if (!in_array($uid, $userstoenrol)) {

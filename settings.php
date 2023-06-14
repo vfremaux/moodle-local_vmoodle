@@ -236,26 +236,26 @@ if ($hassiteconfig) {
             $desc = get_string('plugindist_desc', 'local_vmoodle');
             $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
         }
-    } else {
-        // Minimal settings for vmoodle instances.
-        $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
-
-        $onoffopts[0] = get_string('off', 'local_vmoodle');
-        $onoffopts[1] = get_string('on', 'local_vmoodle');
-
-        $key = 'local_vmoodle/mnet_key_autorenew';
-        $label = get_string('mnetkeyautorenewenable', 'local_vmoodle');
-        $desc = get_string('mnetkeyautorenew_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $onoffopts));
-
-        $key = 'local_vmoodle/mnet_key_autorenew_gap';
-        $label = get_string('mnetkeyautorenewgap', 'local_vmoodle');
-        $desc = get_string('mnetkeyautorenewgap_desc', 'local_vmoodle');
-        $settings->add(new admin_setting_configtext($key, $label, $desc, 24 * 3));
-
-        $key = 'local_vmoodle/mnet_key_autorenew_time_hour';
-        $keymin = 'mnet_key_autorenew_time_min';
-        $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
-        $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
     }
+
+    // Minimal settings for vmoodle instances.
+    $settings->add(new admin_setting_heading('key_autorenew_parms', get_string('mnetkeyautorenew', 'local_vmoodle'), ''));
+
+    $onoffopts[0] = get_string('off', 'local_vmoodle');
+    $onoffopts[1] = get_string('on', 'local_vmoodle');
+
+    $key = 'local_vmoodle/mnet_key_autorenew';
+    $label = get_string('mnetkeyautorenewenable', 'local_vmoodle');
+    $desc = get_string('mnetkeyautorenew_desc', 'local_vmoodle');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, 1, $onoffopts));
+
+    $key = 'local_vmoodle/mnet_key_autorenew_gap';
+    $label = get_string('mnetkeyautorenewgap', 'local_vmoodle');
+    $desc = get_string('mnetkeyautorenewgap_desc', 'local_vmoodle');
+    $settings->add(new admin_setting_configtext($key, $label, $desc, 24 * 3));
+
+    $key = 'local_vmoodle/mnet_key_autorenew_time_hour';
+    $keymin = 'mnet_key_autorenew_time_min';
+    $label = get_string('mnetkeyautorenewtime', 'local_vmoodle');
+    $settings->add(new admin_setting_configtime($key, $keymin, $label, '', array('h' => 0, 'm' => 0)));
 }
