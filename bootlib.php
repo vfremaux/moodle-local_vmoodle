@@ -24,9 +24,10 @@ function vmoodle_get_hostname() {
     global $CFG;
 
     // Special 3.5 and upper.
-    if ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-            $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
-                    !empty($CFG->overridetossl)) {
+    if ((strpos($CFG->wwwroot, 'https') === 0) ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+                    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+                            !empty($CFG->overridetossl)) {
         $protocol = 'https';
     } else {
         $protocol = 'http';
