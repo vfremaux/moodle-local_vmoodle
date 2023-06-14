@@ -75,6 +75,7 @@ function local_vmoodle_supports_feature($feature = null, $getsupported = false) 
             'pro' => array(
                 'admin' => array('sadmin', 'mnetinit'),
                 'vcron' => array('clustering'),
+                'instances' => array('tools')
             ),
             'community' => array(
             ),

@@ -24,9 +24,10 @@ function vmoodle_get_hostname() {
     global $CFG;
 
     // Special 3.5 and upper.
-    if ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-            $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
-                    !empty($CFG->overridetossl)) {
+    if ((strpos($CFG->wwwroot, 'https') === 0) ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+                    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+                            !empty($CFG->overridetossl)) {
         $protocol = 'https';
     } else {
         $protocol = 'http';
@@ -245,7 +246,7 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = fals
         if (!$sidecnx) {
             if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
                 debugging("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
-                die;
+                if (!$interactive) die;
             }
             if (!$interactive) die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
             return false;
