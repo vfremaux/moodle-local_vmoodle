@@ -50,7 +50,7 @@ $vcron->strategy = ROUND_ROBIN;                     // Choose vcron rotation mod
 $vcron->period = 15 * MINSECS;                      // Used if LOWEST_POSSIBLE_GAP to setup the max gap.
 $vcron->timeout = 300;                              // Time out for CURL call to effective cron.
 $vcron->trace = $CFG->dataroot.'/vcrontrace.log';   // Trace file where to collect cron outputs.
-$vcron->trace_enable = false;                       // Enables tracing.
+$vcron->traceenable = false;                       // Enables tracing.
 
 $config = get_config('local_vmoodle');
 
