@@ -33,7 +33,7 @@ list($options, $unrecognized) = cli_get_params(array('help' => false,
                                                      'execute' => false,
                                                      'host' => false,
                                                      'debugging' => false,
-                                                     'isfixture' => false),
+                                                     'is-fixture' => false),
                                                array('h' => 'help',
                                                      'H' => 'host'));
 
@@ -50,7 +50,7 @@ Options:
     --execute=\\\\some\\\\task  Execute scheduled task manually
     --list                List all scheduled tasks
     --debugging           Turns in debug mode
-    --isfixture           Tells to run in fixture mode, i.e. skips the needs upgrade control.
+    --is-fixture           Tells to run in fixture mode, i.e. skips the needs upgrade control.
     -H, --host            Virtual root to run for
     -h, --help            Print out this help
 
@@ -87,7 +87,7 @@ if (!empty($options['debugging'])) {
 
 global $isfixture;
 $isfixture = false;
-if (!empty($options['isfixture'])) {
+if (!empty($options['is-fixture'])) {
     $isfixture = true;
 }
 
