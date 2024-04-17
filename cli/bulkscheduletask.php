@@ -19,6 +19,7 @@ define('CLI_VMOODLE_OVERRIDE', true);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // CLI only functions.
 
 // Ensure options are blanck.
 unset($options);

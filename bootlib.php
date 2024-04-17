@@ -244,8 +244,8 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = fals
 
         $sidecnx = @mysqli_connect($vmoodle->vdbhost, $vmoodle->vdblogin, $vmoodle->vdbpass, '', 3306);
         if (!$sidecnx) {
-            if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
-                debugging("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
+            if (!empty($CFG->debug) && $CFG->debug == E_ALL) {
+                echo "VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable";
                 if (!$interactive) die;
             }
             if (!$interactive) die ("VMoodle_make_connection : Server {$vmoodle->vdblogin}@{$vmoodle->vdbhost} unreachable");
@@ -253,8 +253,8 @@ function vmoodle_make_connection(&$vmoodle, $binddb = false, $interactive = fals
         }
         if ($binddb) {
             if (!mysqli_select_db($sidecnx, $vmoodle->vdbname)) {
-                if (!empty($CFG->debug) && $CFG->debug == DEBUG_DEVELOPER) {
-                    debugging("VMoodle_make_connection : Database {$vmoodle->vdbname} not found");
+                if (!empty($CFG->debug) && $CFG->debug == E_ALL) {
+                    echo ("VMoodle_make_connection : Database {$vmoodle->vdbname} not found");
                     if (!$interactive) die;
                 }
                 if (!$interactive) die ("VMoodle_make_connection : Database not found");

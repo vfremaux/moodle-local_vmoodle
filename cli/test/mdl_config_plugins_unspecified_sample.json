@@ -1,0 +1,26 @@
+[
+{
+    "type": "header",
+    "version": "5.0.4deb2+deb11u1",
+    "comment": "Export to JSON plugin for PHPMyAdmin"
+},
+{
+    "type": "database",
+    "name": "moodle_41_progressive"
+},
+{
+    "type": "table",
+    "name": "mdl_config_plugins",
+    "database": "moodle_41_progressive",
+    "data": 
+[
+{
+    "id": "47559",
+    "plugin": "theme_klassplace",
+    "name": "monochrome",
+    "value": "1"
+}
+]
+
+}
+]
