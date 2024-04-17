@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -53,16 +54,20 @@ if (!isset($CFG->dirroot)) {
 require_once($CFG->dirroot.'/lib/clilib.php');
 
 // Cli only functions.
+$lang = isset($SESSION->lang) ? $SESSION->lang : $CFG->lang ?? 'en';
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array('non-interactive'   => false,
           'allow-unstable'    => false,
+          'help'              => false,
+          'lang'              => $lang,
+          'verbose-settings'  => false,
+          'is-pending'        => false,
           'purge-caches'      => false,
           'host'              => false,
           'test'              => false,
-          'debug'             => false,
-          'help'              => false
+          'debug'             => false
     ),
     array('h' => 'help',
           'H' => 'host',
@@ -73,11 +78,18 @@ list($options, $unrecognized) = cli_get_params(
     )
 );
 
+if ($options['lang']) {
+    if (is_null($SESSION)) {
+        $SESSION = new StdClass;
+    }
+    $SESSION->lang = $options['lang'];
+}
+
 $interactive = empty($options['non-interactive']);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error("$unrecognized is not a recognized option\n");
 }
 
 if ($options['help']) {
@@ -89,7 +101,17 @@ Site defaults may be changed via local/defaults.php.
 
 Options:
     --non-interactive     No interactive questions or confirmations
-    -u, --allow-unstable      Upgrade even if the version is not marked as stable yet, required in non-interactive mode.
+    -u, --allow-unstable      Upgrade even if the version is not marked as stable yet,
+                      required in non-interactive mode.
+    --lang=CODE           Set preferred language for CLI output. Defaults to the
+                      site language if not set. Defaults to 'en' if the lang
+                      parameter is invalid or if the language pack is not
+                      installed.
+    --verbose-settings    Show new settings values. By default only the name of
+                      new core or plugin settings are displayed. This option
+                      outputs the new values as well as the setting name.
+    --is-pending          If an upgrade is needed it exits with an error code of
+                      2 so it distinct from other types of errors.
     -P, --purge-caches    Purge caches immediately after upgradig completes.
     -H, --host            Switches to this host virtual configuration before processing
     --test                Stops after host resolution, telling the actual config that will be used
@@ -161,6 +183,10 @@ if (!moodle_needs_upgrading()) {
     cli_error(get_string('cliupgradenoneed', 'core_admin', $newversion), 0);
 }
 
+if ($options['is-pending']) {
+    cli_error(get_string('cliupgradepending', 'core_admin'), 2);
+}
+
 // Test environment first.
 list($envstatus, $environmentresults) = check_moodle_environment(normalize_version($release), ENV_SELECT_RELEASE);
 if (!$envstatus) {
@@ -173,17 +199,27 @@ if (!$envstatus) {
     exit(1);
 }
 
+// Make sure there are no files left over from previous versions.
+if (upgrade_stale_php_files_present()) {
+    cli_problem(get_string('upgradestalefiles', 'admin'));
+
+    // Stale file info contains HTML elements which aren't suitable for CLI.
+    $upgradestalefilesinfo = get_string('upgradestalefilesinfo', 'admin', get_docs_url('Upgrading'));
+    cli_error(strip_tags($upgradestalefilesinfo));
+}
+
 // Test plugin dependencies.
 $failed = array();
-if (!core_plugin_manager::instance()->all_plugins_ok($version, $failed)) {
+if (!core_plugin_manager::instance()->all_plugins_ok($version, $failed, $CFG->branch)) {
     cli_problem(get_string('pluginscheckfailed', 'admin', array('pluginslist' => implode(', ', array_unique($failed)))));
     cli_error(get_string('pluginschecktodo', 'admin'));
 }
 
+$a = new stdClass();
+$a->oldversion = $oldversion;
+$a->newversion = $newversion;
+
 if ($interactive) {
-    $a = new stdClass();
-    $a->oldversion = $oldversion;
-    $a->newversion = $newversion;
     echo cli_heading(get_string('databasechecking', '', $a)) . PHP_EOL;
 }
 
@@ -231,16 +267,35 @@ set_config('branch', $branch);
 // Unconditionally upgrade.
 upgrade_noncore(true);
 
-// Log in as admin - we need doanything permission when applying defaults.
-if ($admin = get_admin()) {
-    \core\session\manager::set_user($admin);
+// log in as admin - we need doanything permission when applying defaults
+\core\session\manager::set_user(get_admin());
+
+// Apply default settings and output those that have changed.
+cli_heading(get_string('cliupgradedefaultheading', 'admin'));
+$settingsoutput = admin_apply_default_settings(null, false);
+
+foreach ($settingsoutput as $setting => $value) {
+
+    if ($options['verbose-settings']) {
+        $stringvlaues = array(
+                'name' => $setting,
+                'defaultsetting' => var_export($value, true) // Expand objects.
+        );
+        echo get_string('cliupgradedefaultverbose', 'admin', $stringvlaues) . PHP_EOL;
+
+    } else {
+        echo get_string('cliupgradedefault', 'admin', $setting) . PHP_EOL;
+
+    }
 }
 
-// Apply all default settings, just in case do it twice to fill all defaults.
-admin_apply_default_settings(null, false);
-admin_apply_default_settings(null, false);
+// This needs to happen at the end to ensure it occurs after all caches
+// have been purged for the last time.
+// This will build a cached version of the current theme for the user
+// to immediately start browsing the site.
+upgrade_themes();
 
-echo get_string('cliupgradefinished', 'admin')."\n";
+echo get_string('cliupgradefinished', 'admin', $a)."\n";
 
 if (!empty($options['purge-caches'])) {
     purge_all_caches();

@@ -35,11 +35,13 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/lib/clilib.php'); //
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
     array('help' => false,
+          'reset-hub-infos' => false,
           'protected' => false,
           'host' => false,
           'debug' => false,
     ),
     array('h'=>'help',
+          'r' => 'reset-hub-infos',
           'p'=>'protected',
           'H' => 'host',
           'd' => 'debug'
@@ -59,6 +61,7 @@ This CLI registrates the moodle instance to moodle.org worldwide register.
 
 Options:
     -p, --protected       If set, will only publish te name of the moodle and will give no link to access it.
+    -r, --reset-hub-infos Will only clear hub infos, (siteidentifier and registration_hubs).
     -H,   Host            A VMoodle hostname to register.
     -h, --help            Print out this help.
     -d, --debug           Turns on debug mode.
@@ -85,6 +88,22 @@ echo('Config check : playing for '.$CFG->wwwroot."\n");
 if (!empty($options['debug'])) {
     $CFG->debug = E_ALL;
 }
+
+if (!empty($options['reset-hub-infos'])) {
+    global $DB;
+
+    echo "Clearing registraton infos.\n";
+
+    set_config('siteidentifer', null);
+
+    $DB->delete_records('registration_hubs', []);
+
+    echo "done.\n";
+    exit(0);
+}
+
+echo "Not yet investigated how to register non interactively\n";
+exit(0);
 
 // Display statistic that are going to be retrieve by the hub.
 $coursecount = $DB->count_records('course') - 1;
