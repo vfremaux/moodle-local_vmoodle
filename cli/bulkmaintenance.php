@@ -19,6 +19,7 @@ define('CLI_VMOODLE_OVERRIDE', true);
 
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // Global moodle config file.
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
+require_once($CFG->dirroot.'/local/vmoodle/cli/clilib.php'); // CLI only functions.
 
 // Ensure options are blanck.
 unset($options);
@@ -124,7 +125,12 @@ if ($allhosts) {
                 echo "\n";
             }
         }
+
+        $i++;
+        vmoodle_send_cli_progress($numhosts, $i, 'bulkmaintenance');
     }
 }
 
+vmoodle_cli_notify_admin("[$SITE->shortname] BulkMaintenance done.");
 echo "All done.\n";
+exit(0);

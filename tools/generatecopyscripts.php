@@ -247,18 +247,18 @@ if ($data = $mform->get_data()) {
     $datatransfer = '# Data transfer for '.$SITE->fullname."\n";
     $datatransfer .= 'mysqldump '.$main->olddbname.' -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' > temp'.$data->fromversion.'.sql'."\n";
     $datatransfer .= '/bin/cp -f temp'.$data->fromversion.'.sql temp'.$data->toversion.'.sql'."\n";
-    $datatransfer .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
-    $datatransfer .= 'sed -i \'s/'.$main->originwwwrootsed.'/'.$main->currentwwwrootsed.'/g\' temp'.$data->toversion.'.sql'."\n";
+    $datatransfer .= 'sed \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' -i temp'.$data->fromversion.'.sql'."\n";
+    $datatransfer .= 'sed \'s/'.$main->originwwwrootsed.'/'.$main->currentwwwrootsed.'/g\' -i temp'.$data->toversion.'.sql'."\n";
 
     // Process main database for all peer host names, paths and references.
     if ($vhosts) {
         foreach ($vhosts as $vhost) {
             // This is a special copy that works the opposite way : newwwwroot is the older version to patch into the older database.
-            $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->currentwwwrootsed.'/'.$hostreps[$vhost->name]->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
-            $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->originwwwrootsed.'/'.$hostreps[$vhost->name]->currentwwwrootsed.'/g\' temp'.$data->toversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$hostreps[$vhost->name]->currentwwwrootsed.'/'.$hostreps[$vhost->name]->archivewwwrootsed.'/g\' -i temp'.$data->fromversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$hostreps[$vhost->name]->originwwwrootsed.'/'.$hostreps[$vhost->name]->currentwwwrootsed.'/g\' -i temp'.$data->toversion.'.sql'."\n";
 
-            $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->olddatarootsed.'/'.$hostreps[$vhost->name]->newdatarootsed.'/g\' temp'.$data->toversion.'.sql'."\n";
-            $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->olddbnamesed.'/'.$hostreps[$vhost->name]->newdbnamesed.'/g\' temp'.$data->toversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$hostreps[$vhost->name]->olddatarootsed.'/'.$hostreps[$vhost->name]->newdatarootsed.'/g\' -i temp'.$data->toversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$hostreps[$vhost->name]->olddbnamesed.'/'.$hostreps[$vhost->name]->newdbnamesed.'/g\' -i temp'.$data->toversion.'.sql'."\n";
         }
     }
 
@@ -289,8 +289,8 @@ if ($data = $mform->get_data()) {
             $datatransfer .= '# Data transfer for '.$vhost->name."\n";
             $datatransfer .= 'mysqldump '.$hostreps[$vhost->name]->olddbname.' -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' > temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= '/bin/cp -f temp'.$data->fromversion.'.sql temp'.$data->toversion.'.sql'."\n";
-            $datatransfer .= 'sed -i \'s/'.$hostreps[$vhost->name]->originwwwrootsed.'/'.$hostreps[$vhost->name]->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
-            $datatransfer .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' temp'.$data->fromversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$hostreps[$vhost->name]->originwwwrootsed.'/'.$hostreps[$vhost->name]->archivewwwrootsed.'/g\' -i temp'.$data->fromversion.'.sql'."\n";
+            $datatransfer .= 'sed \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' -i temp'.$data->fromversion.'.sql'."\n";
             $datatransfer .= 'mysql -h'.$CFG->dbhost.' -u'.$CFG->dbuser.' -p\''.$CFG->dbpass.'\' '.$hostreps[$vhost->name]->newdbname.' < temp'.$data->toversion.'.sql'."\n";
 
             // Old DB replacement.
@@ -361,7 +361,7 @@ if ($data = $mform->get_data()) {
         $sudostr = '# Sudo file processing (must be root)'."\n";
         $sudostr .= '/bin/cp -f /etc/sudoers.d/moodle'.$data->fromversion.'_sudos /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
         $sudostr .= 'chmod u+w /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
-        $sudostr .= 'sed -i \'s/'.$data->fromversion.'/'.$data->toversion.'/g\' /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
+        $sudostr .= 'sed \'s/'.$data->fromversion.'/'.$data->toversion.'/g\' -i /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
         $sudostr .= 'chmod u-w /etc/sudoers.d/moodle'.$data->toversion."_sudos\n";
     }
 
@@ -371,18 +371,18 @@ if ($data = $mform->get_data()) {
     $configstr .= "/bin/cp -f {$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php.bak\n";
     $configstr .= "/bin/cp -f {$main->olddirroot}/{$vmoodlefromlocation}/vmoodle/vconfig.php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
 
-    $configstr .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' '."{$main->olddirroot}/config.php\n";
-    $configstr .= 'sed -i \'s/'.$main->olddirrootsed.'/'.$main->newdirrootsed.'/g\' '."{$main->newdirroot}/config.php\n";
-    $configstr .= 'sed -i \'s/'.$main->oldmoodledatased.'/'.$main->newmoodledatased.'/g\' '."{$main->newdirroot}/config.php\n";
-    $configstr .= 'sed -i \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' '."{$main->newdirroot}/config.php\n";
+    $configstr .= 'sed \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' -i '."{$main->olddirroot}/config.php\n";
+    $configstr .= 'sed \'s/'.$main->olddirrootsed.'/'.$main->newdirrootsed.'/g\' -i '."{$main->newdirroot}/config.php\n";
+    $configstr .= 'sed \'s/'.$main->oldmoodledatased.'/'.$main->newmoodledatased.'/g\' -i '."{$main->newdirroot}/config.php\n";
+    $configstr .= 'sed \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' -i '."{$main->newdirroot}/config.php\n";
     if ($data->fromversion <= 31 && $data->toversion >= 34) {
-        $configstr .= 'sed -i \'s/mysqli/mariadb/g\' '."{$main->newdirroot}/config.php\n";
+        $configstr .= 'sed \'s/mysqli/mariadb/g\' -i '."{$main->newdirroot}/config.php\n";
     }
-    $configstr .= 'sed -i \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' '."{$main->olddirroot}/config.php\n";
+    $configstr .= 'sed \'s/'.$main->currentwwwrootsed.'/'.$main->archivewwwrootsed.'/g\' -i '."{$main->olddirroot}/config.php\n";
 
-    $configstr .= 'sed -i \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
+    $configstr .= 'sed \'s/'.$main->olddbname.'/'.$main->newdbname.'/g\' -i '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
     if ($data->fromversion <= 31 && $data->toversion >= 34) {
-        $configstr .= 'sed -i \'s/mysqli/mariadb/g\' '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
+        $configstr .= 'sed \'s/mysqli/mariadb/g\' -i '."{$main->newdirroot}/{$vmoodletolocation}/vmoodle/vconfig.php\n";
     }
 
     // Main host upgrade.
@@ -423,6 +423,7 @@ if ($data = $mform->get_data()) {
             $postupgradestr .= "\n";
             $postupgradestr .= '# Post upgrade for ['.$vhost->name.'] '.$vhost->vhostname."\n";
             $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/purge_caches.php --host={$hostreps[$vhost->name]->currentwwwroot}\n";
+            $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->newdirroot}/{$vmoodletolocation}/vmoodle/cli/update_langpacks.php --host={$hostreps[$vhost->name]->currentwwwroot}\n";
             if (is_dir($CFG->dirroot.'/blocks/user_mnet_hosts')) {
                 $postupgradestr .= "sudo -u{$data->webserveruser} php {$main->olddirroot}/blocks/user_mnet_hosts/cli/resync.php --host={$hostreps[$vhost->name]->archivewwwroot}\n";
             }
