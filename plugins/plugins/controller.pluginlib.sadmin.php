@@ -36,7 +36,7 @@ require_login();
 
 // Checking rights.
 if (!has_capability('local/vmoodle:managevmoodles', context_system::instance())) {
-    print_error('onlyadministrators', 'local_vmoodle');
+    throw new moodle_exception(get_string('onlyadministrators', 'local_vmoodle'));
 }
 
 // Declaring parameters.

@@ -82,7 +82,7 @@ function mnet_get_public_key($uri, $application=null, $force=0) {
                 curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
             } else {
                 curl_close($ch);
-                throw new \moodle_exception( 'socksnotsupported', 'mnet');
+                throw new \moodle_exception(get_string('socksnotsupported', 'mnet'));
             }
         }
 

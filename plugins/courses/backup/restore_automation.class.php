@@ -137,7 +137,7 @@ class restore_automation {
         $courseid = \restore_dbops::create_new_course($data->fullname, $data->shortname, $coursecategoryid);
 
         if (!$courseid) {
-            throw new \moodle_exception("Could not create course in automation process");
+            print_object("Could not create course in automation process");
         }
 
         $rc = new \restore_controller($file->get_contenthash(),

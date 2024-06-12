@@ -38,7 +38,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-Use \local_vmoodle\Mnet_Peer;
+use \local_vmoodle\Mnet_Peer;
 
 // Includes the MNET library.
 require_once($CFG->dirroot.'/mnet/lib.php');
@@ -881,7 +881,7 @@ if ($action == 'snapshot') {
     $absolutesqldir = $CFG->dataroot.$separator.$relativesqldir;
 
     if (preg_match('/ /', $absolutesqldir)) {
-        print_error('errorbaddirectorylocation', 'local_vmoodle');
+        throw new moodle_exception(get_string('errorbaddirectorylocation', 'local_vmoodle'));
         if ($automation) {
             return -1;
         }
@@ -929,7 +929,7 @@ if ($action == 'snapshot') {
         if ($vmoodlestep == 1) {
             // Auto dump the database in a master template_folder.
             if (!vmoodle_dump_database($vmoodle, $absolutesqldir.$separator.'vmoodle_master.sql')) {
-                print_error('baddumpcommandpath', 'local_vmoodle');
+                throw new moodle_exception(get_string('baddumpcommandpath', 'local_vmoodle'));
                 if ($automation) {
                     return -1;
                 }

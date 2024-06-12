@@ -47,7 +47,7 @@ if (!empty($CFG->cronremotepassword)) {
     $pass = optional_param('password', '', PARAM_RAW);
     if ($pass != $CFG->cronremotepassword) {
         // wrong password.
-        print_error('cronerrorpassword', 'admin');
+        throw new moodle_exception(get_string('cronerrorpassword', 'admin'));
         exit;
     }
 }

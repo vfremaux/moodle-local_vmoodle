@@ -26,7 +26,6 @@ namespace vmoodleadminset_generic;
 
 use \local_vmoodle\commands\Command;
 use \local_vmoodle\commands\Command_Parameter;
-use \moodle_exception;
 use \StdClass;
 use \context_system;
 
@@ -206,7 +205,7 @@ class Command_CopyFileArea extends Command {
             }
             if (!$rpcfaclient->send($sourcemnethost)) {
                 // General failure querying the source for filearea full directory.
-                throw new moodle_exception($rpcfaclient);
+                print_object($rpcfaclient);
                 $response = (object) array(
                     'status' => MNET_FAILURE,
                     'error' => get_string('sendfailure', 'local_vmoodle', $source)

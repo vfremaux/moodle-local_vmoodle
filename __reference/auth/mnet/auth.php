@@ -152,7 +152,7 @@ class auth_plugin_mnet extends auth_plugin_base {
         require_once $CFG->dirroot . '/mnet/xmlrpc/client.php';
 
         if (\core\session\manager::is_loggedinas()) {
-            throw new \moodle_exception('notpermittedtojumpas', 'mnet');
+            throw new \moodle_exception(get_string('notpermittedtojumpas', 'mnet'));
         }
 
         // check remote login permissions
@@ -160,12 +160,12 @@ class auth_plugin_mnet extends auth_plugin_base {
                 or is_mnet_remote_user($USER)
                 or isguestuser()
                 or !isloggedin()) {
-            throw new \moodle_exception('notpermittedtojump', 'mnet');
+            throw new \moodle_exception(get_string('notpermittedtojump', 'mnet'));
         }
 
         // check for SSO publish permission first
         if ($this->has_service($mnethostid, 'sso_sp') == false) {
-            throw new \moodle_exception('hostnotconfiguredforsso', 'mnet');
+            throw new \moodle_exception(get_string('hostnotconfiguredforsso', 'mnet'));
         }
 
         // set RPC timeout to 30 seconds if not configured
@@ -230,7 +230,7 @@ class auth_plugin_mnet extends auth_plugin_base {
 
         // verify the remote host is configured locally before attempting RPC call
         if (! $remotehost = $DB->get_record('mnet_host', array('wwwroot' => $remotepeer->wwwroot, 'deleted' => 0))) {
-            throw new \moodle_exception('notpermittedtoland', 'mnet');
+            throw new \moodle_exception(get_string('notpermittedtoland', 'mnet'));
         }
 
         // set up the RPC request
@@ -249,13 +249,12 @@ class auth_plugin_mnet extends auth_plugin_base {
                 list($code, $message) = array_map('trim',explode(':', $errormessage, 2));
                 if($code == 702) {
                     $site = get_site();
-                    throw new \moodle_exception('mnet_session_prohibited', 'mnet', $remotepeer->wwwroot,
-                        format_string($site->fullname));
+                    throw new \moodle_exception(get_string('mnet_session_prohibited', 'mnet', format_string($site->fullname)));
                     exit;
                 }
                 $message .= "ERROR $code:<br/>$errormessage<br/>";
             }
-            throw new \moodle_exception("rpcerror", '', '', $message);
+            throw new \moodle_exception(get_string("rpcerror", 'mnet', $message));
         }
         unset($mnetrequest);
 
@@ -265,7 +264,7 @@ class auth_plugin_mnet extends auth_plugin_base {
         }
 
         if (user_not_fully_set_up($remoteuser, false)) {
-            throw new \moodle_exception('notenoughidpinfo', 'mnet');
+            throw new \moodle_exception(get_string('notenoughidpinfo', 'mnet'));
             exit;
         }
 
@@ -290,7 +289,7 @@ class auth_plugin_mnet extends auth_plugin_base {
         if (empty($localuser) || ! $localuser->id) {
             /*
             if (empty($this->config->auto_add_remote_users)) {
-                throw new \moodle_exception('nolocaluser', 'mnet');
+                throw new \moodle_exception(get_string('nolocaluser', 'mnet'));
             } See MDL-21327   for why this is commented out
             */
             $remoteuser->mnethostid = $remotehost->id;
@@ -304,8 +303,7 @@ class auth_plugin_mnet extends auth_plugin_base {
 
         // check sso access control list for permission first
         if (!$this->can_login_remotely($localuser->username, $remotehost->id)) {
-            throw new \moodle_exception('sso_mnet_login_refused', 'mnet', '',
-                array('user' => $localuser->username, 'host' => $remotehost->name));
+            throw new \moodle_exception(get_string('sso_mnet_login_refused', 'mnet', ['user' => $localuser->username, 'host' => $remotehost->name]));
         }
 
         $fs = get_file_storage();
@@ -411,7 +409,7 @@ class auth_plugin_mnet extends auth_plugin_base {
                         $courses[$id] = (array)$courses[$id];
                     }
                 } else {
-                    throw new moodle_exception('unknownrole', 'error', '', 'student');
+                    throw new moodle_exception(get_string('unknownrole', 'error', 'student'));
                 }
             } else {
                 // if the array is empty, send it anyway
