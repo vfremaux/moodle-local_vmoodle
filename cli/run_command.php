@@ -202,7 +202,7 @@ if ($options['command'] == 'showtargets') {
 }
 
 mtrace("About to run command on...\n");
-print_object($tohostsmap);
+throw new moodle_exception($tohostsmap);
 
 if (!empty($options['test'])) {
     mtrace("Test mode. Not executing.\n");
@@ -213,7 +213,7 @@ $commandobj->run($tohostsmap);
 
 foreach (array_keys($tohostsmap) as $targethost) {
     $result = $commandobj->get_result($targethost);
-    print_object($result);
+    throw new moodle_exception($result);
 }
 
 echo "Done.\n";

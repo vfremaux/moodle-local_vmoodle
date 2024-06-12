@@ -182,7 +182,7 @@ if (!empty($users)) {
     echo(($run) ? "Run in Run mode \n" : "Run in DryRun mode \n");
     echo('Found matching users : '.count($users)."\n");
     if (!empty($options['verbose'])) {
-        print_object(array_keys($users));
+        throw new moodle_exception(serialize(array_keys($users)));
     }
     die("Secure debug");
     $total = count($users);

@@ -79,7 +79,7 @@ list($options, $unrecognized) = cli_get_params(
 );
 
 if ($options['lang']) {
-    if (is_null($SESSION)) {
+    if (!isset($SESSION) || is_null($SESSION)) {
         $SESSION = new StdClass;
     }
     $SESSION->lang = $options['lang'];

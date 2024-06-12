@@ -36,6 +36,7 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'h' => 'help',
         'v' => 'verbose',
+        'a' => 'all',
         'f' => 'fullstop',
         'd' => 'debug',
         'M' => 'with-master',
@@ -54,6 +55,7 @@ Command line Global Cache clearance
     Options:
     -h, --help              Print out this help
     -v, --verbose           Print out workers output.
+    -a, --all               Runs also on disabled hosts.
     -f, --fullstop          Stops on first error.
     -d, --debug             Turns on debug mode.
     -M, --with-master        Purge caches on master moodle too.
@@ -102,6 +104,12 @@ $i = 1;
 $numhosts = count($allhosts);
 $fails = 0;
 foreach ($allhosts as $h) {
+    if (empty($options['all'])) {
+        if (empty($h->enabled)) {
+            continue;
+        }
+    }
+
     $workercmd = "php {$CFG->dirroot}/local/vmoodle/cli/purge_caches.php --host=\"{$h->vhostname}\" {$debug} ";
 
     mtrace("Executing $workercmd\n######################################################\n");
