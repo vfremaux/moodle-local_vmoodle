@@ -179,7 +179,7 @@ function vmoodle_get_vmoodles() {
 function vmoodle_get_vmoodleset($clusters = 1, $clusterix = 1) {
     global $DB;
 
-    $allvhosts = $DB->get_records('local_vmoodle', array('enabled' => 1));
+    $allvhosts = $DB->get_records('local_vmoodle', ['enabled' => 1], 'id');
     if ($clusters < 2) {
         return $allvhosts;
     }
@@ -603,7 +603,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
     }
 
     if (!$pgm) {
-        throw new moodle_exception(get_string('dbdumpnotavailable', 'local_vmoodle'));
+        throw new moodle_exception('dbdumpnotavailable', 'local_vmoodle');
         return false;
     } else {
         $phppgm = str_replace("\\", '/', $pgm);
@@ -611,7 +611,7 @@ function vmoodle_dump_database($vmoodle, $outputfile) {
         $pgm = str_replace('/', DIRECTORY_SEPARATOR, $pgm);
 
         if (!is_executable($phppgm)) {
-            throw new moodle_exception(get_string('dbcommanderror', 'local_vmoodle', $phppgm));
+            throw new moodle_exception('dbcommanderror', 'local_vmoodle', $phppgm);
             return false;
         }
         // Final command.
@@ -665,7 +665,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
 
     // Retrieves files contents into strings.
     if (!($dumptxt = file_get_contents($templatesqlfilepath))) {
-        throw new moodle_exception(get_string('nosql', 'local_vmoodle'));
+        throw new moodle_exception('nosql', 'local_vmoodle');
         return false;
     }
 
@@ -682,7 +682,7 @@ function vmoodle_load_database_from_template($vmoodledata) {
 
     // Puts strings into the temporary files.
     if (!file_put_contents($temporarysqlfilepath, $dumptxt)) {
-        throw new moodle_exception(get_string('nooutputfortransformedsql', 'local_vmoodle'));
+        throw new moodle_exception('nooutputfortransformedsql', 'local_vmoodle');
         return false;
     }
 
@@ -755,7 +755,7 @@ function vmoodle_fix_database($vmoodledata, $thisashost) {
     $temporarysetup_path = $CFG->dataroot.'/vmoodle/'.$vmoodledata->vtemplate.'_sql/vmoodle_setup_template.temp.sql';
 
     if (!$file = fopen($temporarysetup_path, 'wb')) {
-        throw new moodle_exception(get_string('couldnotwritethesetupscript', 'local_vmoodle'));
+        throw new moodle_exception('couldnotwritethesetupscript', 'local_vmoodle');
         return false;
     }
     $prefix = $vmoodledata->vdbprefix;
@@ -940,7 +940,7 @@ function vmoodle_destroy($vmoodledata) {
         $e = new StdClass;
         $e->sql = $sql;
         $e->error = $DB->get_last_error();
-        throw new moodle_exception(get_string('noexecutionfor', 'local_vmoodle', $e));
+        throw new moodle_exception('noexecutionfor', 'local_vmoodle', $e);
     }
 
     // Destroy moodledata.
@@ -996,7 +996,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
 
     // Checks the needed program.
     if (!$pgm){
-        throw new moodle_exception(get_string('dbcommandnotconfigured', 'local_vmoodle'));
+        throw new moodle_exception('dbcommandnotconfigured', 'local_vmoodle');
         return false;
     }
 
@@ -1005,7 +1005,7 @@ function vmoodle_get_database_dump_cmd($vmoodledata) {
     $pgm = str_replace("/", DIRECTORY_SEPARATOR, $pgm);
 
     if (!is_executable($phppgm)) {
-        throw new moodle_exception(get_string('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle'));
+        throw new moodle_exception('dbcommanddoesnotmatchanexecutablefile', 'local_vmoodle');
         return false;
     }
 
@@ -1286,6 +1286,7 @@ function vmoodle_get_string($identifier, $subplugin, $a = '', $lang = '') {
  * @see config.php
  * @see config-dist.php
  * @global stdClass $DB The global moodle_database instance.
+ * @param object $vmoodle VMoodle descriptor
  * @return void|bool Returns true when finished setting up $DB. Returns void when $DB has already been set.
  */
 function vmoodle_setup_db($vmoodle) {

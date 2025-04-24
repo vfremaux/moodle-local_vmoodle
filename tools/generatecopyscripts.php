@@ -34,11 +34,11 @@ require_login();
 require_capability('moodle/site:config', $context);
 
 if (@$CFG->mainwwwroot != $CFG->wwwroot) {
-    throw new moodle_exception(get_string('onlymainsitecangenerate', 'local_vmoodle'));
+    throw new moodle_exception('onlymainsitecangenerate', 'local_vmoodle');
 }
 
 if ($USER->mnethostid != $CFG->mnet_localhost_id) {
-    throw new moodle_exception(get_string('onlymainsiteadminscangenerate', 'local_vmoodle'));
+    throw new moodle_exception('onlymainsiteadminscangenerate', 'local_vmoodle');
 }
 
 $PAGE->set_heading(get_string('scriptgenerator', 'local_vmoodle'));

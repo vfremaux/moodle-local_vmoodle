@@ -24,8 +24,8 @@
  */
 
 $plugin = new Stdclass;
-$plugin->version = 2023030900;
+$plugin->version = 2025040300;
 $plugin->component = 'vmoodleadminset_courses';
 $plugin->requires = 2016051900;
-$plugin->release = '4.1.0 (build 2023030900)';
+$plugin->release = '4.5.0 (build 2025040300)';
 $plugin->dependencies = array('local_vmoodle' => 2017090100);

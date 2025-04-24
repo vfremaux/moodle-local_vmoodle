@@ -24,6 +24,7 @@ namespace local_vmoodle;
 defined('MOODLE_INTERNAL') || die();
 
 use StdClass;
+use moodle_exception;
 
 require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
@@ -44,18 +45,18 @@ class restore_automation {
 
         if (!$backupfileid && empty($filepath)) {
             debug_trace("Invalid or empty backup file source.");
-            throw new Exception("Invalid or empty backup file source.");
+            throw new moodle_exception("Invalid or empty backup file source.");
         }
 
         if (!empty($filepath)) {
             if (!is_readable($filepath)) {
                 debug_trace("Not readable path");
-                throw new Exception("Not readable path");
+                throw new moodle_xception("Not readable path");
             }
 
             if (!is_file($filepath)) {
                 debug_trace("Not a file");
-                throw new Exception("Not a file");
+                throw new moodle_exception("Not a file");
             }
         }
 
@@ -95,7 +96,7 @@ class restore_automation {
                 debug_trace("backup file does not exist (by id).");
                 throw new Exception("backup file does not exist (by id).");
             }
-            debug_trace("File from id $backupfileid");
+            // debug_trace("File from id $backupfileid");
         }
 
         // Copy file to temp place.
@@ -109,11 +110,11 @@ class restore_automation {
         if (!file_exists($tempdir)) {
             if (!mkdir($tempdir, 0775, true)) {
                 debug_trace("Could'nt create backup temp directory $tempdir. operation failed.");
-                throw new Exception("Could'nt create backup temp directory $tempdir. operation failed.");
+                throw new moodle_exception("Could'nt create backup temp directory $tempdir. operation failed.");
             }
         }
 
-        debug_trace("VMoodle : Start extraction");
+        // debug_trace("VMoodle : Start extraction");
         $fp = get_file_packer('application/vnd.moodle.backup');
         $unzipresult = $fp->extract_to_pathname($CFG->tempdir.'/backup/'.$file->get_filename(), $tempdir);
         debug_trace("VMoodle : Backup File extracted");
@@ -121,11 +122,11 @@ class restore_automation {
         // Check category exists.
         if (!$cat = $DB->get_record('course_categories', array('id' => $coursecategoryid))) {
             debug_trace("Error : Invalid destination category");
-            throw new Exception("Invalid destination category");
+            throw new moodle_exception("Invalid destination category");
         }
 
         // Create the base course.
-        $data = new \StdClass();
+        $data = new StdClass();
         $data->fullname = "Course restore in progress...";
         if (empty($seed)) {
             $seed = rand(0, 293736);
@@ -137,7 +138,7 @@ class restore_automation {
         $courseid = \restore_dbops::create_new_course($data->fullname, $data->shortname, $coursecategoryid);
 
         if (!$courseid) {
-            print_object("Could not create course in automation process");
+            throw new moodle_exception("Could not create course in automation process");
         }
 
         $rc = new \restore_controller($file->get_contenthash(),

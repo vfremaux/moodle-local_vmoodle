@@ -38,7 +38,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-use \local_vmoodle\Mnet_Peer;
+use local_vmoodle\Mnet_Peer;
 
 // Includes the MNET library.
 require_once($CFG->dirroot.'/mnet/lib.php');
@@ -611,7 +611,10 @@ if ($action == 'doadd') {
                     debug_trace('Vnode mnet bindings.');
                 }
 
-                vmoodle_bind_to_network($submitteddata, $newmnethost);
+                if (local_vmoodle_supports_feature('admin/mnetinit')) {
+                    include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php'),
+                    vmoodle_bind_to_network($submitteddata, $newmnethost);
+                }
             }
         }
 
@@ -811,8 +814,11 @@ if ($action == 'doedit') {
              * Rebind peer to the new subnetwork members, and connect
              * it to them, if it is subnetworking and not creating new subnetwork.
              */
-            if (($submitteddata->mnet > 0) && ($submitteddata->mnet <= vmoodle_get_last_subnetwork_number())) {
-                vmoodle_bind_to_network($submitteddata, $editedhost);
+            if (local_vmoodle_supports_feature('admin/mnetinit')) {
+                include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php'),
+                if (($submitteddata->mnet > 0) && ($submitteddata->mnet <= vmoodle_get_last_subnetwork_number())) {
+                    vmoodle_bind_to_network($submitteddata, $editedhost);
+                }
             }
 
             // First check for global mnet disabing/reviving.
@@ -881,7 +887,7 @@ if ($action == 'snapshot') {
     $absolutesqldir = $CFG->dataroot.$separator.$relativesqldir;
 
     if (preg_match('/ /', $absolutesqldir)) {
-        throw new moodle_exception(get_string('errorbaddirectorylocation', 'local_vmoodle'));
+        throw new moodle_exception('errorbaddirectorylocation', 'local_vmoodle');
         if ($automation) {
             return -1;
         }
@@ -929,7 +935,7 @@ if ($action == 'snapshot') {
         if ($vmoodlestep == 1) {
             // Auto dump the database in a master template_folder.
             if (!vmoodle_dump_database($vmoodle, $absolutesqldir.$separator.'vmoodle_master.sql')) {
-                throw new moodle_exception(get_string('baddumpcommandpath', 'local_vmoodle'));
+                throw new moodle_exception('baddumpcommandpath', 'local_vmoodle');
                 if ($automation) {
                     return -1;
                 }

@@ -133,7 +133,7 @@ if (!empty($options['with-master'])) {
     exec($workercmd, $output, $return);
 
     if ($return) {
-        if (empty($options['fullstop'])) {
+        if (!empty($options['fullstop'])) {
             echo implode("\n", $output)."\n";
             vmoodle_cli_notify_admin("[$SITE->shortname] Bulkuninstallplugins Error : {$CFG->wwwroot} (master) ended with error");
             die("Worker ended with error\n");
@@ -160,7 +160,7 @@ foreach ($allhosts as $h) {
     exec($workercmd, $output, $return);
 
     if ($return) {
-        if (empty($options['fullstop'])) {
+        if (!empty($options['fullstop'])) {
             echo implode("\n", $output)."\n";
             vmoodle_cli_notify_admin("[$SITE->shortname] Bulkuninstallplugins Error : {$h->vhostname} (master) ended with error. Fatal.");
             die("Worker ended with error\n");

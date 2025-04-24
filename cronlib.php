@@ -81,7 +81,7 @@ function exec_vhost_cron($vhost, $detached = false) {
 function vcron_process_result($vhost, $rawresponse, $timestampsend, $timestampreceive) {
     global $vcron, $CFG, $DB;
 
-    if ($vcron->traceenable) {
+    if (!empty($vcron->traceenable)) {
         $crontrace = fopen($vcron->trace, 'a');
     }
 

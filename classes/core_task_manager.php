@@ -26,6 +26,8 @@
 namespace local\vmoodle;
 
 defined('MOODLE_INTERNAL') || die();
+use moodle_exception;
+use moodle_url;
 
 class core_task_manager extends \core\task\manager {
 
@@ -40,8 +42,8 @@ class core_task_manager extends \core\task\manager {
         global $CFG;
 
         if (!self::is_runnable()) {
-            $redirecturl = new \moodle_url('/admin/settings.php', ['section' => 'systempaths']);
-            throw new \moodle_exception(get_string('cannotfindthepathtothecli', 'core_task'));
+            $redirecturl = new moodle_url('/admin/settings.php', ['section' => 'systempaths']);
+            throw new moodle_exception('cannotfindthepathtothecli', 'core_task');
         } else {
             // Shell-escaped path to the PHP binary.
             $phpbinary = escapeshellarg(self::find_php_cli_path());
@@ -67,4 +69,5 @@ class core_task_manager extends \core\task\manager {
 
         return true;
     }
-} 
+}
+ 

@@ -52,11 +52,11 @@ $PAGE->set_url('/admin/mnet/peers.php');
 admin_externalpage_setup($adminsection);
 
 if (!extension_loaded('openssl')) {
-    throw new \moodle_exception(get_string('requiresopenssl', 'mnet'));
+    throw new moodle_exception('requiresopenssl', 'mnet');
 }
 
 if (!function_exists('curl_init') ) {
-    throw new \moodle_exception(get_string('nocurl', 'mnet'));
+    throw new moodle_exception('nocurl', 'mnet');
 }
 
 if (!isset($CFG->mnet_dispatcher_mode)) {

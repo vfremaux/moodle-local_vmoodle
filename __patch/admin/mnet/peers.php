@@ -58,11 +58,11 @@ $PAGE->set_url('/admin/mnet/peers.php');
 admin_externalpage_setup($adminsection);
 
 if (!extension_loaded('openssl')) {
-    throw new \moodle_exception(get_string('requiresopenssl', 'mnet'));
+    throw new \moodle_exception('requiresopenssl', 'mnet');
 }
 
 if (!function_exists('curl_init') ) {
-    throw new \moodle_exception(get_string('nocurl', 'mnet'));
+    throw new \moodle_exception('nocurl', 'mnet');
 }
 
 if (!isset($CFG->mnet_dispatcher_mode)) {
@@ -178,7 +178,7 @@ if ($formdata = $reviewform->get_data()) {
     if ($mnet_peer->commit()) {
         redirect(new moodle_url('/admin/mnet/peers.php', array('hostid' => $mnet_peer->id)), get_string('changessaved'));
     } else {
-        throw new \moodle_exception(get_string('invalidaction', 'error'));
+        throw new moodle_exception('invalidaction', 'error');
     }
 } else if ($reviewform->is_submitted()) { // submitted, but errors
     echo $OUTPUT->header();

@@ -54,6 +54,11 @@ $vcron->trace_enable = false;                       // Enables tracing.
 
 $config = get_config('local_vmoodle');
 
+$cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
+if (!$vcronlock = $cronlockfactory->get_lock("vcron_loop", 0)) {
+    die("Vcron is already locked and running\n");
+}
+
 if (local_vmoodle_supports_feature('vcron/clustering')) {
     include_once($CFG->dirroot.'/local/vmoodle/pro/localprolib.php');
     $vmoodles = \local_vmoodle\local_pro_manager::vmoodle_get_vmoodleset();
@@ -61,54 +66,57 @@ if (local_vmoodle_supports_feature('vcron/clustering')) {
     $vmoodles = vmoodle_get_vmoodleset();
 }
 
-if (!$vmoodles) {
-    die("Nothing to do. No Vhosts");
+if (empty($vmoodles)) {
+    $vcronlock->release();
+    die("Nothing to do. No Vhosts\n");
 }
 
 $allvhosts = array_values($vmoodles);
 
 echo "Moodle VCron... start in {$vcron->activation} mode \n";
-echo "Previous croned : ".@$config->cron_lasthost."\n";
+if (!empty($config->cron_lasthost)) {
+    echo "Previous croned : ".$config->cron_lasthost." ".$vmoodles[$config->cron_lasthost]->vhostname."\n";
+}
 
 if ($vcron->strategy == ROUND_ROBIN) {
-    $rr = 0;
-    foreach ($allvhosts as $vhost) {
-        if ($rr == 1) {
-            // From this host, fire a set of crons (usually one). @see RUN_PER_TURN
-            // If we reach the end of the register, we'll need to wait the next run to continue.
-            set_config('cron_lasthost', $vhost->id, 'local_vmoodle');
-            $config->cron_lasthost = $vhost->id;
-            echo "Round Robin : ".$vhost->vhostname."\n";
-            if ($vcron->activation == 'cli') {
-                exec_vhost_cron($vhost);
-            } else {
-                fire_vhost_cron($vhost);
+    if (!empty($config->cron_lasthost)) {
+        $vhost = array_shift($allvhosts);
+        while ($vhost->id <= $config->cron_lasthost) {
+            if (empty($allvhosts)) {
+                echo "Round Robin : Reloading hostlist.\n";
+                $allvhosts = array_values($vmoodles);
+                break;
             }
-            if ($rr >= RUN_PER_TURN) {
-                // This was the last vhost for this run.
-                die('Done.');
-            }
-            $rr++;
-        }
-        if ($vhost->id == @$config->cron_lasthost) {
-            $rr = 1; // Take next one.
+            $vhost = array_shift($allvhosts);
         }
     }
-    // We were at last. Loop back and take first.
-    set_config('cron_lasthost', $allvhosts[0]->id, 'local_vmoodle');
-    $config->cron_lasthost = $allvhosts[0]->id;
-    echo "Round Robin : ".$vhost->vhostname."\n";
-    if ($vcron->activation == 'cli') {
-        exec_vhost_cron($allvhosts[0]);
-    } else {
-        fire_vhost_cron($allvhosts[0]);
+    for ($rr = 0; $rr < RUN_PER_TURN; $rr++) {
+
+        // If $allhosts has been consumed, reload it.
+        if (empty($allvhosts)) {
+            echo "Round Robin : Reloading hostlist.\n";
+            $allvhosts = array_values($vmoodles);
+        }
+
+        // Start consuming an processing hosts.
+        $vhost = array_shift($allvhosts);
+        echo "Round Robin : ".$vhost->vhostname."\n";
+        if ($vcron->activation == 'cli') {
+            exec_vhost_cron($vhost);
+        } else {
+            fire_vhost_cron($vhost);
+        }
+        // Mark the host as visited.
+        set_config('cron_lasthost', $vhost->id, 'local_vmoodle');
+        $config->cron_lasthost = $vhost->id;
     }
 
 } else if ($vcron->strategy == LOWEST_POSSIBLE_GAP) {
     // First make measurement of cron period.
     if (empty($config->vcrontickperiod)) {
         set_config('vcrontime', time(), 'local_vmoodle');
-        return;
+        $vcronlock->release();
+        die();
     }
     set_config('vcrontickperiod', time() - $config->vcrontime, 'local_vmoodle');
     $hostsperturn = max(1, $vcron->period / $config->vcrontickperiod * count($allvhosts));
@@ -127,3 +135,6 @@ if ($vcron->strategy == ROUND_ROBIN) {
         }
     }
 }
+
+$vcronlock->release();
+echo "VCron Done. \n";
