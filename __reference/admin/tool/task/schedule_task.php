@@ -51,17 +51,16 @@ $context = context_system::instance();
 // create some kind of security problem by specifying a class that isn't a task or whatever).
 $task = \core\task\manager::get_scheduled_task($taskname);
 if (!$task) {
-    throw new moodle_exception('cannotfindinfo', 'error', new moodle_url('/admin/tool/task/scheduledtasks.php'), $taskname);
+    throw new moodle_exception('cannotfindinfo', 'error', $taskname);
 }
 
 if (!\core\task\manager::is_runnable()) {
     $redirecturl = new \moodle_url('/admin/settings.php', ['section' => 'systempaths']);
-    throw new moodle_exception('cannotfindthepathtothecli', 'tool_task', $redirecturl->out());
+    throw new moodle_exception('cannotfindthepathtothecli', 'tool_task');
 }
 
 if (!get_config('tool_task', 'enablerunnow') || !$task->can_run()) {
-    throw new moodle_exception('nopermissions', 'error', new moodle_url('/admin/tool/task/scheduledtasks.php'),
-        get_string('runnow', 'tool_task'), $task->get_name());
+    throw new moodle_exception('nopermissions', 'error', get_string('runnow', 'tool_task', $task->get_name()));
 }
 
 // Start output.

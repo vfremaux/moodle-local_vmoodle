@@ -18,11 +18,11 @@
  * Description of Sql plugin library.
  *
  * @package local_vmoodle
- * @category local
  * @author Bruce Bujon (bruce.bujon@gmail.com)
  */
 $plugin = new stdclass;
-$plugin->version = 2015062000;
+$plugin->version = 2025040303;
 $plugin->component = 'vmoodleadminset_sql';
 $plugin->requires = 2014111001;
+$plugin->release = '4.5.0 (build 2025040303)';
 $plugin->dependencies = array('local_vmoodle' => 2015062000);

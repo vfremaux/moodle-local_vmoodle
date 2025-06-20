@@ -178,7 +178,7 @@ if ($formdata = $reviewform->get_data()) {
     if ($mnet_peer->commit()) {
         redirect(new moodle_url('/admin/mnet/peers.php', array('hostid' => $mnet_peer->id)), get_string('changessaved'));
     } else {
-        throw new \moodle_exception('invalidaction', 'error', 'index.php');
+        throw new moodle_exception('invalidaction', 'error');
     }
 } else if ($reviewform->is_submitted()) { // submitted, but errors
     echo $OUTPUT->header();

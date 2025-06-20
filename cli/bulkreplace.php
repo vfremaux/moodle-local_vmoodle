@@ -113,7 +113,7 @@ foreach ($allhosts as $h) {
     exec($workercmd, $output, $return);
 
     if ($return) {
-        if (empty($options['fullstop'])) {
+        if (!empty($options['fullstop'])) {
             echo implode("\n", $output)."\n";
             die("Worker ended with error\n");
         }

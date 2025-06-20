@@ -25,7 +25,8 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin = new stdclass;
-$plugin->version = 2015062000;
+$plugin->version = 2025040300;
 $plugin->component = 'vmoodleadminset_example';
 $plugin->requires = 2014111001;
+$plugin->release = '4.5.0 (build 2025040300)';
 $plugin->dependencies = array('local_vmoodle' => 2015062000);

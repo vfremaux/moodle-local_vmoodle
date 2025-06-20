@@ -93,7 +93,7 @@ function mnet_get_public_key($uri, $application=null) {
             if (defined('CURLPROXY_SOCKS5')) {
                 $extracurloptions[CURLOPT_PROXYTYPE] = CURLPROXY_SOCKS5;
             } else {
-                throw new \moodle_exception( 'socksnotsupported', 'mnet');
+                throw new moodle_exception('socksnotsupported', 'mnet');
             }
         }
 

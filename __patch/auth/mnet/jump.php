@@ -77,12 +77,12 @@ if (preg_match('/\bmultimnet\b/', $CFG->auth) && ($USER->mnethostid != $CFG->mne
 }
 
 if (empty($hostid) && empty($wwwroot)){
-    print_error('errornohosttobounceby', 'auth_multimnet');
+    throw new moodle_exception('errornohosttobounceby', 'auth_multimnet');
 }
 if (empty($hostid)){
     $host = $DB->get_record('mnet_host', array('wwwroot' => $wwwroot));
     if (empty($host)){
-        print_error('erroremptyhostid', 'auth_multimnet');
+        throw new moodle_exception('erroremptyhostid', 'auth_multimnet');
     }
     $hostid = $host->id;
 }
