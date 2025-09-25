@@ -612,7 +612,7 @@ if ($action == 'doadd') {
                 }
 
                 if (local_vmoodle_supports_feature('admin/mnetinit')) {
-                    include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php'),
+                    include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php');
                     vmoodle_bind_to_network($submitteddata, $newmnethost);
                 }
             }
@@ -815,7 +815,7 @@ if ($action == 'doedit') {
              * it to them, if it is subnetworking and not creating new subnetwork.
              */
             if (local_vmoodle_supports_feature('admin/mnetinit')) {
-                include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php'),
+                include_once($CFG->dirroot.'/local/vmoodle/pro_src/locallib.php');
                 if (($submitteddata->mnet > 0) && ($submitteddata->mnet <= vmoodle_get_last_subnetwork_number())) {
                     vmoodle_bind_to_network($submitteddata, $editedhost);
                 }
