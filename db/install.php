@@ -47,6 +47,20 @@ function xmldb_local_vmoodle_install() {
         $dbman->drop_table($table);
     }
 
+    set_config('needs_after_install', 1, 'local_vmoodle');
+
+    return true;
+}
+
+function xmldb_local_vmoodle_after_install() {
+    global $CFG, $USER, $DB;
+
+    $config = get_config('local_vmoodle');
+
+    if (empty($config->needs_after_install)) {
+        return;
+    }
+
     // Register zabbix indicators if installed.
     // Note will only work with report_zabbix "pro" version.
     // This call is only a wrapper.
@@ -54,18 +68,6 @@ function xmldb_local_vmoodle_install() {
         include_once($CFG->dirroot.'/report/zabbix/xlib.php');
         report_zabbix_register_plugin('local', 'vmoodle');
     }
-
-    set_config('late_install', 1, 'local_vmoodle');
-
-    return true;
-}
-
-/**
- * this function is called when viewing the vmoodle register to 
- * fix some mispositionned rpc registration (Moodle bug in upgradelib.php)
- */
-function xmldb_local_vmoodle_late_install() {
-    global $USER, $DB;
 
     // Cleanup all old mnetrpc functions related to blocks.
     $oldfunctions = $DB->get_records_select('mnet_rpc', ' xmlrpcpath LIKE "blocks/vmoodle%" ');
@@ -119,6 +121,6 @@ function xmldb_local_vmoodle_late_install() {
         }
     }
 
-    set_config('late_install', null, 'local_vmoodle');
+    set_config('needs_after_install', null, 'local_vmoodle');
     return true;
 }

@@ -24,10 +24,10 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/local/vmoodle/lib.php');
 
-if (get_config('local_vmoodle', 'late_install')) {
-    // Need performing some corrections on some db recordings, specially subplugins mnet function records.
-    require_once $CFG->dirroot.'/local/vmoodle/db/install.php';
-    xmldb_local_vmoodle_late_install();
+$config = get_config('local_vmoodle');
+if (!empty($config->needs_after_install)) {
+    require_once($CFG->dirroot.'/local/vmoodle/db/install.php');
+    xmldb_local_vmoodle_after_install();
 }
 
 if ($hassiteconfig) {
