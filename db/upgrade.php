@@ -46,13 +46,9 @@ function xmldb_local_vmoodle_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2017090100, 'local', 'vmoodle');
     }
 
-    // Eventually fix some misnamed rpcs if any at each upgrade.
-    // So this is a global process that can be massified.
-    xmldb_local_vmoodle_late_install();
-
     // Register zabbix indicators if installed.
-    // Note will only work with report_zabbix "pro" version.
-    // This call is only a wrapper.
+    // Serves if this plugin is upgraded from previous install
+    // before zabbix report is installed.
     if (is_dir($CFG->dirroot.'/report/zabbix')) {
         include_once($CFG->dirroot.'/report/zabbix/xlib.php');
         report_zabbix_register_plugin('local', 'vmoodle');
